@@ -576,9 +576,11 @@ function logout(){
 }
 
 window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var pfecha = $('pp-fecha');
+    if (pfecha) pfecha.value = hoy();
+  } catch(e){}
   var u=localStorage.getItem('ogb_uid'), t=localStorage.getItem('ogb_tok');
-  // Poner la fecha de hoy en propuesta
-  $('pp-fecha').value = hoy();
   if (u && t) {
     $('lu').value=u; $('lt').value=t; UID=u; TOK=t;
     get('folio', u, t, function(d){ if(d.ok) startApp(d.folio); else {UID='';TOK='';} });
@@ -586,8 +588,8 @@ window.addEventListener('DOMContentLoaded', function(){
 });
 
 function startApp(f) {
-  $('LOGIN').style.display='none';
-  $('APP').style.display='block';
+  try { $('LOGIN').style.display='none'; } catch(e){}
+  try { $('APP').style.display='block'; } catch(e){}
   folio=f||'cargando…'; upPv(); addP('',1,0);
   get('clientes', UID, TOK, function(d){ if(d.ok&&d.clientes) clientes=d.clientes; });
   get('config',   UID, TOK, function(d){ if(d.ok&&d.config){ cfg=d.config; renderConfigChips(); } });
