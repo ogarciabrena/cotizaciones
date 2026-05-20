@@ -1,1 +1,561 @@
-a
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador | Omar García Brena</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --verde: #7AE06A;
+    --verde-dark: #5bc44d;
+    --bg: #0d0d0d;
+    --bg2: #141414;
+    --bg3: #1a1a1a;
+    --bg4: #222222;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(122,224,106,0.25);
+    --text: #f0f0f0;
+    --muted: #888;
+    --danger: #e05050;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .page { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 0.5px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+  .logo { font-size: 13px; font-weight: 300; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+  .logo strong { display: block; font-size: 17px; font-weight: 500; letter-spacing: 0; color: var(--text); margin-bottom: 2px; }
+  .folio-badge { background: var(--bg3); border: 0.5px solid var(--border2); padding: 6px 14px; border-radius: 20px; font-size: 12px; color: var(--verde); letter-spacing: 0.08em; font-weight: 500; }
+
+  h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 42px); font-weight: 400; line-height: 1.15; margin-bottom: 0.4rem; }
+  h1 em { font-style: italic; color: var(--verde); }
+  .hero-sub { font-size: 13px; color: var(--muted); margin-bottom: 2.5rem; }
+
+  .section { margin-bottom: 2rem; }
+  .section-label { font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--verde); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+  .section-label::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; font-weight: 500; }
+
+  input, select, textarea {
+    background: var(--bg3); border: 0.5px solid var(--border);
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; padding: 10px 13px; border-radius: 6px;
+    outline: none; transition: border-color 0.2s;
+    -webkit-appearance: none; appearance: none; width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--verde); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .productos-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .productos-header { display: grid; grid-template-columns: 3fr 80px 110px 36px; gap: 8px; padding: 9px 14px; background: var(--bg3); border-bottom: 0.5px solid var(--border); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .productos-lista { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .producto-row { display: grid; grid-template-columns: 3fr 80px 110px 36px; gap: 8px; align-items: center; }
+  .producto-row input { padding: 8px 10px; font-size: 13px; }
+  .producto-row input[type=number] { text-align: right; }
+  .precio-cell { position: relative; }
+  .precio-cell::before { content: '$'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 12px; pointer-events: none; }
+  .precio-cell input { padding-left: 22px; }
+  .btn-del { width: 34px; height: 34px; border-radius: 6px; background: transparent; border: 0.5px solid var(--border); color: var(--muted); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; line-height: 1; }
+  .btn-del:hover { background: rgba(224,80,80,0.12); border-color: var(--danger); color: var(--danger); }
+  .productos-footer { padding: 10px 14px; border-top: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .btn-add { font-size: 12px; font-weight: 500; color: var(--verde); background: transparent; border: 0.5px solid var(--border2); border-radius: 20px; padding: 6px 14px; cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .btn-add:hover { background: rgba(122,224,106,0.08); }
+
+  .totales-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+  .total-row .lbl { font-size: 13px; color: var(--muted); }
+  .total-row .val { font-size: 13px; }
+  .total-row.grand { border-top: 0.5px solid var(--border); margin-top: 8px; padding-top: 14px; }
+  .total-row.grand .lbl { font-size: 15px; color: var(--text); font-weight: 500; }
+  .total-row.grand .val { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--verde); letter-spacing: -0.02em; }
+  .iva-note { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .switch-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .switch { position: relative; width: 38px; height: 22px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; inset: 0; background: var(--bg4); border-radius: 22px; border: 0.5px solid var(--border); transition: 0.2s; }
+  .slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px; background: var(--muted); border-radius: 50%; transition: 0.2s; }
+  .switch input:checked + .slider { background: rgba(122,224,106,0.2); border-color: var(--verde); }
+  .switch input:checked + .slider::before { background: var(--verde); transform: translateX(16px); }
+
+  .status-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .status-chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 0.5px solid var(--border); background: var(--bg3); cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; color: var(--muted); }
+  .status-chip.active-nueva     { background: rgba(122,224,106,0.12); border-color: var(--verde); color: var(--verde); }
+  .status-chip.active-enviada   { background: rgba(58,130,246,0.12);  border-color: #3a82f6; color: #3a82f6; }
+  .status-chip.active-negociando{ background: rgba(251,191,36,0.12);  border-color: #fbbf24; color: #fbbf24; }
+  .status-chip.active-cerrada   { background: rgba(34,197,94,0.12);   border-color: #22c55e; color: #22c55e; }
+  .status-chip.active-perdida   { background: rgba(224,80,80,0.12);   border-color: var(--danger); color: var(--danger); }
+
+  .vigencia-row { display: flex; align-items: center; gap: 10px; }
+  .vigencia-row input[type=number] { width: 70px; text-align: center; }
+  .vigencia-row span { font-size: 13px; color: var(--muted); }
+
+  .preview-box { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 10px; padding: 1.25rem 1.5rem; }
+  .preview-folio { font-size: 11px; color: var(--verde); letter-spacing: 0.1em; margin-bottom: 4px; }
+  .preview-cliente { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 2px; }
+  .preview-giro { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .preview-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; color: var(--muted); }
+  .preview-item:last-child { border-bottom: none; }
+  .preview-total { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border2); }
+  .preview-total .lbl { font-size: 13px; color: var(--muted); }
+  .preview-total .num { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--verde); }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2rem; }
+  .btn-main { flex: 1; min-width: 200px; padding: 14px 24px; background: var(--verde); color: #0d0d0d; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-main:hover { background: var(--verde-dark); transform: translateY(-1px); }
+  .btn-main:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-sec { flex: 1; min-width: 160px; padding: 14px 24px; background: transparent; color: var(--text); border: 0.5px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .btn-sec:hover { border-color: rgba(255,255,255,0.25); background: var(--bg3); }
+  .btn-sec:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .result-box { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 10px; padding: 1rem 1.5rem; margin-top: 1rem; display: none; }
+  .result-box.show { display: block; }
+  .result-box a { color: var(--verde); font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-right: 16px; }
+  .result-box a:hover { text-decoration: underline; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--bg3); border: 0.5px solid var(--border2); color: var(--verde); padding: 12px 24px; border-radius: 30px; font-size: 13px; letter-spacing: 0.05em; transition: transform 0.3s ease; z-index: 100; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: rgba(224,80,80,0.4); color: var(--danger); }
+
+  .step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--verde); display: inline-block; margin-right: 8px; vertical-align: middle; }
+
+  @media (max-width: 600px) {
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    .productos-header { display: none; }
+    .producto-row { grid-template-columns: 1fr 1fr; }
+    .producto-row .desc-cell { grid-column: 1 / -1; }
+    .actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">
+      <strong>Omar García Brena</strong>
+      Consultor Tecnológico · México
+    </div>
+    <div class="folio-badge" id="folio-display">COT-001-2026</div>
+  </div>
+
+  <h1>Nueva <em>cotización</em></h1>
+  <p class="hero-sub">Completa los datos — el Doc y PDF se generan automáticamente en tu Drive.</p>
+
+  <!-- CLIENTE -->
+  <div class="section">
+    <div class="section-label">Datos del cliente</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field">
+        <label>Nombre / Negocio *</label>
+        <input type="text" id="cliente-nombre" placeholder="Santa Marta" oninput="updatePreview()">
+      </div>
+      <div class="field">
+        <label>Giro</label>
+        <input type="text" id="cliente-giro" placeholder="Comedor, Postrería…" oninput="updatePreview()">
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="field">
+        <label>Teléfono</label>
+        <input type="tel" id="cliente-tel" placeholder="+52 951 000 0000">
+      </div>
+      <div class="field">
+        <label>Correo (opcional)</label>
+        <input type="email" id="cliente-email" placeholder="contacto@negocio.mx">
+      </div>
+      <div class="field">
+        <label>Zona de servicio</label>
+        <input type="text" id="cliente-zona" placeholder="Miahuatlán, Oaxaca">
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div class="section">
+    <div class="section-label">Productos / Servicios</div>
+    <div class="productos-box">
+      <div class="productos-header">
+        <span>Descripción</span>
+        <span style="text-align:right">Cant.</span>
+        <span style="text-align:right">Precio unit.</span>
+        <span></span>
+      </div>
+      <div class="productos-lista" id="productos-lista"></div>
+      <div class="productos-footer">
+        <button class="btn-add" onclick="addProducto()">+ Agregar línea</button>
+        <span style="font-size:11px;color:var(--muted)" id="cant-items">0 conceptos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOTALES -->
+  <div class="section">
+    <div class="section-label">Totales y configuración</div>
+    <div class="grid2">
+      <div class="totales-box">
+        <div class="total-row">
+          <span class="lbl">Subtotal</span>
+          <span class="val" id="subtotal-val">$0</span>
+        </div>
+        <div class="total-row" id="iva-row" style="display:none">
+          <span class="lbl">IVA (16%)</span>
+          <span class="val" id="iva-val">$0</span>
+        </div>
+        <div class="total-row grand">
+          <span class="lbl">Total</span>
+          <span class="val" id="total-val">$0</span>
+        </div>
+        <p class="iva-note" id="iva-note">* Precios en MXN. IVA no incluido.</p>
+        <div class="switch-row">
+          <label class="switch">
+            <input type="checkbox" id="iva-toggle" onchange="toggleIVA()">
+            <span class="slider"></span>
+          </label>
+          <span style="font-size:12px;color:var(--muted)">Incluir IVA 16%</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="field">
+          <label>Vigencia</label>
+          <div class="vigencia-row">
+            <input type="number" id="vigencia" value="15" min="1" max="90" oninput="updatePreview()">
+            <span>días naturales</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Notas internas (solo en Sheets, no en el Doc)</label>
+          <textarea id="notas" placeholder="Ej. cliente interesado en fase 2…" style="min-height:60px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="section">
+    <div class="section-label">Pipeline CRM</div>
+    <div class="status-row">
+      <button class="status-chip active-nueva" data-status="NUEVA"      onclick="setStatus(this)">⬤ Nueva</button>
+      <button class="status-chip"              data-status="ENVIADA"    onclick="setStatus(this)">⬤ Enviada</button>
+      <button class="status-chip"              data-status="NEGOCIANDO" onclick="setStatus(this)">⬤ Negociando</button>
+      <button class="status-chip"              data-status="CERRADA"    onclick="setStatus(this)">⬤ Cerrada ✓</button>
+      <button class="status-chip"              data-status="PERDIDA"    onclick="setStatus(this)">⬤ Perdida</button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">El status se guarda en Sheets. Puedes cambiarlo también desde el menú 🟢 en tu hoja.</p>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="section">
+    <div class="section-label">Vista previa del metadata</div>
+    <div class="preview-box">
+      <div class="preview-folio" id="prev-folio">COT-001-2026</div>
+      <div class="preview-cliente" id="prev-cliente">—</div>
+      <div class="preview-giro" id="prev-giro">—</div>
+      <div id="prev-items"></div>
+      <div class="preview-total">
+        <span class="lbl">Total estimado</span>
+        <span class="num" id="prev-total">$0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADO Doc/PDF -->
+  <div class="result-box" id="result-box">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Documentos generados en tu Drive:</p>
+    <a id="link-doc" href="#" target="_blank">📄 Abrir Google Doc</a>
+    <a id="link-pdf" href="#" target="_blank">📥 Abrir PDF</a>
+  </div>
+
+  <!-- ACCIONES -->
+  <div class="actions">
+    <button class="btn-main" id="btn-guardar" onclick="guardarCotizacion()">
+      <span class="step-dot"></span>1 — Guardar en Sheets
+    </button>
+    <button class="btn-sec" id="btn-doc" onclick="generarDoc()" disabled>
+      📄 2 — Generar Doc + PDF
+    </button>
+  </div>
+  <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">
+    Primero guarda → luego genera el Doc. Ambos van a tu Drive automáticamente.
+  </p>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── CONFIG ─────────────────────────────────────────────────
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzvmdb-7yV4-wf65JSd1-XI9-3W_4cMZ6LoOYTEGunadfPFkvairIk4mPX5s9-xUEza_g/exec';
+  const TOKEN   = 'rDMyQqrnbm1grpqQdzeq21urdWw+q2X0gWq9Q5cMo4o=';
+  // ──────────────────────────────────────────────────────────
+
+  let productos     = [];
+  let currentStatus = 'NUEVA';
+  let folioNum      = 1;
+  let guardado      = false;
+
+  const folioStr = () => `COT-${String(folioNum).padStart(3,'0')}-2026`;
+
+  // Folio inicial — intenta leer el último desde Sheets para no repetir
+  // (opcional: si no responde simplemente arranca en 001)
+  function addProducto(desc='', cant=1, precio=0) {
+    const id = Date.now() + Math.random();
+    productos.push({ id, desc, cant, precio });
+    renderProductos();
+    updatePreview();
+  }
+
+  function removeProducto(id) {
+    productos = productos.filter(p => p.id !== id);
+    renderProductos();
+    updatePreview();
+  }
+
+  function renderProductos() {
+    const lista = document.getElementById('productos-lista');
+    lista.innerHTML = '';
+    productos.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'producto-row';
+      row.innerHTML = `
+        <div class="desc-cell">
+          <input type="text" placeholder="Descripción del servicio…" value="${escHtml(p.desc)}"
+            oninput="updateProd(${p.id},'desc',this.value)">
+        </div>
+        <div>
+          <input type="number" min="1" value="${p.cant}"
+            oninput="updateProd(${p.id},'cant',this.value)">
+        </div>
+        <div class="precio-cell">
+          <input type="number" min="0" value="${p.precio || ''}" placeholder="0"
+            oninput="updateProd(${p.id},'precio',this.value)">
+        </div>
+        <button class="btn-del" onclick="removeProducto(${p.id})" title="Eliminar">×</button>
+      `;
+      lista.appendChild(row);
+    });
+    document.getElementById('cant-items').textContent =
+      `${productos.length} concepto${productos.length !== 1 ? 's' : ''}`;
+  }
+
+  function updateProd(id, field, val) {
+    const p = productos.find(p => p.id === id);
+    if (!p) return;
+    if (field === 'desc')   p.desc   = val;
+    if (field === 'cant')   p.cant   = parseFloat(val) || 1;
+    if (field === 'precio') p.precio = parseFloat(val) || 0;
+    updatePreview();
+  }
+
+  function calcTotals() {
+    const sub  = productos.reduce((a, p) => a + (p.cant * p.precio), 0);
+    const ivaOn = document.getElementById('iva-toggle').checked;
+    const iva  = ivaOn ? sub * 0.16 : 0;
+    return { sub, iva, total: sub + iva };
+  }
+
+  function toggleIVA() {
+    const on = document.getElementById('iva-toggle').checked;
+    document.getElementById('iva-row').style.display = on ? 'flex' : 'none';
+    document.getElementById('iva-note').textContent  =
+      on ? '* IVA incluido (16%).' : '* Precios en MXN. IVA no incluido.';
+    updatePreview();
+  }
+
+  function fmt(n) {
+    return '$' + Math.round(n).toLocaleString('es-MX');
+  }
+
+  function updatePreview() {
+    const { sub, iva, total } = calcTotals();
+    document.getElementById('subtotal-val').textContent = fmt(sub);
+    document.getElementById('iva-val').textContent      = fmt(iva);
+    document.getElementById('total-val').textContent    = fmt(total);
+
+    const nombre = document.getElementById('cliente-nombre').value || '—';
+    const giro   = document.getElementById('cliente-giro').value   || '—';
+
+    document.getElementById('folio-display').textContent = folioStr();
+    document.getElementById('prev-folio').textContent    = folioStr();
+    document.getElementById('prev-cliente').textContent  = nombre;
+    document.getElementById('prev-giro').textContent     = giro;
+    document.getElementById('prev-total').textContent    = fmt(total);
+
+    document.getElementById('prev-items').innerHTML = productos.map(p =>
+      `<div class="preview-item"><span>${escHtml(p.desc) || '(sin descripción)'}</span><span>${fmt(p.cant * p.precio)}</span></div>`
+    ).join('');
+
+    // Si ya estaba guardado, deshabilitar btn-guardar para no duplicar
+    if (guardado) {
+      guardado = false;
+      document.getElementById('btn-doc').disabled = true;
+      document.getElementById('result-box').classList.remove('show');
+    }
+  }
+
+  function setStatus(btn) {
+    document.querySelectorAll('.status-chip').forEach(c => c.className = 'status-chip');
+    currentStatus = btn.dataset.status;
+    btn.classList.add('active-' + currentStatus.toLowerCase());
+  }
+
+  function buildPayload(accion) {
+    const { sub, iva, total } = calcTotals();
+    return {
+      token:       TOKEN,
+      accion,
+      folio:       folioStr(),
+      fecha:       new Date().toISOString().split('T')[0],
+      cliente:     document.getElementById('cliente-nombre').value.trim(),
+      giro:        document.getElementById('cliente-giro').value.trim(),
+      tel:         document.getElementById('cliente-tel').value.trim(),
+      email:       document.getElementById('cliente-email').value.trim(),
+      zona:        document.getElementById('cliente-zona').value.trim(),
+      vigencia:    document.getElementById('vigencia').value,
+      status:      currentStatus,
+      notas:       document.getElementById('notas').value.trim(),
+      productos:   productos.map(p => ({
+        desc:     p.desc,
+        cant:     p.cant,
+        precio:   Math.round(p.precio),
+        subtotal: Math.round(p.cant * p.precio)
+      })),
+      subtotal:    Math.round(sub),
+      iva:         Math.round(iva),
+      total:       Math.round(total),
+      incluye_iva: document.getElementById('iva-toggle').checked,
+    };
+  }
+
+  function validar() {
+    if (!document.getElementById('cliente-nombre').value.trim()) {
+      showToast('⚠ Ingresa el nombre del cliente', true); return false;
+    }
+    if (productos.length === 0) {
+      showToast('⚠ Agrega al menos un producto', true); return false;
+    }
+    if (productos.some(p => !p.desc.trim())) {
+      showToast('⚠ Todos los productos deben tener descripción', true); return false;
+    }
+    return true;
+  }
+
+  async function guardarCotizacion() {
+    if (!validar()) return;
+    const btn = document.getElementById('btn-guardar');
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+
+    try {
+      const res  = await fetch(GAS_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(buildPayload('guardar')),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        guardado = true;
+        showToast('✓ Guardado en Google Sheets');
+        btn.textContent = '✓ Guardado';
+        document.getElementById('btn-doc').disabled = false;
+        folioNum++;
+      } else {
+        throw new Error(data.error || 'Error desconocido');
+      }
+    } catch (err) {
+      showToast('⚠ Error: ' + err.message, true);
+      btn.disabled = false;
+      btn.innerHTML = '<span class="step-dot"></span>1 — Guardar en Sheets';
+    }
+  }
+
+  async function generarDoc() {
+    if (!validar()) return;
+    const btn = document.getElementById('btn-doc');
+    btn.disabled = true;
+    btn.textContent = 'Generando Doc + PDF…';
+
+    // El folio a generar es el anterior (ya se incrementó al guardar)
+    const folioParaDoc = `COT-${String(folioNum - 1).padStart(3,'0')}-2026`;
+    const payload = buildPayload('generar_doc');
+    payload.folio = folioParaDoc;
+
+    try {
+      const res  = await fetch(GAS_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        showToast('✓ Doc y PDF generados en tu Drive');
+        btn.textContent = '✓ Generado';
+
+        // Mostrar links
+        document.getElementById('link-doc').href = data.doc_url;
+        document.getElementById('link-pdf').href = data.pdf_url;
+        document.getElementById('result-box').classList.add('show');
+
+        // Reset para nueva cotización
+        setTimeout(() => {
+          if (confirm('¿Iniciar una nueva cotización?')) resetForm();
+        }, 1500);
+      } else {
+        throw new Error(data.error || 'Error desconocido');
+      }
+    } catch (err) {
+      showToast('⚠ Error: ' + err.message, true);
+      btn.disabled = false;
+      btn.textContent = '📄 2 — Generar Doc + PDF';
+    }
+  }
+
+  function resetForm() {
+    productos = [];
+    currentStatus = 'NUEVA';
+    guardado = false;
+    document.getElementById('cliente-nombre').value = '';
+    document.getElementById('cliente-giro').value   = '';
+    document.getElementById('cliente-tel').value    = '';
+    document.getElementById('cliente-email').value  = '';
+    document.getElementById('cliente-zona').value   = '';
+    document.getElementById('notas').value          = '';
+    document.getElementById('vigencia').value       = '15';
+    document.getElementById('iva-toggle').checked   = false;
+    document.querySelectorAll('.status-chip').forEach(c => c.className = 'status-chip');
+    document.querySelector('[data-status="NUEVA"]').classList.add('active-nueva');
+    document.getElementById('btn-guardar').disabled    = false;
+    document.getElementById('btn-guardar').innerHTML   = '<span class="step-dot"></span>1 — Guardar en Sheets';
+    document.getElementById('btn-doc').disabled        = true;
+    document.getElementById('btn-doc').textContent     = '📄 2 — Generar Doc + PDF';
+    document.getElementById('result-box').classList.remove('show');
+    toggleIVA();
+    renderProductos();
+    updatePreview();
+  }
+
+  function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = 'toast' + (isError ? ' error' : '');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  // Init
+  addProducto('', 1, 0);
+  updatePreview();
+</script>
+</body>
+</html>
