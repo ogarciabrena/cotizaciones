@@ -538,24 +538,24 @@ input[readonly]{opacity:.7;cursor:default}
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIGURACIÓN ─────────────────────────────────────────────
-// Solo el SHEET_ID va aquí — no es secreto (es el ID del Sheet).
+// -- CONFIGURACIÓN ---------------------------------------------
+// Solo el SHEET_ID va aquí - no es secreto (es el ID del Sheet).
 // El auth real lo hacen el UID + TOKEN contra la hoja oculta "Usuarios".
 var GAS = 'https://script.google.com/macros/s/AKfycbzvmdb-7yV4-wf65JSd1-XI9-3W_4cMZ6LoOYTEGunadfPFkvairIk4mPX5s9-xUEza_g/exec';
 var UID = '', TOK = '';
 
 // Estado
-var folio='…', folioSaved='', cfg=null;
+var folio='...', folioSaved='', cfg=null;
 var prods=[], status='NUEVA', clientes=[], catProds=[], acIdx=-1, catVis=false;
 var propDatos = null;   // cotización cargada en el generador
 var propImgs  = {portada:[], intro:[], sol:[]};  // imágenes por sección
 var propActivo= {portada:true, intro:true, sol:true, cot:true, notas:true};
 
-// ── LOGIN ──────────────────────────────────────────────────────
+// -- LOGIN ------------------------------------------------------
 function doLogin() {
   var u = $('lu').value.trim(), t = $('lt').value.trim();
   if (!u || !t) { lerr('Completa ID y Token.'); return; }
-  var btn = $('lbtn'); btn.textContent='Verificando…'; btn.disabled=true;
+  var btn = $('lbtn'); btn.textContent='Verificando...'; btn.disabled=true;
   get('folio', u, t, function(d) {
     if (d.ok) {
       UID=u; TOK=t;
@@ -564,7 +564,7 @@ function doLogin() {
       startApp(d.folio);
     } else {
       lerr('ID o Token incorrecto, o usuario inactivo.');
-      btn.textContent='Ingresar →'; btn.disabled=false;
+      btn.textContent='Ingresar ->'; btn.disabled=false;
     }
   });
 }
@@ -590,13 +590,13 @@ window.addEventListener('DOMContentLoaded', function(){
 function startApp(f) {
   try { $('LOGIN').style.display='none'; } catch(e){}
   try { $('APP').style.display='block'; } catch(e){}
-  folio=f||'cargando…'; upPv(); addP('',1,0);
+  folio=f||'cargando...'; upPv(); addP('',1,0);
   get('clientes', UID, TOK, function(d){ if(d.ok&&d.clientes) clientes=d.clientes; });
   get('config',   UID, TOK, function(d){ if(d.ok&&d.config){ cfg=d.config; renderConfigChips(); } });
   get('productos',UID, TOK, function(d){ if(d.ok&&d.productos){ catProds=d.productos; renderCatFull(); } });
 }
 
-// ── TABS ───────────────────────────────────────────────────────
+// -- TABS -------------------------------------------------------
 function showTab(id, btn) {
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
@@ -609,7 +609,7 @@ function showTab(id, btn) {
   }
 }
 
-// ── AUTOCOMPLETE ───────────────────────────────────────────────
+// -- AUTOCOMPLETE -----------------------------------------------
 function onNI(){
   upPv();
   var q=gv('cn').toLowerCase(); if(!q){cDD();return;}
@@ -619,7 +619,7 @@ function onNI(){
   ms.forEach(function(c){
     var el=document.createElement('div'); el.className='aci';
     el.innerHTML='<div class="an">'+esc(c.nombre)+'<span class="abadge">anterior</span></div>'
-      +'<div class="ad">'+(c.giro?esc(c.giro)+' · ':'')+( c.tel?esc(c.tel):'' )+'</div>';
+      +'<div class="ad">'+(c.giro?esc(c.giro)+' . ':'')+( c.tel?esc(c.tel):'' )+'</div>';
     el.addEventListener('mousedown',function(e){e.preventDefault();selC(c);});
     dd.appendChild(el);
   });
@@ -637,12 +637,12 @@ function onNK(e){
 function selC(c){
   sv('cn',c.nombre); sv('cg',c.giro||''); sv('ct',c.tel||'');
   sv('ce',c.email||''); sv('cz',c.zona||'');
-  cDD(); upPv(); toast('✓ '+c.nombre+' precargado');
+  cDD(); upPv(); toast('OK '+c.nombre+' precargado');
 }
 function cDD(){ var dd=$('acd'); dd.classList.remove('on'); dd.innerHTML=''; acIdx=-1; }
 document.addEventListener('click',function(e){if(!e.target.closest('.acw'))cDD();});
 
-// ── CATÁLOGO INLINE ────────────────────────────────────────────
+// -- CATÁLOGO INLINE --------------------------------------------
 function togCat(){
   catVis=!catVis;
   var g=$('cgrid');
@@ -672,27 +672,27 @@ function renderCatFull(){
     g.appendChild(d);
   });
 }
-function fromCat(n,p){ addP(n,1,p); toast('✓ '+n+' agregado'); }
+function fromCat(n,p){ addP(n,1,p); toast('OK '+n+' agregado'); }
 function calcP(){
   var c=parseFloat($('pc').value)||0, m=parseFloat($('pm').value)||0;
   $('pp').value = c&&m<100 ? fmto(Math.round(c/(1-m/100))) : '';
 }
 function saveProd(){
   var nombre=gv('pn'), costo=parseFloat($('pc').value)||0, margen=parseFloat($('pm').value)||0;
-  if(!nombre){toast('⚠ Nombre requerido',true);return;}
-  if(!costo){toast('⚠ Ingresa el costo',true);return;}
+  if(!nombre){toast('! Nombre requerido',true);return;}
+  if(!costo){toast('! Ingresa el costo',true);return;}
   post({uid:UID,tok:TOK,a:'guardar_producto',nombre:nombre,descripcion:gv('pd'),costo:costo,margen:margen},
   function(d){
     if(d.ok){
       catProds.push({nombre:nombre,descripcion:gv('pd'),precio:Math.round(costo/(1-margen/100))});
       renderCatFull();
       ['pn','pd','pc','pm'].forEach(function(i){$(i).value='';});
-      $('pp').value=''; toast('✓ Producto guardado');
-    } else toast('⚠ '+(d.e||'Error'),true);
+      $('pp').value=''; toast('OK Producto guardado');
+    } else toast('! '+(d.e||'Error'),true);
   });
 }
 
-// ── BUSCADOR ───────────────────────────────────────────────────
+// -- BUSCADOR ---------------------------------------------------
 var busT;
 function buscar(){
   var q=$('si').value.trim();
@@ -706,7 +706,7 @@ function buscar(){
       el.innerHTML=d.resultados.map(function(r){
         return '<div class="rcard" onclick="cargarEnPropuesta(\''+ea(r.folio)+'\')">'
           +'<div><div class="rf">'+esc(r.folio)+'</div><div class="rn">'+esc(r.cliente)+'</div>'
-          +'<div class="rm">'+(r.giro?esc(r.giro)+' · ':'')+(r.fecha||'')+'</div></div>'
+          +'<div class="rm">'+(r.giro?esc(r.giro)+' . ':'')+(r.fecha||'')+'</div></div>'
           +'<div class="rright"><div class="rt">'+fmto(r.total)+'</div>'
           +'<div class="spill '+(smap[r.status]||'sp-n')+'">'+r.status+'</div>'
           +(r.fecha_cierre?'<div style="font-size:10px;color:var(--mt);margin-top:3px">Cierre: '+r.fecha_cierre+'</div>':'')
@@ -720,12 +720,12 @@ function cargarEnPropuesta(folio){
   sv('prop-folio', folio);
   cargarCotizacion();
   showTab('propuesta');
-  toast('✓ Cargando cotización en Propuesta…');
+  toast('OK Cargando cotización en Propuesta...');
 }
 
 // Convierte la cotización activa en propuesta (false=solo propuesta, true=cargar y editar)
 function convertirEnPropuesta(modoEditar){
-  if(!gv('cn')){toast('⚠ No hay cotización activa',true);return;}
+  if(!gv('cn')){toast('! No hay cotización activa',true);return;}
   var t=calc();
   // Cargar datos de la cotización activa en el generador de propuesta
   sv('pp-cliente', gv('cn'));
@@ -750,12 +750,12 @@ function convertirEnPropuesta(modoEditar){
   actualizarPropTabla(propDatos);
   $('prop-status-box').style.display='block';
   sei('prop-folio-loaded', propDatos.folio);
-  sei('prop-cliente-loaded', propDatos.cliente+' · '+fmto(propDatos.total));
+  sei('prop-cliente-loaded', propDatos.cliente+' . '+fmto(propDatos.total));
   if(modoEditar){
     // Modo editar: recargar productos del cotizador activo para poder modificar
-    toast('✓ Cotización cargada — puedes editar productos y generar la propuesta');
+    toast('OK Cotización cargada - puedes editar productos y generar la propuesta');
   } else {
-    toast('✓ Cotización convertida en propuesta');
+    toast('OK Cotización convertida en propuesta');
   }
   showTab('propuesta');
 }
@@ -780,29 +780,27 @@ function renderConfigChips(){
     var btn=document.createElement('button');
     btn.className='badd alt';
     btn.textContent='+ '+item.label;
-    btn.title=val.substring(0,80)+(val.length>80?'…':'');
+    btn.title=val.substring(0,80)+(val.length>80?'...':'');
     btn.onclick=function(){
       var ta=$('pp-intro');
-      ta.value=(ta.value?ta.value+'
-
-':'')+val;
-      toast('✓ "'+item.label+'" agregado');
+      ta.value=(ta.value?ta.value+'\n\n':'')+val;
+      toast('OK: '+item.label+' agregado');
     };
     el.appendChild(btn);
   });
 }
 
-// ── PRODUCTOS ──────────────────────────────────────────────────
+// -- PRODUCTOS --------------------------------------------------
 function addP(d,c,p){ d=d||''; c=c!==undefined?c:1; p=p!==undefined?p:0; var id=Date.now()+Math.random(); prods.push({id:id,d:d,c:c,p:p}); renderP(); upPv(); }
 function rmP(id){ prods=prods.filter(function(x){return x.id!==id;}); renderP(); upPv(); }
 function renderP(){
   var l=$('plst'); l.innerHTML='';
   prods.forEach(function(pr){
     var row=document.createElement('div'); row.className='prow';
-    row.innerHTML='<div class="dc"><input type="text" placeholder="Descripción del servicio…" value="'+esc(pr.d)+'" oninput="upP('+pr.id+',\'d\',this.value)"></div>'
+    row.innerHTML='<div class="dc"><input type="text" placeholder="Descripción del servicio..." value="'+esc(pr.d)+'" oninput="upP('+pr.id+',\'d\',this.value)"></div>'
       +'<div><input type="number" min="1" value="'+pr.c+'" oninput="upP('+pr.id+',\'c\',this.value)"></div>'
       +'<div class="pcell"><input type="number" min="0" value="'+(pr.p||'')+'" placeholder="0" oninput="upP('+pr.id+',\'p\',this.value)"></div>'
-      +'<button class="bdel" onclick="rmP('+pr.id+')">×</button>';
+      +'<button class="bdel" onclick="rmP('+pr.id+')">x</button>';
     l.appendChild(row);
   });
   $('pcnt').textContent=prods.length+' concepto'+(prods.length!==1?'s':'');
@@ -815,7 +813,7 @@ function upPv(){
   var t=calc();
   sei('sv',fmt(t.sub)); sei('iv',fmt(t.iva)); sei('tv',fmt(t.tot));
   sei('fbadge',folio); sei('pvf',folio);
-  sei('pvc',gv('cn')||'—'); sei('pvg',gv('cg')||'—');
+  sei('pvc',gv('cn')||'-'); sei('pvg',gv('cg')||'-');
   sei('pvtotal',fmt(t.tot));
   $('pvi').innerHTML=prods.map(function(p){ return '<div class="pvi"><span>'+esc(p.d||'(sin desc)')+'</span><span>'+fmt(p.c*p.p)+'</span></div>'; }).join('');
 }
@@ -826,7 +824,7 @@ function setSt(btn){
   btn.classList.add(m[status]||'sn');
 }
 
-// ── GUARDAR ────────────────────────────────────────────────────
+// -- GUARDAR ----------------------------------------------------
 function mkPay(){
   var t=calc();
   return{uid:UID,tok:TOK,a:'guardar',folio:folio,fecha:hoy(),
@@ -839,18 +837,18 @@ function mkPay(){
   };
 }
 function valid(){
-  if(!gv('cn')){toast('⚠ Ingresa el nombre del cliente',true);return false;}
-  if(!prods.length||prods.every(function(p){return !p.d.trim();})){toast('⚠ Agrega al menos un producto',true);return false;}
-  if(prods.some(function(p){return p.d.trim()&&p.p<=0;})){toast('⚠ Todos los productos deben tener precio > 0',true);return false;}
+  if(!gv('cn')){toast('! Ingresa el nombre del cliente',true);return false;}
+  if(!prods.length||prods.every(function(p){return !p.d.trim();})){toast('! Agrega al menos un producto',true);return false;}
+  if(prods.some(function(p){return p.d.trim()&&p.p<=0;})){toast('! Todos los productos deben tener precio > 0',true);return false;}
   return true;
 }
 function guardar(){
   if(!valid())return;
-  var btn=$('bg'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>Guardando…';
+  var btn=$('bg'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>Guardando...';
   post(mkPay(),function(d){
     if(d.ok){
-      folioSaved=folio; toast('✓ Guardado — '+folio);
-      btn.textContent='✓ Guardado';
+      folioSaved=folio; toast('OK Guardado - '+folio);
+      btn.textContent='OK Guardado';
       $('bp').disabled=false; $('bd').disabled=false;
       $('acc-propuesta').style.display='flex';
       get('folio',UID,TOK,function(r){if(r.ok&&r.folio){folio=r.folio;upPv();}});
@@ -858,13 +856,13 @@ function guardar(){
       if(n&&!clientes.some(function(c){return c.nombre.toLowerCase()===n.toLowerCase();}))
         clientes.push({nombre:n,giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz')});
     } else {
-      toast('⚠ '+(d.e||'Error al guardar'),true);
-      btn.disabled=false; btn.innerHTML='<span class="dot"></span>1 — Guardar en Sheets';
+      toast('! '+(d.e||'Error al guardar'),true);
+      btn.disabled=false; btn.innerHTML='<span class="dot"></span>1 - Guardar en Sheets';
     }
   });
 }
 
-// ── DATOS PARA DOCUMENTOS ──────────────────────────────────────
+// -- DATOS PARA DOCUMENTOS --------------------------------------
 function getDatos(){
   var t=calc(), c=cfg||{};
   return{folio:folioSaved||folio, fecha:hoy(),
@@ -874,18 +872,18 @@ function getDatos(){
     subtotal:Math.round(t.sub), iva:Math.round(t.iva), total:Math.round(t.tot),
     incluye_iva:$('ivt').checked,
     terminos: c.b1||TD, slogan:c.b2||'Moderniza tu negocio desde el primer día',
-    nota_pie: c.b3||'Omar García Brena · ogarciabrena@gmail.com',
+    nota_pie: c.b3||'Omar García Brena . ogarciabrena@gmail.com',
     pago:     c.b9||''
   };
 }
 var TD='1. Cotizacion valida por el tiempo indicado.\n2. Precios en MXN, IVA no incluido.\n3. Zona: Miahuatlan, Oaxaca.\n4. CCTV sujeto a revision presencial.\n5. Primer mes de soporte incluido.\n6. Aceptacion = conformidad.';
 
-// ── PDF (cotización) ───────────────────────────────────────────
-function genPDF(){ if(!valid())return; withCfg(function(){ buildPDF(getDatos(),'pdf'); },'bp','📄 PDF'); }
-function genDOC(){ if(!valid())return; withCfg(function(){ buildDOC(getDatos()); },'bd','📝 DOC'); }
+// -- PDF (cotización) -------------------------------------------
+function genPDF(){ if(!valid())return; withCfg(function(){ buildPDF(getDatos(),'pdf'); },'bp','? PDF'); }
+function genDOC(){ if(!valid())return; withCfg(function(){ buildDOC(getDatos()); },'bd','? DOC'); }
 function withCfg(fn,bid,label){
-  var btn=$(bid); btn.disabled=true; btn.innerHTML='<span class="spin"></span>…';
-  function go(){ try{fn();toast('✓ Descargado');}catch(err){toast('⚠ '+err.message,true);} btn.textContent=label;btn.disabled=false; }
+  var btn=$(bid); btn.disabled=true; btn.innerHTML='<span class="spin"></span>...';
+  function go(){ try{fn();toast('OK Descargado');}catch(err){toast('! '+err.message,true);} btn.textContent=label;btn.disabled=false; }
   if(!cfg){get('config',UID,TOK,function(d){if(d.ok)cfg=d.config;go();});}else go();
 }
 
@@ -905,7 +903,7 @@ function buildPDF(p, filename){
 
   // Banda verde superior
   fr(0,0,W,10,VD);
-  sf('bold',9,WH); tx('Omar García Brena — Consultor Tecnológico · ogarciabrena@gmail.com · +52 55 1455 2202',W/2,6.5,{align:'center'});
+  sf('bold',9,WH); tx('Omar García Brena - Consultor Tecnológico . ogarciabrena@gmail.com . +52 55 1455 2202',W/2,6.5,{align:'center'});
   y=18;
 
   // Título
@@ -938,7 +936,7 @@ function buildPDF(p, filename){
   fr(ml,y,cw,7,VL);
   // Fix nombre encimado: truncar con splitTextToSize
   sf('bold',11,VD);
-  var cliNombre = doc.splitTextToSize(p.cliente||'—', cw-6);
+  var cliNombre = doc.splitTextToSize(p.cliente||'-', cw-6);
   tx(cliNombre[0],ml+3,y+5.2);
   y+=9;
   sf('normal',8,GR);
@@ -961,7 +959,7 @@ function buildPDF(p, filename){
 
   // Tabla productos
   sf('bold',8,VM); tx('DESCRIPCIÓN DE SERVICIOS',ml,y); y+=4;
-  var rows=(p.productos||[]).map(function(pr,i){ return [String(i+1),pr.desc||'—',String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)]; });
+  var rows=(p.productos||[]).map(function(pr,i){ return [String(i+1),pr.desc||'-',String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)]; });
   doc.autoTable({
     startY:y,
     head:[['#','Descripción','Cant.','Precio unit.','Subtotal']],
@@ -995,17 +993,17 @@ function buildPDF(p, filename){
   ln(ml,y,ml+74,y,[160,160,160]); ln(ml+85,y,ml+74+85,y,[160,160,160]); y+=4;
   sf('normal',7,GR); tx('Nombre y firma del cliente',ml,y); tx('Fecha de aceptación',ml+85,y);
   fr(0,289,W,8,VD);
-  sf('normal',7,[200,230,201]); tx(p.nota_pie||'Omar García Brena · ogarciabrena@gmail.com',W/2,294.5,{align:'center'});
+  sf('normal',7,[200,230,201]); tx(p.nota_pie||'Omar García Brena . ogarciabrena@gmail.com',W/2,294.5,{align:'center'});
 
   doc.save((filename||p.folio)+' - '+p.cliente+'.pdf');
 }
 
-// ── DOC ────────────────────────────────────────────────────────
+// -- DOC --------------------------------------------------------
 function buildDOC(p){
   var rows=(p.productos||[]).map(function(pr,i){
     return '<tr style="background:'+(i%2===0?'#fff':'#f8f8f8')+'">'
       +'<td style="text-align:center;padding:5px 8px;border:1px solid #ddd">'+pr.cant+'</td>'
-      +'<td style="padding:5px 8px;border:1px solid #ddd">'+esc(pr.desc||'—')+'</td>'
+      +'<td style="padding:5px 8px;border:1px solid #ddd">'+esc(pr.desc||'-')+'</td>'
       +'<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.precio)+'</td>'
       +'<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.subtotal)+'</td>'+'</tr>';
   }).join('');
@@ -1021,7 +1019,7 @@ function buildDOC(p){
   +'<td style="text-align:right;vertical-align:top;width:140px"><div style="background:#1B5E20;color:#fff;padding:8px 12px"><p style="margin:0;font-size:7pt;color:#a5d6a7">COTIZACIÓN</p><p style="margin:0;font-size:13pt;font-weight:bold">'+esc(p.folio)+'</p><p style="margin:0;font-size:8pt;color:#c8e6c9">'+fmtF(p.fecha)+'</p></div></td></tr></table>'
   +'<hr style="border:none;border-top:2px solid #2E7D32;margin:0 0 12px">'
   +'<table style="margin-bottom:12px"><tr><td style="font-size:9pt;color:#555"><b>Consultor:</b> Omar García Brena<br><b>Correo:</b> ogarciabrena@gmail.com<br><b>Tel:</b> +52 55 1455 2202</td><td style="text-align:right;font-size:9pt;color:#555"><b>Folio:</b> '+esc(p.folio)+'<br><b>Fecha:</b> '+fmtF(p.fecha)+'<br><b>Vigencia:</b> '+p.vigencia+' días naturales</td></tr></table>'
-  +'<h2>Cotización para</h2><div style="background:#E8F5E9;padding:8px 12px;margin-bottom:12px"><p style="font-size:12pt;font-weight:bold;color:#1B5E20;margin:0 0 4px">'+esc(p.cliente||'—')+'</p>'+(cliInfo?'<table style="width:auto">'+cliInfo+'</table>':'')+'</div>'
+  +'<h2>Cotización para</h2><div style="background:#E8F5E9;padding:8px 12px;margin-bottom:12px"><p style="font-size:12pt;font-weight:bold;color:#1B5E20;margin:0 0 4px">'+esc(p.cliente||'-')+'</p>'+(cliInfo?'<table style="width:auto">'+cliInfo+'</table>':'')+'</div>'
   +'<h2>Descripción de servicios</h2><table style="margin-bottom:6px"><thead><tr style="background:#1B5E20"><th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:center;width:7%">Cant.</th><th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:left;width:53%">Descripción</th><th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Precio unit.</th><th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Subtotal</th></tr></thead><tbody>'+rows+'</tbody></table>'
   +'<p style="font-size:8pt;font-style:italic;color:#888;text-align:right;margin-bottom:12px">Esta cotización es válida por los próximos '+p.vigencia+' días.</p>'
   +'<table style="width:42%;margin-left:auto;margin-bottom:6px"><tr style="background:#f5f5f5"><td style="padding:4px 10px;border:1px solid #ddd;color:#666">Subtotal</td><td style="padding:4px 10px;border:1px solid #ddd;text-align:right">'+fmto(p.subtotal)+'</td></tr><tr><td style="padding:4px 10px;border:1px solid #ddd;color:#666">IVA</td><td style="padding:4px 10px;border:1px solid #ddd;text-align:right">'+(p.incluye_iva?fmto(p.iva):'No aplica')+'</td></tr><tr style="background:#1B5E20"><td style="padding:6px 10px;border:1px solid #1B5E20;color:#fff;font-weight:bold">TOTAL</td><td style="padding:6px 10px;border:1px solid #1B5E20;color:#fff;font-weight:bold;text-align:right">'+fmto(p.total)+'</td></tr></table>'
@@ -1029,28 +1027,28 @@ function buildDOC(p){
   +(p.pago?'<h2>Forma de pago</h2><p style="font-size:9pt;color:#555">'+esc(p.pago)+'</p>':'')
   +'<h2>Términos y condiciones</h2>'+termH
   +'<div style="margin-top:28px"><table style="width:100%"><tr><td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Nombre y firma del cliente</td><td style="width:6%"></td><td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Fecha de aceptación</td></tr></table></div>'
-  +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px 12px;margin-top:22px;font-size:8pt;text-align:center">'+esc(p.nota_pie||'Omar García Brena · ogarciabrena@gmail.com')+'</div>'
+  +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px 12px;margin-top:22px;font-size:8pt;text-align:center">'+esc(p.nota_pie||'Omar García Brena . ogarciabrena@gmail.com')+'</div>'
   +'</body></html>';
   dlBlob(html,'text/html;charset=utf-8',p.folio+' - '+p.cliente+'.html');
 }
 
-// ══════════════════════════════════════════════════════════════
+// ----------------------------------------
 //  GENERADOR DE PROPUESTA
-// ══════════════════════════════════════════════════════════════
+// ----------------------------------------
 function togProp(id, btn){
   propActivo[id] = !propActivo[id];
   var blk=$('blk-'+id);
   blk.style.display = propActivo[id] ? 'block' : 'none';
-  btn.textContent  = propActivo[id] ? '✓ Incluir' : 'Omitir';
+  btn.textContent  = propActivo[id] ? 'OK Incluir' : 'Omitir';
   btn.classList.toggle('on', propActivo[id]);
 }
 
 function cargarCotizacion(){
   var f=$('prop-folio').value.trim();
-  if(!f){toast('⚠ Ingresa un folio',true);return;}
+  if(!f){toast('! Ingresa un folio',true);return;}
   if(cfg) renderConfigChips();
   get('cotizacion&f='+encodeURIComponent(f), UID, TOK, function(d){
-    if(!d.ok){toast('⚠ '+d.e,true);return;}
+    if(!d.ok){toast('! '+d.e,true);return;}
     propDatos=d;
     sv('pp-cliente',d.cliente||'');
     sv('pp-folio-show',d.folio||'');
@@ -1059,8 +1057,8 @@ function cargarCotizacion(){
     actualizarPropTabla(d);
     $('prop-status-box').style.display='block';
     sei('prop-folio-loaded', d.folio);
-    sei('prop-cliente-loaded', d.cliente+' · '+fmto(d.total));
-    toast('✓ Cotización cargada');
+    sei('prop-cliente-loaded', d.cliente+' . '+fmto(d.total));
+    toast('OK Cotización cargada');
   });
 }
 
@@ -1093,7 +1091,7 @@ function addImgThumb(src,sec){
   var grid=$(sec+'-imgs');
   var wrap=document.createElement('div'); wrap.className='img-thumb';
   var idx=propImgs[sec].length-1;
-  wrap.innerHTML='<img src="'+src+'"><button class="img-rm" onclick="rmImg(\''+sec+'\','+idx+',this.parentNode)">×</button>';
+  wrap.innerHTML='<img src="'+src+'"><button class="img-rm" onclick="rmImg(\''+sec+'\','+idx+',this.parentNode)">x</button>';
   grid.appendChild(wrap);
 }
 function rmImg(sec,idx,el){
@@ -1111,7 +1109,7 @@ document.addEventListener('paste',function(e){
       var active=document.querySelector('.panel.on');
       if(active&&active.id==='propuesta') sec='portada';
       readImg(items[i].getAsFile(),sec);
-      toast('✓ Imagen pegada en portada');
+      toast('OK Imagen pegada en portada');
       break;
     }
   }
@@ -1129,12 +1127,12 @@ function genPropuesta(){
 
   var titulo  = gv('pp-titulo')||'PROPUESTA TECNOLÓGICA INTEGRAL';
   var subtit  = gv('pp-sub')||((cfg&&cfg.b2)||'');
-  var cliente = gv('pp-cliente')||'—';
+  var cliente = gv('pp-cliente')||'-';
   var fecha   = $('pp-fecha').value||hoy();
-  var folioPP = $('pp-folio-show').value||'—';
+  var folioPP = $('pp-folio-show').value||'-';
   var d       = propDatos;
 
-  // ── PORTADA ────────────────────────────────────────────────
+  // -- PORTADA ------------------------------------------------
   if(propActivo.portada){
     // Fondo verde oscuro cubriendo toda la portada
     fr(0,0,W,297,VD);
@@ -1147,14 +1145,14 @@ function genPropuesta(){
         doc.addImage(propImgs.portada[0],'JPEG',ml,ty,45,32);
         // Nombre consultor a la derecha del logo
         sf('normal',8,[200,230,201]);
-        tx('Omar García Brena · Consultor Tecnológico',ml+49,ty+8);
+        tx('Omar García Brena . Consultor Tecnológico',ml+49,ty+8);
         tx('ogarciabrena@gmail.com',ml+49,ty+14);
         ty+=40; // espacio después del logo
       }catch(e){ ty+=8; }
     } else {
       // Sin logo: solo nombre arriba
       sf('normal',9,[180,230,180]);
-      tx('Omar García Brena · Consultor Tecnológico',W/2,ty+6,{align:'center'});
+      tx('Omar García Brena . Consultor Tecnológico',W/2,ty+6,{align:'center'});
       ty+=16;
     }
 
@@ -1162,13 +1160,13 @@ function genPropuesta(){
     doc.setDrawColor.apply(doc,[100,150,100]);doc.setLineWidth(0.3);
     doc.line(ml,ty,W-mr,ty); ty+=12;
 
-    // Título principal — splitTextToSize para que no se corte
+    // Título principal - splitTextToSize para que no se corte
     sf('bold',24,WH);
     var tLines=doc.splitTextToSize(titulo,cw);
     tLines.forEach(function(l){tx(l,W/2,ty,{align:'center'});ty+=12;});
     ty+=4;
 
-    // Subtítulo — splitTextToSize
+    // Subtítulo - splitTextToSize
     if(subtit){
       sf('italic',11,[200,230,201]);
       var sLines=doc.splitTextToSize(subtit,cw-20);
@@ -1183,18 +1181,18 @@ function genPropuesta(){
     var cliLines=doc.splitTextToSize(cliente,cw-40);
     tx(cliLines[0],W/2,ty+12,{align:'center'});
     sf('normal',9,GR);
-    tx('Folio: '+folioPP+'   ·   Fecha: '+fmtF(fecha),W/2,ty+22,{align:'center'});
+    tx('Folio: '+folioPP+'   .   Fecha: '+fmtF(fecha),W/2,ty+22,{align:'center'});
     ty+=boxH+16;
 
     // Footer de portada
     fr(0,272,W,25,[20,70,20]);
-    sf('normal',9,[200,230,201]); tx('Omar García Brena  ·  Consultor Tecnológico',W/2,281,{align:'center'});
-    sf('normal',8,[160,210,160]); tx('ogarciabrena@gmail.com  ·  +52 55 1455 2202',W/2,287,{align:'center'});
+    sf('normal',9,[200,230,201]); tx('Omar García Brena  .  Consultor Tecnológico',W/2,281,{align:'center'});
+    sf('normal',8,[160,210,160]); tx('ogarciabrena@gmail.com  .  +52 55 1455 2202',W/2,287,{align:'center'});
     doc.addPage();
   }
 
   var y=18;
-  // ── INTRODUCCIÓN ───────────────────────────────────────────
+  // -- INTRODUCCIÓN -------------------------------------------
   if(propActivo.intro){
     var intro=gv('pp-intro');
     if(intro||( propImgs.intro&&propImgs.intro.length)){
@@ -1216,7 +1214,7 @@ function genPropuesta(){
     }
   }
 
-  // ── SOLUCIÓN ───────────────────────────────────────────────
+  // -- SOLUCIÓN -----------------------------------------------
   if(propActivo.sol){
     var sol=gv('pp-sol');
     if(sol||(propImgs.sol&&propImgs.sol.length)){
@@ -1237,7 +1235,7 @@ function genPropuesta(){
     }
   }
 
-  // ── TABLA SERVICIOS Y PRECIOS ──────────────────────────────
+  // -- TABLA SERVICIOS Y PRECIOS ------------------------------
   if(propActivo.cot && d){
     if(y>220){doc.addPage();y=18;}
     fr(ml,y-4,cw,8,VD); sf('bold',10,WH); tx('SERVICIOS Y PRECIOS',ml+4,y+1); y+=10;
@@ -1263,7 +1261,7 @@ function genPropuesta(){
     y+=12;
   }
 
-  // ── NOTAS FINALES ──────────────────────────────────────────
+  // -- NOTAS FINALES ------------------------------------------
   if(propActivo.notas){
     var notas=gv('pp-notas');
     if(notas){
@@ -1281,12 +1279,12 @@ function genPropuesta(){
 
   var fn=(d?d.folio:'propuesta')+' - '+cliente+' - Propuesta.pdf';
   doc.save(fn);
-  toast('✓ Propuesta PDF descargada');
+  toast('OK Propuesta PDF descargada');
 }
 
 function genPropuestaDOC(){
   var d=propDatos;
-  var cliente=gv('pp-cliente')||'—';
+  var cliente=gv('pp-cliente')||'-';
   var fecha=$('pp-fecha').value||hoy();
   var titulo=gv('pp-titulo')||'PROPUESTA TECNOLÓGICA INTEGRAL';
   var subtit=gv('pp-sub')||'';
@@ -1309,19 +1307,19 @@ function genPropuestaDOC(){
   +'<h1 style="color:#fff;font-size:18pt;margin:0 0 6px">'+esc(titulo)+'</h1>'
   +(subtit?'<p style="color:#a5d6a7;margin:0;font-style:italic">'+esc(subtit)+'</p>':'')
   +'<p style="color:#c8e6c9;margin:12px 0 0;font-size:12pt;font-weight:bold">'+esc(cliente)+'</p>'
-  +'<p style="color:#a5d6a7;margin:2px 0;font-size:9pt">Fecha: '+fmtF(fecha)+(d?' · Folio: '+esc(d.folio):'')+'</p></div>'
+  +'<p style="color:#a5d6a7;margin:2px 0;font-size:9pt">Fecha: '+fmtF(fecha)+(d?' . Folio: '+esc(d.folio):'')+'</p></div>'
   +(propActivo.intro&&intro?'<h2>Introducción / Diagnóstico</h2><p>'+esc(intro).replace(/\n/g,'</p><p>')+'</p>':'')
   +(propActivo.sol&&sol?'<h2>Solución propuesta</h2><p>'+esc(sol).replace(/\n/g,'</p><p>')+'</p>':'')
   +tablaHTML
   +(propActivo.notas&&notas?'<h2>Próximos pasos</h2><p>'+esc(notas).replace(/\n/g,'</p><p>')+'</p>':'')
   +'<hr style="margin:20px 0;border:none;border-top:2px solid #2E7D32">'
-  +'<p style="font-size:9pt;color:#555"><b>Omar García Brena</b> — Consultor Tecnológico<br>ogarciabrena@gmail.com · +52 55 1455 2202</p>'
+  +'<p style="font-size:9pt;color:#555"><b>Omar García Brena</b> - Consultor Tecnológico<br>ogarciabrena@gmail.com . +52 55 1455 2202</p>'
   +'</body></html>';
   dlBlob(html,'text/html;charset=utf-8',(d?d.folio:'propuesta')+' - '+cliente+' - Propuesta.html');
-  toast('✓ Propuesta DOC descargada');
+  toast('OK Propuesta DOC descargada');
 }
 
-// ── UTILS ──────────────────────────────────────────────────────
+// -- UTILS ------------------------------------------------------
 function hoy(){ return new Date().toISOString().split('T')[0]; }
 function fmtF(iso){
   try{
