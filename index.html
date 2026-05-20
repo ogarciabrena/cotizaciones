@@ -292,32 +292,36 @@ var TOKEN   = 'rDMyQqrnbm1grpqQdzeq21urdWw+q2X0gWq9Q5cMo4o=';
 
 var productos      = [];
 var currentStatus  = 'NUEVA';
-var folioNum       = 1;
+var folioActual    = 'COT-001-2026';
+var folioGuardado  = '';
 var guardado       = false;
-var clientesCache  = [];    // historial cargado al inicio
-var acIdx          = -1;    // índice seleccionado en dropdown
+var clientesCache  = [];
+var acIdx          = -1;
 
-var folioStr = function() {
-  return 'COT-' + String(folioNum).padStart(3,'0') + '-2026';
-};
+var folioStr = function() { return folioActual; };
 
-// ── Cargar clientes al inicio ─────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
   addProducto('', 1, 0);
   updatePreview();
-  cargarClientes();
+  cargarFolioYClientes();
 });
 
-function cargarClientes() {
-  var url = GAS_URL + '?accion=listar_clientes&token=' + encodeURIComponent(TOKEN);
-  fetch(url)
+function cargarFolioYClientes() {
+  var urlFolio    = GAS_URL + '?accion=siguiente_folio&token=' + encodeURIComponent(TOKEN);
+  var urlClientes = GAS_URL + '?accion=listar_clientes&token=' + encodeURIComponent(TOKEN);
+  fetch(urlFolio)
     .then(function(r){ return r.json(); })
     .then(function(data){
-      if (data.ok && data.clientes) {
-        clientesCache = data.clientes;
+      if (data.ok && data.folio) {
+        folioActual = data.folio;
+        updatePreview();
       }
-    })
-    .catch(function(){});  // silencioso si falla, no bloquea
+    }).catch(function(){});
+  fetch(urlClientes)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data.ok && data.clientes) clientesCache = data.clientes;
+    }).catch(function(){});
 }
 
 // ── Autocomplete ──────────────────────────────────────────────
@@ -549,10 +553,15 @@ function guardarCotizacion() {
     .then(function(data){
       if (data.ok) {
         guardado = true;
+        folioGuardado = folioActual;
         showToast('✓ Guardado en Google Sheets');
         btn.textContent = '✓ Guardado';
         document.getElementById('btn-doc').disabled = false;
-        folioNum++;
+        // Pedir al GS el siguiente folio real
+        fetch(GAS_URL + '?accion=siguiente_folio&token=' + encodeURIComponent(TOKEN))
+          .then(function(r){ return r.json(); })
+          .then(function(d){ if(d.ok && d.folio){ folioActual = d.folio; updatePreview(); } })
+          .catch(function(){});
         // Actualizar cache de clientes con el nuevo
         var nombre = document.getElementById('cliente-nombre').value.trim();
         if (nombre) {
@@ -586,7 +595,7 @@ function generarDoc() {
   btn.innerHTML = '<span class="loader"></span>Generando Doc + PDF…';
 
   var payload    = buildPayload('generar_doc');
-  payload.folio  = 'COT-' + String(folioNum - 1).padStart(3,'0') + '-2026';
+  payload.folio  = folioGuardado || folioActual;
 
   gasPost(payload)
     .then(function(data){
