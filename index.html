@@ -445,6 +445,19 @@
     return true;
   }
 
+  // Apps Script no acepta Content-Type: application/json desde origen externo
+  // sin preflight — la solución es enviar como texto plano (no dispara preflight)
+  // y en el script leer e.postData.contents normalmente. Funciona perfecto.
+  async function gasPost(payload) {
+    const res = await fetch(GAS_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
   async function guardarCotizacion() {
     if (!validar()) return;
     const btn = document.getElementById('btn-guardar');
@@ -452,13 +465,7 @@
     btn.textContent = 'Guardando…';
 
     try {
-      const res  = await fetch(GAS_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(buildPayload('guardar')),
-      });
-      const data = await res.json();
-
+      const data = await gasPost(buildPayload('guardar'));
       if (data.ok) {
         guardado = true;
         showToast('✓ Guardado en Google Sheets');
@@ -481,29 +488,18 @@
     btn.disabled = true;
     btn.textContent = 'Generando Doc + PDF…';
 
-    // El folio a generar es el anterior (ya se incrementó al guardar)
     const folioParaDoc = `COT-${String(folioNum - 1).padStart(3,'0')}-2026`;
     const payload = buildPayload('generar_doc');
     payload.folio = folioParaDoc;
 
     try {
-      const res  = await fetch(GAS_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
-      const data = await res.json();
-
+      const data = await gasPost(payload);
       if (data.ok) {
         showToast('✓ Doc y PDF generados en tu Drive');
         btn.textContent = '✓ Generado';
-
-        // Mostrar links
         document.getElementById('link-doc').href = data.doc_url;
         document.getElementById('link-pdf').href = data.pdf_url;
         document.getElementById('result-box').classList.add('show');
-
-        // Reset para nueva cotización
         setTimeout(() => {
           if (confirm('¿Iniciar una nueva cotización?')) resetForm();
         }, 1500);
