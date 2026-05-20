@@ -417,10 +417,7 @@ input[readonly]{opacity:.7;cursor:default}
         <button class="prop-toggle on" id="tog-intro" onclick="togProp('intro',this)">✓ Incluir</button>
       </div>
       <div id="blk-intro">
-        <div style="margin-bottom:10px">
-          <p style="font-size:10px;color:var(--mt);font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Insertar texto desde Config (clic para agregar)</p>
-          <div id="config-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
-        </div>
+
         <div class="fld" style="margin-bottom:10px">
           <label>Texto de introducción</label>
           <textarea id="pp-intro" style="min-height:90px" placeholder="Describe el contexto del cliente, el problema que se resuelve, por qué esta propuesta es la solución adecuada…"></textarea>
@@ -485,6 +482,11 @@ input[readonly]{opacity:.7;cursor:default}
       </div>
     </div>
 
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:1rem;margin-bottom:1rem">
+      <p style="font-size:10px;color:var(--g);font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">Texto predeterminado de Config</p>
+      <p style="font-size:11px;color:var(--mt);margin-bottom:8px">Clic en cualquier etiqueta para insertarlo en el texto de Introduccion</p>
+      <div id="config-chips" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    </div>
     <div class="actions" style="margin-top:1.5rem">
       <button class="bmain" onclick="genPropuesta()"><span class="dot"></span>Generar Propuesta PDF</button>
       <button class="bsec"  onclick="genPropuestaDOC()">📝 Propuesta DOC</button>
@@ -545,7 +547,7 @@ var GAS = 'https://script.google.com/macros/s/AKfycbzvmdb-7yV4-wf65JSd1-XI9-3W_4
 var UID = '', TOK = '';
 
 // Estado
-var folio='...', folioSaved='', cfg=null;
+var folio='...', folioSaved='', cfg=null, cfgChips=[];
 var prods=[], status='NUEVA', clientes=[], catProds=[], acIdx=-1, catVis=false;
 var propDatos = null;   // cotización cargada en el generador
 var propImgs  = {portada:[], intro:[], sol:[]};  // imágenes por sección
@@ -592,7 +594,7 @@ function startApp(f) {
   try { $('APP').style.display='block'; } catch(e){}
   folio=f||'cargando...'; upPv(); addP('',1,0);
   get('clientes', UID, TOK, function(d){ if(d.ok&&d.clientes) clientes=d.clientes; });
-  get('config',   UID, TOK, function(d){ if(d.ok&&d.config){ cfg=d.config; renderConfigChips(); } });
+  get('config',   UID, TOK, function(d){ if(d.ok&&d.config){ cfg=d.config; if(d.chips) cfgChips=d.chips; renderConfigChips(); } });
   get('productos',UID, TOK, function(d){ if(d.ok&&d.productos){ catProds=d.productos; renderCatFull(); } });
 }
 
@@ -710,6 +712,10 @@ function buscar(){
           +'<div class="rright"><div class="rt">'+fmto(r.total)+'</div>'
           +'<div class="spill '+(smap[r.status]||'sp-n')+'">'+r.status+'</div>'
           +(r.fecha_cierre?'<div style="font-size:10px;color:var(--mt);margin-top:3px">Cierre: '+r.fecha_cierre+'</div>':'')
+          +'<div style="display:flex;gap:5px;margin-top:6px">'
+          +'<button style="font-size:10px;padding:3px 8px;background:transparent;border:1px solid var(--bdg);color:var(--g);border-radius:12px;cursor:pointer" onclick="event.stopPropagation();cargarEnPropuesta(\''+ea(r.folio)+'\')">=&gt; Propuesta</button>'
+          +'<button style="font-size:10px;padding:3px 8px;background:transparent;border:1px solid var(--bd);color:var(--mt);border-radius:12px;cursor:pointer" onclick="event.stopPropagation();recotizar(\''+ea(r.folio)+'\')">=&gt; Recotizar</button>'
+          +'</div>'
           +'</div></div>';
       }).join('');
     });
@@ -764,30 +770,28 @@ function convertirEnPropuesta(modoEditar){
 function renderConfigChips(){
   var el=$('config-chips'); if(!el)return;
   el.innerHTML='';
-  if(!cfg)return;
-  var etiquetas=[
-    {key:'b1', label:'Términos y condiciones'},
-    {key:'b2', label:'Slogan'},
-    {key:'b3', label:'Nota de pie'},
-    {key:'b4', label:'Zona de servicio'},
-    {key:'b7', label:'Política de soporte'},
-    {key:'b8', label:'Política de garantías'},
-    {key:'b9', label:'Forma de pago'},
-    {key:'b10',label:'Mensaje de bienvenida'},
-  ];
-  etiquetas.forEach(function(item){
-    var val=cfg[item.key]; if(!val) return;
+  var chips=cfgChips&&cfgChips.length?cfgChips:buildDefaultChips();
+  chips.forEach(function(item){
+    var val=item.valor||(cfg&&cfg[item.key])||''; if(!val) return;
     var btn=document.createElement('button');
     btn.className='badd alt';
+    btn.style.cssText='font-size:11px;margin-bottom:4px';
     btn.textContent='+ '+item.label;
-    btn.title=val.substring(0,80)+(val.length>80?'...':'');
-    btn.onclick=function(){
+    btn.title=val.substring(0,100)+(val.length>100?'...':'');
+    btn.onclick=(function(v,l){return function(){
       var ta=$('pp-intro');
-      ta.value=(ta.value?ta.value+'\n\n':'')+val;
-      toast('OK: '+item.label+' agregado');
-    };
+      ta.value=(ta.value?ta.value+'\n\n':'')+v;
+      toast('Agregado: '+l);
+    };})(val,item.label);
     el.appendChild(btn);
   });
+}
+function buildDefaultChips(){
+  if(!cfg) return [];
+  var labels=['Terminos y condiciones','Slogan','Nota de pie','Zona de servicio',
+              'Correo','Telefono','Soporte','Garantias','Forma de pago','Bienvenida'];
+  return labels.map(function(l,i){return {key:'b'+(i+1),label:l,valor:cfg['b'+(i+1)]||''};})
+               .filter(function(x){return x.valor;});
 }
 
 // -- PRODUCTOS --------------------------------------------------
@@ -1356,6 +1360,31 @@ function toast(msg,isErr){
   t.textContent=msg; t.className='toast'+(isErr?' err':'');
   t.classList.add('on');
   setTimeout(function(){t.classList.remove('on');},3200);
+}
+
+function recotizar(folio){
+  get('cotizacion&f='+encodeURIComponent(folio), UID, TOK, function(d){
+    if(!d.ok){toast('Error: '+d.e,true);return;}
+    sv('cn',d.cliente||'');sv('cg',d.giro||'');sv('ct',d.tel||'');
+    sv('ce',d.email||'');sv('cz',d.zona||'');
+    prods=[];
+    if(d.resumen){
+      d.resumen.split(' | ').forEach(function(item){
+        var m2=item.match(/^(.+)\s+\(x(\d+)\)\s+=\s+\$(.+)$/);
+        if(m2){
+          var desc=m2[1].trim(),cant=parseInt(m2[2])||1;
+          var sub=parseFloat(m2[3].replace(/,/g,''))||0;
+          addP(desc,cant,cant>0?Math.round(sub/cant):0);
+        }
+      });
+    }
+    if(!prods.length) addP('',1,0);
+    upPv();showTab('cotizador');
+    var bg=$('bg');bg.disabled=false;bg.innerHTML='<span class="dot"></span>1 - Guardar en Sheets';
+    $('bp').disabled=true;$('bd').disabled=true;
+    $('acc-propuesta').style.display='none';
+    toast('Cargada '+folio+' - edita y guarda como nueva');
+  });
 }
 </script>
 </body>
