@@ -8,14 +8,42 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--v:#7AE06A;--vd:#5bc44d;--bg:#0d0d0d;--bg2:#141414;--bg3:#1a1a1a;--bg4:#222;--b:rgba(255,255,255,.08);--b2:rgba(122,224,106,.25);--t:#f0f0f0;--m:#888;--r:#e05050}
+:root{--v:#7AE06A;--vd:#5bc44d;--vdk:#1B5E20;--bg:#0d0d0d;--bg2:#141414;--bg3:#1a1a1a;--bg4:#222;--b:rgba(255,255,255,.08);--b2:rgba(122,224,106,.25);--t:#f0f0f0;--m:#888;--r:#e05050}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
-.page{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
-.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:.5px solid var(--b);padding-bottom:1.5rem;margin-bottom:2.5rem}
+
+/* LOGIN SCREEN */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:2rem}
+.login-box{background:var(--bg2);border:.5px solid var(--b2);border-radius:16px;padding:2.5rem;width:100%;max-width:480px}
+.login-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:400;margin-bottom:.3rem}
+.login-title em{font-style:italic;color:var(--v)}
+.login-sub{font-size:13px;color:var(--m);margin-bottom:2rem}
+.login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.login-field label{font-size:11px;color:var(--m);letter-spacing:.05em;font-weight:500;text-transform:uppercase}
+.login-field input{background:var(--bg3);border:.5px solid var(--b);color:var(--t);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 13px;border-radius:6px;outline:none;width:100%;transition:border-color .2s}
+.login-field input:focus{border-color:var(--v)}
+.login-note{font-size:11px;color:var(--m);margin-bottom:1.5rem;padding:10px 12px;background:rgba(122,224,106,.06);border:.5px solid var(--b2);border-radius:6px;line-height:1.5}
+.btn-login{width:100%;padding:13px;background:var(--v);color:#0d0d0d;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-login:hover{background:var(--vd)}
+
+/* MAIN APP */
+#app{display:none}
+.page{max-width:900px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:.5px solid var(--b);padding-bottom:1.5rem;margin-bottom:2rem}
 .logo{font-size:13px;font-weight:300;letter-spacing:.12em;color:var(--m);text-transform:uppercase}
 .logo strong{display:block;font-size:17px;font-weight:500;letter-spacing:0;color:var(--t);margin-bottom:2px}
+.header-right{display:flex;align-items:center;gap:10px}
 .fbadge{background:var(--bg3);border:.5px solid var(--b2);padding:6px 14px;border-radius:20px;font-size:12px;color:var(--v);letter-spacing:.08em;font-weight:500}
-h1{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:400;line-height:1.15;margin-bottom:.4rem}
+.btn-icon{background:transparent;border:.5px solid var(--b);color:var(--m);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-icon:hover{border-color:var(--b2);color:var(--v)}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:2rem;background:var(--bg2);padding:4px;border-radius:10px;border:.5px solid var(--b)}
+.tab{flex:1;padding:9px 16px;border:none;border-radius:7px;background:transparent;color:var(--m);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;font-weight:400}
+.tab.active{background:var(--bg3);color:var(--t);font-weight:500;border:.5px solid var(--b)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+h1{font-family:'Playfair Display',serif;font-size:clamp(24px,3.5vw,38px);font-weight:400;line-height:1.15;margin-bottom:.4rem}
 h1 em{font-style:italic;color:var(--v)}
 .hero-sub{font-size:13px;color:var(--m);margin-bottom:2.5rem}
 .sec{margin-bottom:2rem}
@@ -28,6 +56,9 @@ label{font-size:11px;color:var(--m);letter-spacing:.05em;font-weight:500}
 input,select,textarea{background:var(--bg3);border:.5px solid var(--b);color:var(--t);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;border-radius:6px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;width:100%}
 input:focus,select:focus,textarea:focus{border-color:var(--v)}
 textarea{resize:vertical;min-height:60px}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* Autocomplete */
 .acw{position:relative}
 .acd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;background:var(--bg3);border:.5px solid var(--b2);border-radius:8px;overflow:hidden;display:none;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .acd.open{display:block}
@@ -37,6 +68,18 @@ textarea{resize:vertical;min-height:60px}
 .aci .an{color:var(--t);font-weight:500}
 .aci .ad{color:var(--m);font-size:11px;margin-top:1px}
 .acbadge{display:inline-block;font-size:10px;background:rgba(122,224,106,.15);color:var(--v);padding:1px 6px;border-radius:10px;margin-left:6px;vertical-align:middle}
+
+/* Catálogo productos */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px}
+.cat-item{background:var(--bg3);border:.5px solid var(--b);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;position:relative}
+.cat-item:hover{border-color:var(--b2);background:rgba(122,224,106,.06)}
+.cat-item .ci-nombre{font-size:13px;font-weight:500;color:var(--t);margin-bottom:3px}
+.cat-item .ci-precio{font-size:12px;color:var(--v);font-weight:500}
+.cat-item .ci-desc{font-size:11px;color:var(--m);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-add{position:absolute;top:8px;right:8px;width:22px;height:22px;background:var(--vdk);color:#fff;border:none;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
+.cat-item:hover .cat-add{opacity:1}
+
+/* Productos líneas */
 .pbox{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;overflow:hidden}
 .phead{display:grid;grid-template-columns:3fr 80px 110px 36px;gap:8px;padding:9px 14px;background:var(--bg3);border-bottom:.5px solid var(--b);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--m)}
 .plst{padding:8px;display:flex;flex-direction:column;gap:6px}
@@ -51,6 +94,8 @@ textarea{resize:vertical;min-height:60px}
 .pfoot{padding:10px 14px;border-top:.5px solid var(--b);display:flex;justify-content:space-between;align-items:center}
 .badd{font-size:12px;font-weight:500;color:var(--v);background:transparent;border:.5px solid var(--b2);border-radius:20px;padding:6px 14px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .badd:hover{background:rgba(122,224,106,.08)}
+
+/* Totales */
 .tbox{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;padding:1.25rem 1.5rem}
 .trow{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
 .trow .lb{font-size:13px;color:var(--m)}
@@ -66,6 +111,8 @@ textarea{resize:vertical;min-height:60px}
 .sl::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--m);border-radius:50%;transition:.2s}
 .sw input:checked+.sl{background:rgba(122,224,106,.2);border-color:var(--v)}
 .sw input:checked+.sl::before{background:var(--v);transform:translateX(16px)}
+
+/* Pipeline */
 .sr{display:flex;gap:8px;flex-wrap:wrap}
 .sc{padding:6px 14px;border-radius:20px;font-size:12px;border:.5px solid var(--b);background:var(--bg3);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;color:var(--m)}
 .sc.an{background:rgba(122,224,106,.12);border-color:var(--v);color:var(--v)}
@@ -73,9 +120,8 @@ textarea{resize:vertical;min-height:60px}
 .sc.ag{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
 .sc.ac{background:rgba(34,197,94,.12);border-color:#22c55e;color:#22c55e}
 .sc.ap{background:rgba(224,80,80,.12);border-color:var(--r);color:var(--r)}
-.vrow{display:flex;align-items:center;gap:10px}
-.vrow input[type=number]{width:70px;text-align:center}
-.vrow span{font-size:13px;color:var(--m)}
+
+/* Preview */
 .pvbox{background:var(--bg2);border:.5px solid var(--b2);border-radius:10px;padding:1.25rem 1.5rem}
 .pvf{font-size:11px;color:var(--v);letter-spacing:.1em;margin-bottom:4px}
 .pvc{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:2px}
@@ -85,139 +131,332 @@ textarea{resize:vertical;min-height:60px}
 .pvt{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:.5px solid var(--b2)}
 .pvt .lb{font-size:13px;color:var(--m)}
 .pvt .num{font-family:'Playfair Display',serif;font-size:22px;color:var(--v)}
+.vrow{display:flex;align-items:center;gap:10px}
+.vrow input[type=number]{width:70px;text-align:center}
+.vrow span{font-size:13px;color:var(--m)}
+
+/* Buscador */
+.search-bar{display:flex;gap:10px;margin-bottom:1rem}
+.search-bar input{flex:1}
+.search-results{display:flex;flex-direction:column;gap:8px}
+.result-card{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.result-card:hover{border-color:var(--b2)}
+.rc-left .rc-folio{font-size:12px;color:var(--v);font-weight:500;margin-bottom:2px}
+.rc-left .rc-cliente{font-size:14px;color:var(--t);font-weight:500}
+.rc-left .rc-meta{font-size:11px;color:var(--m)}
+.rc-right{text-align:right;flex-shrink:0}
+.rc-total{font-family:'Playfair Display',serif;font-size:18px;color:var(--t)}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:.05em;margin-top:4px}
+.sp-nueva{background:rgba(122,224,106,.12);color:var(--v)}
+.sp-enviada{background:rgba(58,130,246,.12);color:#3a82f6}
+.sp-negociando{background:rgba(251,191,36,.12);color:#fbbf24}
+.sp-cerrada{background:rgba(34,197,94,.12);color:#22c55e}
+.sp-perdida{background:rgba(224,80,80,.12);color:var(--r)}
+.empty-state{text-align:center;padding:3rem;color:var(--m);font-size:13px}
+
+/* Acciones */
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:2rem}
 .bmain{flex:1;min-width:200px;padding:14px 24px;background:var(--v);color:#0d0d0d;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
 .bmain:hover{background:var(--vd);transform:translateY(-1px)}
 .bmain:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.bsec{flex:1;min-width:140px;padding:14px 20px;background:transparent;color:var(--t);border:.5px solid var(--b);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.bsec{flex:1;min-width:130px;padding:14px 20px;background:transparent;color:var(--t);border:.5px solid var(--b);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
 .bsec:hover{border-color:rgba(255,255,255,.25);background:var(--bg3)}
 .bsec:disabled{opacity:.4;cursor:not-allowed}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:.5px solid var(--b2);color:var(--v);padding:12px 24px;border-radius:30px;font-size:13px;transition:transform .3s ease;z-index:100;white-space:nowrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:.5px solid var(--b2);color:var(--v);padding:12px 24px;border-radius:30px;font-size:13px;transition:transform .3s ease;z-index:200;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.err{border-color:rgba(224,80,80,.4);color:var(--r)}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--v);display:inline-block;margin-right:8px;vertical-align:middle}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(13,13,13,.3);border-top-color:#0d0d0d;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
-@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}.phead{display:none}.prow{grid-template-columns:1fr 1fr}.prow .dc{grid-column:1/-1}.actions{flex-direction:column}}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}.phead{display:none}.prow{grid-template-columns:1fr 1fr}.prow .dc{grid-column:1/-1}.actions{flex-direction:column}.tabs{flex-direction:column}}
 </style>
 </head>
 <body>
+
+<!-- ════════ LOGIN SCREEN ════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2 class="login-title">Cotizador <em>OGB</em></h2>
+    <p class="login-sub">Omar García Brena · Consultor Tecnológico</p>
+    <div class="login-note">
+      🔐 Ingresa la URL de tu Apps Script y tu token de acceso.<br>
+      Se guardan en este navegador. Para revocar acceso, genera una nueva versión del Apps Script.
+    </div>
+    <div class="login-field">
+      <label>URL del Apps Script</label>
+      <input type="url" id="login-url" placeholder="https://script.google.com/macros/s/...">
+    </div>
+    <div class="login-field" style="margin-bottom:1.5rem">
+      <label>Token de acceso</label>
+      <input type="password" id="login-token" placeholder="Tu token secreto">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Conectar y continuar →</button>
+    <p id="login-err" style="font-size:12px;color:var(--r);margin-top:10px;display:none"></p>
+  </div>
+</div>
+
+<!-- ════════ MAIN APP ════════ -->
+<div id="app">
 <div class="page">
+
   <div class="header">
     <div class="logo"><strong>Omar García Brena</strong>Consultor Tecnológico · México</div>
-    <div class="fbadge" id="folio-display">COT-001-2026</div>
+    <div class="header-right">
+      <div class="fbadge" id="folio-display">…</div>
+      <button class="btn-icon" onclick="openBuscador()">🔍 Buscar</button>
+      <button class="btn-icon" onclick="logout()" title="Cerrar sesión">⏏ Salir</button>
+    </div>
   </div>
-  <h1>Nueva <em>cotización</em></h1>
-  <p class="hero-sub">Completa los datos — PDF y DOC se descargan automáticamente.</p>
 
-  <div class="sec">
-    <div class="slbl">Datos del cliente</div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('cotizador',this)">Nueva cotización</button>
+    <button class="tab" onclick="showTab('buscador',this)">Buscar cotizaciones</button>
+    <button class="tab" onclick="showTab('catalogo-tab',this)">Catálogo de productos</button>
+  </div>
+
+  <!-- ══ TAB: COTIZADOR ══ -->
+  <div id="cotizador" class="tab-panel active">
+
+    <div class="sec">
+      <div class="slbl">Datos del cliente</div>
+      <div class="g2" style="margin-bottom:10px">
+        <div class="fld">
+          <label>Nombre / Negocio *</label>
+          <div class="acw">
+            <input type="text" id="cn" placeholder="Escribe para buscar o nuevo…" oninput="onNI()" onkeydown="onNK(event)" autocomplete="off">
+            <div class="acd" id="acd"></div>
+          </div>
+        </div>
+        <div class="fld"><label>Giro</label><input type="text" id="cg" placeholder="Comedor, Postrería…" oninput="upPrev()"></div>
+      </div>
+      <div class="g3">
+        <div class="fld"><label>Teléfono</label><input type="tel" id="ct" placeholder="+52 951 000 0000"></div>
+        <div class="fld"><label>Correo (opcional)</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
+        <div class="fld"><label>Zona de servicio</label><input type="text" id="cz" placeholder="Miahuatlán, Oaxaca"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="slbl">Productos / Servicios</div>
+      <div class="cat-grid" id="cat-grid" style="display:none"></div>
+      <div class="pbox">
+        <div class="phead"><span>Descripción</span><span style="text-align:right">Cant.</span><span style="text-align:right">Precio unit.</span><span></span></div>
+        <div class="plst" id="plst"></div>
+        <div class="pfoot">
+          <div style="display:flex;gap:8px">
+            <button class="badd" onclick="addP()">+ Línea vacía</button>
+            <button class="badd" onclick="toggleCatalogo()" id="btn-cat" style="border-color:rgba(122,224,106,.4)">📦 Del catálogo</button>
+          </div>
+          <span style="font-size:11px;color:var(--m)" id="pcnt">0 conceptos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="slbl">Totales y configuración</div>
+      <div class="g2">
+        <div class="tbox">
+          <div class="trow"><span class="lb">Subtotal</span><span class="vl" id="sv">$0</span></div>
+          <div class="trow" id="iva-row" style="display:none"><span class="lb">IVA (16%)</span><span class="vl" id="iv">$0</span></div>
+          <div class="trow grand"><span class="lb">Total</span><span class="vl" id="tv">$0</span></div>
+          <p class="iva-note" id="iva-note">* Precios en MXN. IVA no incluido.</p>
+          <div class="sw-row">
+            <label class="sw"><input type="checkbox" id="iva-toggle" onchange="togIVA()"><span class="sl"></span></label>
+            <span style="font-size:12px;color:var(--m)">Incluir IVA 16%</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="fld">
+            <label>Vigencia</label>
+            <div class="vrow"><input type="number" id="vig" value="15" min="1" max="90" oninput="upPrev()"><span>días naturales</span></div>
+          </div>
+          <div class="fld">
+            <label>Fecha de cierre estimada → columna P</label>
+            <input type="date" id="fecha-cierre">
+          </div>
+          <div class="fld">
+            <label>Notas internas (solo en Sheets)</label>
+            <textarea id="notas" placeholder="Ej. cliente interesado en fase 2…"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="slbl">Pipeline CRM</div>
+      <div class="sr">
+        <button class="sc an" data-s="NUEVA"      onclick="setSt(this)">⬤ Nueva</button>
+        <button class="sc"    data-s="ENVIADA"    onclick="setSt(this)">⬤ Enviada</button>
+        <button class="sc"    data-s="NEGOCIANDO" onclick="setSt(this)">⬤ Negociando</button>
+        <button class="sc"    data-s="CERRADA"    onclick="setSt(this)">⬤ Cerrada ✓</button>
+        <button class="sc"    data-s="PERDIDA"    onclick="setSt(this)">⬤ Perdida</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="slbl">Vista previa</div>
+      <div class="pvbox">
+        <div class="pvf" id="pv-f">…</div>
+        <div class="pvc" id="pv-c">—</div>
+        <div class="pvg" id="pv-g">—</div>
+        <div id="pv-i"></div>
+        <div class="pvt"><span class="lb">Total estimado</span><span class="num" id="pv-t">$0</span></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="bmain" id="btn-g"   onclick="guardar()"><span class="dot"></span>1 — Guardar en Sheets</button>
+      <button class="bsec"  id="btn-pdf" onclick="descargarPDF()" disabled>📄 Descargar PDF</button>
+      <button class="bsec"  id="btn-doc" onclick="descargarDOC()" disabled>📝 Descargar DOC</button>
+    </div>
+    <p style="font-size:11px;color:var(--m);margin-top:10px;text-align:center">Los términos y condiciones se jalan de tu hoja Config automáticamente.</p>
+
+  </div>
+
+  <!-- ══ TAB: BUSCADOR ══ -->
+  <div id="buscador" class="tab-panel">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Buscar por folio, cliente o descripción…" oninput="buscar()">
+    </div>
+    <div class="search-results" id="search-results">
+      <div class="empty-state">Escribe algo para buscar cotizaciones</div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: CATÁLOGO ══ -->
+  <div id="catalogo-tab" class="tab-panel">
+    <div class="slbl" style="margin-bottom:1rem">Productos en catálogo</div>
+    <div id="catalogo-lista" class="cat-grid"></div>
+    <div style="height:1px;background:var(--b);margin:1.5rem 0"></div>
+    <div class="slbl">Agregar producto al catálogo</div>
     <div class="g2" style="margin-bottom:10px">
+      <div class="fld"><label>Nombre del servicio *</label><input type="text" id="np-nombre" placeholder="Sistema POS completo"></div>
+      <div class="fld"><label>Descripción corta</label><input type="text" id="np-desc" placeholder="Equipo + instalación + capacitación"></div>
+    </div>
+    <div class="g3" style="margin-bottom:1rem">
       <div class="fld">
-        <label>Nombre / Negocio *</label>
-        <div class="acw">
-          <input type="text" id="cn" placeholder="Escribe para buscar o nuevo…" oninput="onNI()" onkeydown="onNK(event)" autocomplete="off">
-          <div class="acd" id="acd"></div>
-        </div>
+        <label>Tu costo ($) — privado</label>
+        <input type="number" id="np-costo" placeholder="14000" oninput="calcPrecio()">
       </div>
-      <div class="fld"><label>Giro</label><input type="text" id="cg" placeholder="Comedor, Postrería…" oninput="upPrev()"></div>
-    </div>
-    <div class="g3">
-      <div class="fld"><label>Teléfono</label><input type="tel" id="ct" placeholder="+52 951 000 0000"></div>
-      <div class="fld"><label>Correo (opcional)</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
-      <div class="fld"><label>Zona de servicio</label><input type="text" id="cz" placeholder="Miahuatlán, Oaxaca"></div>
-    </div>
-  </div>
-
-  <div class="sec">
-    <div class="slbl">Productos / Servicios</div>
-    <div class="pbox">
-      <div class="phead"><span>Descripción</span><span style="text-align:right">Cant.</span><span style="text-align:right">Precio unit.</span><span></span></div>
-      <div class="plst" id="plst"></div>
-      <div class="pfoot">
-        <button class="badd" onclick="addP()">+ Agregar línea</button>
-        <span style="font-size:11px;color:var(--m)" id="pcnt">0 conceptos</span>
+      <div class="fld">
+        <label>Margen de ganancia (%)</label>
+        <input type="number" id="np-margen" placeholder="30" min="0" max="99" oninput="calcPrecio()">
+      </div>
+      <div class="fld">
+        <label>Precio para el cliente (calculado)</label>
+        <input type="text" id="np-precio" readonly style="background:rgba(122,224,106,.08);color:var(--v);font-weight:500;cursor:default">
       </div>
     </div>
+    <p style="font-size:11px;color:var(--m);margin-bottom:1rem">El costo y margen <strong>nunca</strong> aparecen en el PDF ni en el DOC — solo el precio del cliente. La ganancia se calcula en tu Sheets.</p>
+    <button class="bmain" style="max-width:260px" onclick="guardarProducto()"><span class="dot"></span>Guardar en catálogo</button>
   </div>
 
-  <div class="sec">
-    <div class="slbl">Totales y configuración</div>
-    <div class="g2">
-      <div class="tbox">
-        <div class="trow"><span class="lb">Subtotal</span><span class="vl" id="sv">$0</span></div>
-        <div class="trow" id="iva-row" style="display:none"><span class="lb">IVA (16%)</span><span class="vl" id="iv">$0</span></div>
-        <div class="trow grand"><span class="lb">Total</span><span class="vl" id="tv">$0</span></div>
-        <p class="iva-note" id="iva-note">* Precios en MXN. IVA no incluido.</p>
-        <div class="sw-row">
-          <label class="sw"><input type="checkbox" id="iva-toggle" onchange="togIVA()"><span class="sl"></span></label>
-          <span style="font-size:12px;color:var(--m)">Incluir IVA 16%</span>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="fld">
-          <label>Vigencia</label>
-          <div class="vrow"><input type="number" id="vig" value="15" min="1" max="90" oninput="upPrev()"><span>días naturales</span></div>
-        </div>
-        <div class="fld">
-          <label>Fecha de cierre estimada (col. P en Sheets)</label>
-          <input type="date" id="fecha-cierre">
-        </div>
-        <div class="fld">
-          <label>Notas internas (solo en Sheets)</label>
-          <textarea id="notas" placeholder="Ej. cliente interesado en fase 2…"></textarea>
-        </div>
-      </div>
-    </div>
-  </div>
+</div><!-- /page -->
+</div><!-- /app -->
 
-  <div class="sec">
-    <div class="slbl">Pipeline CRM</div>
-    <div class="sr">
-      <button class="sc an" data-s="NUEVA"      onclick="setSt(this)">⬤ Nueva</button>
-      <button class="sc"    data-s="ENVIADA"    onclick="setSt(this)">⬤ Enviada</button>
-      <button class="sc"    data-s="NEGOCIANDO" onclick="setSt(this)">⬤ Negociando</button>
-      <button class="sc"    data-s="CERRADA"    onclick="setSt(this)">⬤ Cerrada ✓</button>
-      <button class="sc"    data-s="PERDIDA"    onclick="setSt(this)">⬤ Perdida</button>
-    </div>
-  </div>
-
-  <div class="sec">
-    <div class="slbl">Vista previa</div>
-    <div class="pvbox">
-      <div class="pvf" id="pv-f">COT-001-2026</div>
-      <div class="pvc" id="pv-c">—</div>
-      <div class="pvg" id="pv-g">—</div>
-      <div id="pv-i"></div>
-      <div class="pvt"><span class="lb">Total estimado</span><span class="num" id="pv-t">$0</span></div>
-    </div>
-  </div>
-
-  <div class="actions">
-    <button class="bmain" id="btn-g" onclick="guardar()"><span class="dot"></span>1 — Guardar en Sheets</button>
-    <button class="bsec"  id="btn-pdf" onclick="descargarPDF()" disabled>📄 Descargar PDF</button>
-    <button class="bsec"  id="btn-doc" onclick="descargarDOC()" disabled>📝 Descargar DOC</button>
-  </div>
-  <p style="font-size:11px;color:var(--m);margin-top:10px;text-align:center">Guarda primero → luego descarga PDF y DOC. Los términos y condiciones se jalán de tu hoja Config automáticamente.</p>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbzvmdb-7yV4-wf65JSd1-XI9-3W_4cMZ6LoOYTEGunadfPFkvairIk4mPX5s9-xUEza_g/exec';
-var TOKEN   = 'rDMyQqrnbm1grpqQdzeq21urdWw+q2X0gWq9Q5cMo4o=';
+// ── CREDENCIALES (localStorage) ───────────────────────────────
+var GAS_URL = '';
+var TOKEN   = '';
+var cfgCache     = null;
+var productosCache = [];
 
-var prods=[], status='NUEVA', folioActual='COT-001-2026', folioGuardado='';
-var clientes=[], acIdx=-1;
-var cfgCache=null; // Config jalada del GS
+function doLogin() {
+  var url = document.getElementById('login-url').value.trim();
+  var tok = document.getElementById('login-token').value.trim();
+  if (!url || !tok) { showLoginErr('Completa ambos campos.'); return; }
+  if (!url.startsWith('https://script.google.com')) { showLoginErr('URL inválida — debe ser de Apps Script.'); return; }
 
-window.addEventListener('DOMContentLoaded',function(){
-  addP('',1,0); upPrev();
-  gasGet('siguiente_folio',function(d){if(d.ok&&d.folio){folioActual=d.folio;upPrev();}});
-  gasGet('listar_clientes',function(d){if(d.ok&&d.clientes)clientes=d.clientes;});
-  gasGet('leer_config',function(d){if(d.ok&&d.config)cfgCache=d.config;});
+  var btn = document.querySelector('.btn-login');
+  btn.textContent = 'Verificando…'; btn.disabled = true;
+
+  // Verificar token haciendo una petición real
+  fetch(url+'?accion=siguiente_folio&token='+encodeURIComponent(tok))
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if (d.ok) {
+        GAS_URL = url; TOKEN = tok;
+        localStorage.setItem('ogb_url', url);
+        localStorage.setItem('ogb_tok', tok);
+        iniciarApp(d.folio);
+      } else {
+        showLoginErr('Token incorrecto o URL inválida.');
+        btn.textContent = 'Conectar y continuar →'; btn.disabled = false;
+      }
+    })
+    .catch(function(){
+      showLoginErr('No se pudo conectar. Verifica la URL.');
+      btn.textContent = 'Conectar y continuar →'; btn.disabled = false;
+    });
+}
+
+function showLoginErr(msg) {
+  var el = document.getElementById('login-err');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function logout() {
+  if (!confirm('¿Cerrar sesión? Tendrás que ingresar la URL y token de nuevo.')) return;
+  localStorage.removeItem('ogb_url');
+  localStorage.removeItem('ogb_tok');
+  location.reload();
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+  var savedUrl = localStorage.getItem('ogb_url');
+  var savedTok = localStorage.getItem('ogb_tok');
+  if (savedUrl && savedTok) {
+    document.getElementById('login-url').value = savedUrl;
+    document.getElementById('login-token').value = savedTok;
+    GAS_URL = savedUrl; TOKEN = savedTok;
+    // Auto-login silencioso
+    fetch(GAS_URL+'?accion=siguiente_folio&token='+encodeURIComponent(TOKEN))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.ok) iniciarApp(d.folio);
+        else { GAS_URL=''; TOKEN=''; }
+      }).catch(function(){});
+  }
 });
 
-// ── Autocomplete ──────────────────────────────────────────────
+function iniciarApp(folio) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  folioActual = folio || 'cargando…';
+  upPrev();
+  addP('',1,0);
+  gasGet('listar_clientes', function(d){if(d.ok&&d.clientes)clientes=d.clientes;});
+  gasGet('leer_config',     function(d){if(d.ok&&d.config)cfgCache=d.config;});
+  gasGet('listar_productos',function(d){
+    if(d.ok&&d.productos){
+      productosCache=d.productos;
+      renderCatalogoTab();
+    }
+  });
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+var prods=[], status='NUEVA', folioActual='…', folioGuardado='';
+var clientes=[], acIdx=-1;
+
+// ── TABS ──────────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function openBuscador() {
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('buscador').classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.getElementById('search-input').focus();
+}
+
+// ── AUTOCOMPLETE CLIENTE ──────────────────────────────────────
 function onNI(){
   upPrev();
   var q=gv('cn').toLowerCase(); if(!q){cDD();return;}
@@ -227,7 +466,8 @@ function onNI(){
   dd.innerHTML=''; acIdx=-1; dd._m=ms;
   ms.forEach(function(c){
     var el=document.createElement('div'); el.className='aci';
-    el.innerHTML='<div class="an">'+esc(c.nombre)+'<span class="acbadge">anterior</span></div><div class="ad">'+(c.giro?esc(c.giro)+'  ':'')+( c.tel?'📞 '+esc(c.tel):'' )+'</div>';
+    el.innerHTML='<div class="an">'+esc(c.nombre)+'<span class="acbadge">anterior</span></div>'
+      +'<div class="ad">'+(c.giro?esc(c.giro)+'  ':'')+( c.tel?'📞 '+esc(c.tel):'' )+'</div>';
     el.addEventListener('mousedown',function(e){e.preventDefault();selC(c);});
     dd.appendChild(el);
   });
@@ -253,7 +493,114 @@ function selC(c){
 function cDD(){var dd=document.getElementById('acd');dd.classList.remove('open');dd.innerHTML='';acIdx=-1;}
 document.addEventListener('click',function(e){if(!e.target.closest('.acw'))cDD();});
 
-// ── Productos ─────────────────────────────────────────────────
+// ── CATÁLOGO INLINE ───────────────────────────────────────────
+var catVisible = false;
+function toggleCatalogo(){
+  catVisible=!catVisible;
+  var grid=document.getElementById('cat-grid');
+  if(catVisible && productosCache.length){
+    grid.style.display='grid';
+    renderCatGrid();
+  } else {
+    grid.style.display='none';
+  }
+}
+function renderCatGrid(){
+  var g=document.getElementById('cat-grid'); g.innerHTML='';
+  productosCache.forEach(function(p){
+    var d=document.createElement('div'); d.className='cat-item';
+    d.innerHTML='<button class="cat-add" onclick="addDesdecat(\''+esc(p.nombre)+'\','+p.precio+')">+</button>'
+      +'<div class="ci-nombre">'+esc(p.nombre)+'</div>'
+      +'<div class="ci-precio">'+fmto(p.precio)+'</div>'
+      +(p.descripcion?'<div class="ci-desc">'+esc(p.descripcion)+'</div>':'');
+    d.addEventListener('click',function(e){
+      if(e.target.classList.contains('cat-add'))return;
+      addDesdecat(p.nombre,p.precio);
+    });
+    g.appendChild(d);
+  });
+}
+function addDesdecat(nombre,precio){
+  addP(nombre,1,precio);
+  toast('✓ "'+nombre+'" agregado');
+}
+function renderCatalogoTab(){
+  var g=document.getElementById('catalogo-lista'); g.innerHTML='';
+  if(!productosCache.length){g.innerHTML='<p style="color:var(--m);font-size:13px">Sin productos aún. Agrega el primero abajo.</p>';return;}
+  productosCache.forEach(function(p){
+    var d=document.createElement('div'); d.className='cat-item';
+    d.style.cursor='default';
+    d.innerHTML='<div class="ci-nombre">'+esc(p.nombre)+'</div>'
+      +'<div class="ci-precio">'+fmto(p.precio)+'</div>'
+      +(p.descripcion?'<div class="ci-desc">'+esc(p.descripcion)+'</div>':'');
+    g.appendChild(d);
+  });
+}
+function calcPrecio(){
+  var costo  = parseFloat(document.getElementById('np-costo').value)||0;
+  var margen = parseFloat(document.getElementById('np-margen').value)||0;
+  var precio = margen >= 100 ? 0 : Math.round(costo / (1 - margen/100));
+  document.getElementById('np-precio').value = precio ? fmto(precio) : '';
+}
+function guardarProducto(){
+  var nombre = document.getElementById('np-nombre').value.trim();
+  var costo  = parseFloat(document.getElementById('np-costo').value)||0;
+  var margen = parseFloat(document.getElementById('np-margen').value)||0;
+  if(!nombre){toast('⚠ Ingresa el nombre del producto',true);return;}
+  if(!costo) {toast('⚠ Ingresa el costo',true);return;}
+  var precio = Math.round(costo/(1-margen/100));
+  gasPost({token:TOKEN,accion:'guardar_producto',
+    nombre:nombre,descripcion:document.getElementById('np-desc').value.trim(),
+    costo:costo,margen:margen,precio:precio},
+  function(d){
+    if(d.ok){
+      toast('✓ Producto guardado en catálogo');
+      productosCache.push({nombre:nombre,descripcion:document.getElementById('np-desc').value.trim(),precio:precio});
+      renderCatalogoTab();
+      document.getElementById('np-nombre').value='';
+      document.getElementById('np-desc').value='';
+      document.getElementById('np-costo').value='';
+      document.getElementById('np-margen').value='';
+      document.getElementById('np-precio').value='';
+    } else {
+      toast('⚠ '+(d.error||'Error'),true);
+    }
+  });
+}
+
+// ── BUSCADOR ──────────────────────────────────────────────────
+var buscarTimeout;
+function buscar(){
+  var q=document.getElementById('search-input').value.trim();
+  clearTimeout(buscarTimeout);
+  if(!q){document.getElementById('search-results').innerHTML='<div class="empty-state">Escribe algo para buscar</div>';return;}
+  buscarTimeout=setTimeout(function(){
+    gasGet('buscar&q='+encodeURIComponent(q), function(d){
+      var el=document.getElementById('search-results');
+      if(!d.ok||!d.resultados||!d.resultados.length){
+        el.innerHTML='<div class="empty-state">Sin resultados para "'+esc(q)+'"</div>';return;
+      }
+      el.innerHTML=d.resultados.map(function(r){
+        var spClass='sp-'+(r.status||'nueva').toLowerCase();
+        return '<div class="result-card" onclick="cargarCotizacion(\''+esc(r.folio)+'\',\''+esc(r.cliente)+'\')">'
+          +'<div class="rc-left">'
+          +'<div class="rc-folio">'+esc(r.folio)+'</div>'
+          +'<div class="rc-cliente">'+esc(r.cliente)+'</div>'
+          +'<div class="rc-meta">'+esc(r.giro||'')+(r.fecha?' · '+r.fecha:'')+'</div>'
+          +'</div>'
+          +'<div class="rc-right">'
+          +'<div class="rc-total">'+fmto(r.total)+'</div>'
+          +'<div class="status-pill '+spClass+'">'+r.status+'</div>'
+          +'</div></div>';
+      }).join('');
+    });
+  },350);
+}
+function cargarCotizacion(folio,cliente){
+  toast('Folio: '+folio+' — '+cliente);
+}
+
+// ── PRODUCTOS ─────────────────────────────────────────────────
 function addP(d,c,p){d=d||'';c=c!==undefined?c:1;p=p!==undefined?p:0;var id=Date.now()+Math.random();prods.push({id:id,d:d,c:c,p:p});renderP();upPrev();}
 function rmP(id){prods=prods.filter(function(x){return x.id!==id;});renderP();upPrev();}
 function renderP(){
@@ -269,13 +616,13 @@ function renderP(){
   document.getElementById('pcnt').textContent=prods.length+' concepto'+(prods.length!==1?'s':'');
 }
 function upP(id,f,val){var pr=prods.find(function(x){return x.id===id;});if(!pr)return;if(f==='d')pr.d=val;else if(f==='c')pr.c=parseFloat(val)||1;else pr.p=parseFloat(val)||0;upPrev();}
-function calc(){var sub=prods.reduce(function(a,p){return a+(p.c*p.p);},0);var iva=document.getElementById('iva-toggle').checked?sub*0.16:0;return{sub:sub,iva:iva,tot:sub+iva};}
+function calc(){var sub=prods.reduce(function(a,p){return a+(p.c*p.p);},0);var iva=document.getElementById('iva-toggle')&&document.getElementById('iva-toggle').checked?sub*0.16:0;return{sub:sub,iva:iva,tot:sub+iva};}
 function togIVA(){var on=document.getElementById('iva-toggle').checked;document.getElementById('iva-row').style.display=on?'flex':'none';document.getElementById('iva-note').textContent=on?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.';upPrev();}
 function fmt(n){return '$'+Math.round(n).toLocaleString('es-MX');}
 function upPrev(){
   var t=calc();
   document.getElementById('sv').textContent=fmt(t.sub);
-  document.getElementById('iv').textContent=fmt(t.iva);
+  if(document.getElementById('iv'))document.getElementById('iv').textContent=fmt(t.iva);
   document.getElementById('tv').textContent=fmt(t.tot);
   document.getElementById('folio-display').textContent=folioActual;
   document.getElementById('pv-f').textContent=folioActual;
@@ -290,6 +637,8 @@ function setSt(btn){
   var map={NUEVA:'an',ENVIADA:'ae',NEGOCIANDO:'ag',CERRADA:'ac',PERDIDA:'ap'};
   btn.classList.add(map[status]||'an');
 }
+
+// ── GUARDAR ───────────────────────────────────────────────────
 function mkPayload(){
   var t=calc();
   return{token:TOKEN,accion:'guardar',folio:folioActual,
@@ -307,8 +656,6 @@ function valid(){
   if(!prods.length||prods.every(function(p){return !p.d;})){toast('⚠ Agrega al menos un producto',true);return false;}
   return true;
 }
-
-// ── Guardar ───────────────────────────────────────────────────
 function guardar(){
   if(!valid())return;
   var btn=document.getElementById('btn-g');
@@ -316,7 +663,7 @@ function guardar(){
   gasPost(mkPayload(),function(data){
     if(data.ok){
       folioGuardado=folioActual;
-      toast('✓ Guardado en Sheets');
+      toast('✓ Guardado — '+folioActual);
       btn.textContent='✓ Guardado';
       document.getElementById('btn-pdf').disabled=false;
       document.getElementById('btn-doc').disabled=false;
@@ -331,241 +678,198 @@ function guardar(){
   });
 }
 
-// ── Datos para PDF/DOC ────────────────────────────────────────
+// ── DATOS PARA PDF/DOC ────────────────────────────────────────
 function getDatos(){
-  var t=calc();
-  var cfg=cfgCache||{};
+  var t=calc(), cfg=cfgCache||{};
   return{
-    folio:     folioGuardado||folioActual,
-    fecha:     new Date().toISOString().split('T')[0],
-    vigencia:  document.getElementById('vig').value,
-    fecha_cierre: document.getElementById('fecha-cierre').value,
-    cliente:   gv('cn'), giro:gv('cg'), tel:gv('ct'), email:gv('ce'), zona:gv('cz'),
-    productos: prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
-    subtotal:  Math.round(t.sub), iva:Math.round(t.iva), total:Math.round(t.tot),
-    incluye_iva: document.getElementById('iva-toggle').checked,
-    // Config jalada del GS
-    terminos:  cfg.terminos || cfg.fila1 || TERM_DEFAULT,
-    slogan:    cfg.slogan   || cfg.fila2 || 'Moderniza tu negocio desde el primer día',
-    nota_pie:  cfg.nota_pie || cfg.fila3 || 'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202',
+    folio:       folioGuardado||folioActual,
+    fecha:       new Date().toISOString().split('T')[0],
+    vigencia:    document.getElementById('vig').value,
+    fecha_cierre:document.getElementById('fecha-cierre').value,
+    cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
+    productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
+    subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
+    incluye_iva:document.getElementById('iva-toggle').checked,
+    terminos: cfg.b1||TERM_DEF,
+    slogan:   cfg.b2||'Moderniza tu negocio desde el primer día',
+    nota_pie: cfg.b3||'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202',
+    zona_srv: cfg.b4||'Miahuatlán de Porfirio Díaz, Oaxaca',
+    pago:     cfg.b9||'',
   };
 }
+var TERM_DEF='1. Cotizacion valida por el tiempo indicado.\n2. Precios en MXN, IVA no incluido.\n3. Zona sin viaticos: Miahuatlan, Oaxaca.\n4. CCTV sujeto a revision presencial.\n5. Primer mes de soporte incluido.\n6. Aceptacion implica conformidad.';
 
-var TERM_DEFAULT='1. Esta cotizacion tiene vigencia indicada.\n2. Precios en MXN. IVA no incluido.\n3. Zona sin viaticos: Miahuatlan de Porfirio Diaz, Oaxaca.\n4. Instalacion CCTV sujeta a revision presencial.\n5. Primer mes de soporte incluido.\n6. La aceptacion implica conformidad con estos terminos.';
-
-// ── PDF con jsPDF ─────────────────────────────────────────────
+// ── PDF ───────────────────────────────────────────────────────
 function descargarPDF(){
   if(!valid())return;
   var btn=document.getElementById('btn-pdf');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generando…';
-  // Si no tenemos config aún, recargarla
-  if(!cfgCache){
-    gasGet('leer_config',function(d){
-      if(d.ok&&d.config)cfgCache=d.config;
-      _buildPDF();
-      btn.textContent='📄 Descargar PDF';btn.disabled=false;
-    });
-  } else {
-    _buildPDF();
+  function go(){
+    try{_buildPDF(getDatos());toast('✓ PDF descargado');}
+    catch(err){toast('⚠ '+err.message,true);}
     btn.textContent='📄 Descargar PDF';btn.disabled=false;
   }
+  if(!cfgCache){gasGet('leer_config',function(d){if(d.ok&&d.config)cfgCache=d.config;go();});}
+  else go();
 }
 
-function _buildPDF(){
-  var p=getDatos();
-  var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
-  var W=210, ml=15, mr=15, cw=W-ml-mr;
-  var y=15;
+function _buildPDF(p){
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:'mm',format:'a4'});
+  var W=210,ml=15,mr=15,cw=W-ml-mr,y=15;
+  var VM=[46,125,50],VD=[27,94,32],VL=[232,245,233];
+  var BL=[17,17,17],GR=[100,100,100],GB=[245,245,245],WH=[255,255,255];
 
-  // Colores como arrays RGB
-  var VD=[27,94,32], VM=[46,125,50], VL=[232,245,233];
-  var PK=[219,68,120]; // rosa como en la referencia — acento para el título
-  var BL=[17,17,17], GR=[100,100,100], GB=[245,245,245], WH=[255,255,255];
-  var LINE=[220,220,220];
-
-  function sf(style,size,color){doc.setFont('helvetica',style||'normal');doc.setFontSize(size||10);doc.setTextColor.apply(doc,color||BL);}
-  function fr(x,ry,w,h,color){doc.setFillColor.apply(doc,color);doc.rect(x,ry,w,h,'F');}
-  function ln(x1,y1,x2,y2,color){doc.setDrawColor.apply(doc,color||LINE);doc.line(x1,y1,x2,y2);}
+  function sf(st,sz,col){doc.setFont('helvetica',st||'normal');doc.setFontSize(sz||10);doc.setTextColor.apply(doc,col||BL);}
+  function fr(x,ry,w,h,col){doc.setFillColor.apply(doc,col);doc.rect(x,ry,w,h,'F');}
   function tx(t,x,ty,opts){doc.text(String(t||''),x,ty,opts||{});}
+  function ln(x1,y1,x2,y2,col){doc.setDrawColor.apply(doc,col||[200,200,200]);doc.line(x1,y1,x2,y2);}
 
-  // ── HEADER — nombre consultor izq, COTIZACIÓN der ──────────
-  sf('bold',14,VM);
-  tx('Omar García Brena', ml, y);
-  sf('normal',8,GR);
-  tx('Consultor Tecnológico · México', ml, y+5);
+  // HEADER
+  sf('bold',15,VM); tx('Omar García Brena',ml,y);
+  sf('normal',8,GR); tx('Consultor Tecnológico · México',ml,y+5);
+  // Box COTIZACIÓN
+  var bw=54,bx=W-mr-bw;
+  fr(bx,y-7,bw,20,VD);
+  sf('bold',12,WH); tx('COTIZACIÓN',bx+bw/2,y,{align:'center'});
+  sf('normal',7,[200,230,201]); tx(p.folio,bx+bw/2,y+5,{align:'center'});
+  y+=16; ln(ml,y,W-mr,y); y+=5;
 
-  // Box derecho tipo "FACTURA" de la referencia
-  var bw=52, bx=W-mr-bw;
-  fr(bx, y-6, bw, 18, VM);
-  sf('bold',13,WH);
-  tx('COTIZACIÓN', bx+bw/2, y+1, {align:'center'});
-  sf('normal',7,[200,230,201]);
-  tx(p.folio, bx+bw/2, y+6, {align:'center'});
+  // Fecha / vigencia box
+  fr(bx,y-2,bw,16,GB);
+  sf('bold',7,GR); tx('FECHA:',bx+bw/2,y+3,{align:'center'});
+  sf('bold',9,BL); tx(fmtF(p.fecha),bx+bw/2,y+8,{align:'center'});
+  sf('normal',7,GR); tx('Vigencia: '+p.vigencia+' días',bx+bw/2,y+13,{align:'center'});
+  y+=20;
 
-  y+=16;
-  ln(ml, y, W-mr, y, LINE);
+  // Cliente
+  sf('bold',8,VM); tx('Cotización para:',ml,y); y+=4;
+  sf('bold',11,BL); tx(p.cliente||'—',ml,y);
+  if(p.email){sf('normal',8,GR);tx('Correo:',ml+80,y);sf('normal',8,BL);tx(p.email,ml+100,y);}
   y+=5;
-
-  // ── FECHA y VIGENCIA en box pequeño ───────────────────────
-  fr(bx, y-1, bw, 14, GB);
-  sf('bold',7,GR); tx('FECHA:', bx+bw/2, y+3, {align:'center'});
-  sf('bold',9,BL); tx(fmtF(p.fecha), bx+bw/2, y+8, {align:'center'});
-  sf('normal',7,GR); tx('Vigencia: '+p.vigencia+' días', bx+bw/2, y+12, {align:'center'});
-  y+=18;
-
-  // ── CLIENTE ───────────────────────────────────────────────
-  sf('bold',8,VM); tx('Cotización para:', ml, y); y+=4;
-  sf('bold',10,BL); tx(p.cliente||'—', ml, y);
-  if(p.email){sf('normal',8,GR);tx('Correo:', ml+80, y);sf('normal',8,BL);tx(p.email,ml+100,y);}
+  if(p.giro){sf('normal',8,GR);tx('Negocio:',ml,y);sf('normal',8,BL);tx(p.giro,ml+22,y);}
+  if(p.tel){sf('normal',8,GR);tx('Tel:',ml+80,y);sf('normal',8,BL);tx(p.tel,ml+90,y);}
   y+=5;
-  if(p.giro){sf('normal',8,GR);tx('Negocio:', ml, y);sf('normal',8,BL);tx(p.giro,ml+20,y);}
-  if(p.tel){sf('normal',8,GR);tx('Tel:', ml+80, y);sf('normal',8,BL);tx(p.tel,ml+92,y);}
-  y+=5;
-  if(p.zona){sf('normal',8,GR);tx('Zona:', ml, y);sf('normal',8,BL);tx(p.zona,ml+14,y);}
-  y+=8;
-  ln(ml,y,W-mr,y,LINE); y+=5;
+  if(p.zona){sf('normal',8,GR);tx('Zona:',ml,y);sf('normal',8,BL);tx(p.zona,ml+14,y);}
+  y+=8; ln(ml,y,W-mr,y); y+=5;
 
-  // ── DESCRIPCIÓN ───────────────────────────────────────────
-  sf('bold',8,VM); tx('Descripción del proyecto:', ml, y); y+=5;
-  if(p.slogan){sf('normal',8,GR);var sl=doc.splitTextToSize(p.slogan,cw);sl.forEach(function(l){tx(l,ml,y);y+=4;});y+=2;}
+  // Descripción del proyecto
+  if(p.slogan){
+    sf('bold',8,VM); tx('Descripción del proyecto:',ml,y); y+=4;
+    sf('italic',8,GR);
+    var sl=doc.splitTextToSize(p.slogan,cw);
+    sl.forEach(function(l){tx(l,ml,y);y+=4;}); y+=3;
+  }
 
-  // ── TABLA PRODUCTOS ───────────────────────────────────────
-  var colW=[cw*0.07,cw*0.45,cw*0.18,cw*0.15,cw*0.15];
-  var hh=7;
-  fr(ml,y,cw,hh,VM);
-  sf('bold',8,WH);
-  var hx=ml,hnames=['Cant.','Descripción','Precio U','Total',''];
-  // 4 columnas reales: cant, desc, precio, total
-  var cols4=[cw*0.1,cw*0.52,cw*0.19,cw*0.19];
-  var hnames4=['Cantidad','Descripción','Precio U','Total'];
-  var hx4=ml;
-  hnames4.forEach(function(h,i){
-    if(i>0)tx(h,hx4+2,y+5);
-    else tx(h,hx4+cols4[0]/2,y+5,{align:'center'});
-    hx4+=cols4[i];
+  // Tabla productos — 4 cols
+  var c4=[cw*0.1,cw*0.5,cw*0.2,cw*0.2];
+  fr(ml,y,cw,7,VD); sf('bold',8,WH);
+  var hx=ml,hn=['Cantidad','Descripción','Precio U','Total'];
+  hn.forEach(function(h,i){
+    if(i===0)tx(h,hx+c4[0]/2,y+5,{align:'center'});
+    else tx(h,hx+2,y+5);
+    hx+=c4[i];
   });
-  y+=hh;
+  y+=7;
 
   (p.productos||[]).forEach(function(pr,ri){
-    var rh=6, rbg=ri%2===0?WH:GB;
-    fr(ml,y,cw,rh,rbg);
-    sf('normal',8,BL);
+    var rh=7,rbg=ri%2===0?WH:GB;
+    fr(ml,y,cw,rh,rbg); sf('normal',8,BL);
     var rx=ml;
-    var rvals=[String(pr.cant), pr.desc||'—', fmto(pr.precio), fmto(pr.subtotal)];
-    rvals.forEach(function(val,i){
-      var maxW=cols4[i]-3;
-      if(i===0)tx(val,rx+cols4[0]/2,y+4.5,{align:'center'});
-      else if(i>=2)tx(val,rx+cols4[i]-1,y+4.5,{align:'right'});
-      else{var trunc=doc.splitTextToSize(val,maxW);tx(trunc[0]+(trunc.length>1?'…':''),rx+2,y+4.5);}
-      rx+=cols4[i];
+    var rv=[String(pr.cant),pr.desc||'—',fmto(pr.precio),fmto(pr.subtotal)];
+    rv.forEach(function(v,i){
+      if(i===0)tx(v,rx+c4[0]/2,y+5,{align:'center'});
+      else if(i>=2)tx(v,rx+c4[i]-1,y+5,{align:'right'});
+      else{var tr=doc.splitTextToSize(v,c4[i]-3);tx(tr[0]+(tr.length>1?'…':''),rx+2,y+5);}
+      rx+=c4[i];
     });
     y+=rh;
   });
 
-  // Nota vigencia
-  y+=3;
-  sf('italic',7,GR);
+  // Vigencia nota
+  y+=3; sf('italic',7,GR);
   tx('Esta cotización es válida por los próximos '+p.vigencia+' días.',W-mr,y,{align:'right'});
-  y+=6;
+  y+=7;
 
-  // ── TOTALES (alineados a la derecha como en la referencia) ─
-  var tw=55, tx0=W-mr-tw;
+  // Totales (derecha)
+  var tw=58,tx0=W-mr-tw;
   [['Subtotal',fmto(p.subtotal)],['IVA',p.incluye_iva?fmto(p.iva):'No aplica'],['Total',fmto(p.total)]].forEach(function(row,i){
-    var isT=i===2, rbg=isT?VM:GB;
-    fr(tx0,y,tw,6,rbg);
-    sf(isT?'bold':'normal',isT?9:8,isT?WH:GR);
-    tx(row[0],tx0+2,y+4.5);
-    sf(isT?'bold':'normal',isT?9:8,isT?WH:BL);
-    tx(row[1],tx0+tw-1,y+4.5,{align:'right'});
+    var isT=i===2;
+    fr(tx0,y,tw,6,isT?VD:GB);
+    sf(isT?'bold':'normal',isT?9:8,isT?WH:GR); tx(row[0],tx0+2,y+4.5);
+    sf(isT?'bold':'normal',isT?9:8,isT?WH:BL); tx(row[1],tx0+tw-1,y+4.5,{align:'right'});
     y+=6;
   });
+  sf('normal',7,GR); tx(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.',ml,y+4); y+=10;
 
-  sf('normal',7,GR);
-  tx(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.',ml,y+4);
-  y+=10;
+  // Forma de pago
+  if(p.pago){sf('bold',8,VM);tx('Forma de pago:',ml,y);y+=4;sf('normal',7,GR);tx(p.pago,ml,y);y+=8;}
 
-  // ── TÉRMINOS ──────────────────────────────────────────────
-  sf('bold',8,VM); tx('Términos:', ml, y); y+=4;
+  // Términos
+  if(y>240){doc.addPage();y=15;}
+  sf('bold',8,VM); tx('Términos:',ml,y); y+=4;
   sf('normal',7,GR);
   (p.terminos||'').split('\n').forEach(function(l){
     if(!l.trim())return;
-    var wrapped=doc.splitTextToSize(l.trim(),cw);
-    wrapped.forEach(function(wl){
-      if(y>270){doc.addPage();y=15;}
-      tx(wl,ml,y);y+=3.5;
-    });
+    var wr=doc.splitTextToSize(l.trim(),cw);
+    wr.forEach(function(wl){if(y>275){doc.addPage();y=15;}tx(wl,ml,y);y+=3.5;});
   });
-  y+=4;
-
-  // ── FIRMA ─────────────────────────────────────────────────
-  if(y>240){doc.addPage();y=15;}
-  sf('normal',8,VM); tx(p.nota_pie||'Omar García Brena',ml,y);
   y+=5;
-  sf('bold',9,BL); tx('Omar García Brena',ml,y);
-  y+=4;
-  sf('normal',7,GR); tx('Consultor Tecnológico · ogarciabrena@gmail.com',ml,y);
-  y+=10;
-  ln(ml,y,ml+70,y,[150,150,150]);
-  ln(ml+85,y,ml+155,y,[150,150,150]);
-  y+=4;
-  sf('normal',7,GR);
-  tx('Nombre y firma del cliente',ml,y);
-  tx('Fecha de aceptación',ml+85,y);
 
-  // ── PIE DE PÁGINA ─────────────────────────────────────────
-  fr(ml,282,cw,8,VM);
+  // Firma
+  if(y>248){doc.addPage();y=15;}
+  sf('normal',8,VM); tx(p.nota_pie,ml,y); y+=5;
+  sf('bold',9,BL); tx('Omar García Brena',ml,y); y+=4;
+  sf('normal',7,GR); tx('Consultor Tecnológico · ogarciabrena@gmail.com',ml,y); y+=10;
+  ln(ml,y,ml+70,y,[150,150,150]); ln(ml+85,y,ml+155,y,[150,150,150]); y+=4;
+  sf('normal',7,GR); tx('Nombre y firma del cliente',ml,y); tx('Fecha de aceptación',ml+85,y);
+
+  // Footer
+  fr(ml,283,cw,8,VD);
   sf('normal',7,[200,230,201]);
-  tx('ogarciabrena@gmail.com',ml+5,287);
-  tx('+52 55 1455 2202',W-mr-5,287,{align:'right'});
+  tx('ogarciabrena@gmail.com',ml+4,288);
+  tx('+52 55 1455 2202',W-mr-4,288,{align:'right'});
 
-  doc.save((p.folio||'COT')+' - '+(p.cliente||'cliente')+'.pdf');
+  doc.save(p.folio+' - '+p.cliente+'.pdf');
 }
 
-// ── DOC editable (HTML descargable que Word abre) ─────────────
+// ── DOC ───────────────────────────────────────────────────────
 function descargarDOC(){
   if(!valid())return;
   var btn=document.getElementById('btn-doc');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generando…';
-  if(!cfgCache){
-    gasGet('leer_config',function(d){
-      if(d.ok&&d.config)cfgCache=d.config;
-      _buildDOC();
-      btn.textContent='📝 Descargar DOC';btn.disabled=false;
-    });
-  } else {
-    _buildDOC();
+  function go(){
+    try{_buildDOC(getDatos());toast('✓ DOC descargado');}
+    catch(err){toast('⚠ '+err.message,true);}
     btn.textContent='📝 Descargar DOC';btn.disabled=false;
   }
+  if(!cfgCache){gasGet('leer_config',function(d){if(d.ok&&d.config)cfgCache=d.config;go();});}
+  else go();
 }
 
-function _buildDOC(){
-  var p=getDatos();
-  var rows=p.productos.map(function(pr,i){
-    return '<tr style="background:'+(i%2===0?'#fff':'#f5f5f5')+'">'+
-      '<td style="text-align:center;padding:5px 8px;border:1px solid #ddd">'+pr.cant+'</td>'+
-      '<td style="padding:5px 8px;border:1px solid #ddd">'+esc(pr.desc||'—')+'</td>'+
-      '<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.precio)+'</td>'+
-      '<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.subtotal)+'</td>'+
-      '</tr>';
+function _buildDOC(p){
+  var rows=(p.productos||[]).map(function(pr,i){
+    return '<tr style="background:'+(i%2===0?'#fff':'#f5f5f5')+'">'
+      +'<td style="text-align:center;padding:5px 8px;border:1px solid #ddd">'+pr.cant+'</td>'
+      +'<td style="padding:5px 8px;border:1px solid #ddd">'+esc(pr.desc||'—')+'</td>'
+      +'<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.precio)+'</td>'
+      +'<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.subtotal)+'</td>'
+      +'</tr>';
   }).join('');
-
   var termHtml=(p.terminos||'').split('\n').filter(function(l){return l.trim();})
     .map(function(l){return '<p style="margin:2px 0;font-size:9pt;color:#555">'+esc(l)+'</p>';}).join('');
-
   var cliInfo='';
-  if(p.giro)   cliInfo+='<p style="margin:1px 0"><b>Giro:</b> '+esc(p.giro)+'</p>';
-  if(p.tel)    cliInfo+='<p style="margin:1px 0"><b>Tel:</b> '+esc(p.tel)+'</p>';
-  if(p.email)  cliInfo+='<p style="margin:1px 0"><b>Correo:</b> '+esc(p.email)+'</p>';
-  if(p.zona)   cliInfo+='<p style="margin:1px 0"><b>Zona:</b> '+esc(p.zona)+'</p>';
+  if(p.giro)  cliInfo+='<p style="margin:1px 0"><b>Giro:</b> '+esc(p.giro)+'</p>';
+  if(p.tel)   cliInfo+='<p style="margin:1px 0"><b>Tel:</b> '+esc(p.tel)+'</p>';
+  if(p.email) cliInfo+='<p style="margin:1px 0"><b>Correo:</b> '+esc(p.email)+'</p>';
+  if(p.zona)  cliInfo+='<p style="margin:1px 0"><b>Zona:</b> '+esc(p.zona)+'</p>';
 
   var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
   +'<head><meta charset="UTF-8"><meta name=ProgId content=Word.Document>'
-  +'<style>body{font-family:Arial,sans-serif;font-size:10pt;margin:2cm}table{border-collapse:collapse;width:100%}</style></head>'
-  +'<body>'
-  // Encabezado
+  +'<style>body{font-family:Arial,sans-serif;font-size:10pt;margin:2cm}table{border-collapse:collapse;width:100%}</style></head><body>'
   +'<table style="width:100%;margin-bottom:16px"><tr>'
   +'<td><p style="font-size:16pt;font-weight:bold;color:#2E7D32;margin:0">PROPUESTA TECNOLÓGICA INTEGRAL</p>'
-  +'<p style="font-size:9pt;color:#666;margin:2px 0">'+esc(p.slogan||'Moderniza tu negocio desde el primer día')+'</p></td>'
+  +'<p style="font-size:9pt;color:#666;margin:2px 0">'+esc(p.slogan||'')+'</p></td>'
   +'<td style="text-align:right;vertical-align:top">'
   +'<div style="background:#1B5E20;color:#fff;padding:8px 14px;display:inline-block">'
   +'<p style="margin:0;font-size:7pt;color:#A5D6A7">COTIZACIÓN</p>'
@@ -573,67 +877,74 @@ function _buildDOC(){
   +'<p style="margin:0;font-size:8pt;color:#C8E6C9">'+fmtF(p.fecha)+'</p>'
   +'</div></td></tr></table>'
   +'<hr style="border:none;border-top:2px solid #2E7D32;margin-bottom:12px">'
-  // Info consultor / vigencia
   +'<table style="width:100%;margin-bottom:12px"><tr>'
   +'<td style="font-size:9pt;color:#555"><b>Consultor:</b> Omar García Brena<br><b>Correo:</b> ogarciabrena@gmail.com<br><b>Tel:</b> +52 55 1455 2202</td>'
   +'<td style="text-align:right;font-size:9pt;color:#555"><b>Folio:</b> '+esc(p.folio)+'<br><b>Fecha:</b> '+fmtF(p.fecha)+'<br><b>Vigencia:</b> '+p.vigencia+' días naturales</td>'
   +'</tr></table>'
-  // Cliente
   +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:8px 0 4px">COTIZACIÓN PARA</p>'
   +'<div style="background:#E8F5E9;padding:8px 12px;margin-bottom:12px">'
   +'<p style="font-size:12pt;font-weight:bold;color:#1B5E20;margin:0 0 4px">'+esc(p.cliente||'—')+'</p>'
   +cliInfo+'</div>'
-  // Tabla productos
+  +(p.slogan?'<p style="font-size:9pt;color:#666;font-style:italic;margin-bottom:12px">'+esc(p.slogan)+'</p>':'')
   +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:8px 0 4px">DESCRIPCIÓN DE SERVICIOS</p>'
   +'<table style="margin-bottom:8px"><thead>'
-  +'<tr style="background:#1B5E20"><th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:center;width:8%">Cant.</th>'
+  +'<tr style="background:#1B5E20">'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:center;width:8%">Cant.</th>'
   +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:left;width:52%">Descripción</th>'
   +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Precio U</th>'
-  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Total</th></tr></thead>'
-  +'<tbody>'+rows+'</tbody></table>'
-  // Totales
-  +'<table style="width:40%;margin-left:auto;margin-bottom:12px">'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Total</th>'
+  +'</tr></thead><tbody>'+rows+'</tbody></table>'
+  +'<p style="font-size:8pt;font-style:italic;color:#666;text-align:right;margin-bottom:12px">Esta cotización es válida por los próximos '+p.vigencia+' días.</p>'
+  +'<table style="width:40%;margin-left:auto;margin-bottom:4px">'
   +'<tr style="background:#f5f5f5"><td style="padding:4px 8px;border:1px solid #ddd;color:#666">Subtotal</td><td style="padding:4px 8px;border:1px solid #ddd;text-align:right">'+fmto(p.subtotal)+'</td></tr>'
   +'<tr><td style="padding:4px 8px;border:1px solid #ddd;color:#666">IVA</td><td style="padding:4px 8px;border:1px solid #ddd;text-align:right">'+(p.incluye_iva?fmto(p.iva):'No aplica')+'</td></tr>'
   +'<tr style="background:#1B5E20"><td style="padding:6px 8px;border:1px solid #1B5E20;color:#fff;font-weight:bold">TOTAL</td><td style="padding:6px 8px;border:1px solid #1B5E20;color:#fff;font-weight:bold;text-align:right">'+fmto(p.total)+'</td></tr>'
   +'</table>'
-  +'<p style="font-size:8pt;color:#888">'+(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.')+'</p>'
-  // Términos
+  +'<p style="font-size:8pt;color:#888;margin-bottom:12px">'+(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.')+'</p>'
+  +(p.pago?'<p style="font-size:8pt;color:#555;margin-bottom:8px"><b>Forma de pago:</b> '+esc(p.pago)+'</p>':'')
   +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:12px 0 4px">TÉRMINOS Y CONDICIONES</p>'
   +termHtml
-  // Firma
   +'<div style="margin-top:24px"><table style="width:100%"><tr>'
   +'<td style="width:50%;padding-top:30px;border-top:1px solid #999;font-size:8pt;color:#555">Nombre y firma del cliente</td>'
   +'<td style="width:10%"></td>'
   +'<td style="width:40%;padding-top:30px;border-top:1px solid #999;font-size:8pt;color:#555">Fecha de aceptación</td>'
   +'</tr></table></div>'
-  // Footer
   +'<div style="background:#1B5E20;color:#C8E6C9;padding:8px 12px;margin-top:20px;font-size:8pt;text-align:center">'
-  +esc(p.nota_pie||'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202')
-  +'</div>'
-  +'</body></html>';
+  +esc(p.nota_pie||'Omar García Brena · ogarciabrena@gmail.com')
+  +'</div></body></html>';
 
   var blob=new Blob([html],{type:'application/msword;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
-  a.href=url; a.download=(p.folio||'COT')+' - '+(p.cliente||'cliente')+'.doc';
+  a.href=url; a.download=p.folio+' - '+p.cliente+'.doc';
   document.body.appendChild(a); a.click();
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  toast('✓ DOC descargado');
 }
 
-// ── Utils ─────────────────────────────────────────────────────
+// ── UTILS ─────────────────────────────────────────────────────
 function fmtF(iso){
   try{if(!iso)return new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
   var pts=iso.split('-');return new Date(Number(pts[0]),Number(pts[1])-1,Number(pts[2])).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});}
   catch(e){return iso||'';}
 }
 function fmto(n){return '$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});}
-function gv(id){return document.getElementById(id).value.trim();}
+function gv(id){var el=document.getElementById(id);return el?el.value.trim():'';}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function gasGet(ac,cb){fetch(GAS_URL+'?accion='+ac+'&token='+encodeURIComponent(TOKEN)).then(function(r){return r.json();}).then(cb).catch(function(){cb({ok:false});});}
-function gasPost(payload,cb){fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).then(function(r){return r.json();}).then(cb).catch(function(err){cb({ok:false,error:err.message});});}
-function toast(msg,isErr){var t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(isErr?' err':'');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+function gasGet(ac,cb){
+  fetch(GAS_URL+'?accion='+ac+'&token='+encodeURIComponent(TOKEN))
+    .then(function(r){return r.json();}).then(cb).catch(function(){cb({ok:false});});
+}
+function gasPost(payload,cb){
+  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json();}).then(cb)
+    .catch(function(err){cb({ok:false,error:err.message});});
+}
+function toast(msg,isErr){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(isErr?' err':'');
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3200);
+}
 </script>
 </body>
 </html>
