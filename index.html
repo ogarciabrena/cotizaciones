@@ -2,220 +2,246 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cotizador | Omar García Brena</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cotizador OGB</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--v:#7AE06A;--vd:#5bc44d;--vdk:#1B5E20;--bg:#0d0d0d;--bg2:#141414;--bg3:#1a1a1a;--bg4:#222;--b:rgba(255,255,255,.08);--b2:rgba(122,224,106,.25);--t:#f0f0f0;--m:#888;--r:#e05050}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#7AE06A;--gd:#4db840;--gdk:#1B5E20;--glt:#E8F5E9;
+  --bg:#0a0a0a;--s1:#111;--s2:#191919;--s3:#222;
+  --bd:rgba(255,255,255,.07);--bdg:rgba(122,224,106,.2);
+  --tx:#EDEDED;--mt:#777;--rd:#e05050;
+  --rad:8px;--rad2:12px
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px}
 
-/* LOGIN SCREEN */
-#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:2rem}
-.login-box{background:var(--bg2);border:.5px solid var(--b2);border-radius:16px;padding:2.5rem;width:100%;max-width:480px}
-.login-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:400;margin-bottom:.3rem}
-.login-title em{font-style:italic;color:var(--v)}
-.login-sub{font-size:13px;color:var(--m);margin-bottom:2rem}
-.login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
-.login-field label{font-size:11px;color:var(--m);letter-spacing:.05em;font-weight:500;text-transform:uppercase}
-.login-field input{background:var(--bg3);border:.5px solid var(--b);color:var(--t);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 13px;border-radius:6px;outline:none;width:100%;transition:border-color .2s}
-.login-field input:focus{border-color:var(--v)}
-.login-note{font-size:11px;color:var(--m);margin-bottom:1.5rem;padding:10px 12px;background:rgba(122,224,106,.06);border:.5px solid var(--b2);border-radius:6px;line-height:1.5}
-.btn-login{width:100%;padding:13px;background:var(--v);color:#0d0d0d;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-login:hover{background:var(--vd)}
+/* ─ LOGIN ─ */
+#L{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.5rem;z-index:999}
+.lbox{width:100%;max-width:460px;background:var(--s1);border:1px solid var(--bdg);border-radius:var(--rad2);padding:2.5rem}
+.ltit{font-family:'Playfair Display',serif;font-size:2rem;font-weight:400;line-height:1.1;margin-bottom:.3rem}
+.ltit em{font-style:italic;color:var(--g)}
+.lsub{font-size:12px;color:var(--mt);margin-bottom:1.5rem}
+.lnote{font-size:12px;color:var(--mt);background:rgba(122,224,106,.05);border:1px solid var(--bdg);border-radius:var(--rad);padding:.75rem 1rem;margin-bottom:1.5rem;line-height:1.6}
+.lf{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem}
+.lf label{font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-weight:500}
+.lf input{background:var(--s2);border:1px solid var(--bd);color:var(--tx);font-family:'Inter',sans-serif;font-size:13px;padding:10px 12px;border-radius:var(--rad);outline:none;width:100%;transition:border-color .15s}
+.lf input:focus{border-color:var(--g)}
+.lbtn{width:100%;padding:13px;background:var(--g);color:#0a0a0a;border:none;border-radius:var(--rad);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;margin-top:.5rem}
+.lbtn:hover{background:var(--gd)}
+.lerr{font-size:12px;color:var(--rd);margin-top:.75rem;display:none}
 
-/* MAIN APP */
-#app{display:none}
-.page{max-width:900px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
-.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:.5px solid var(--b);padding-bottom:1.5rem;margin-bottom:2rem}
-.logo{font-size:13px;font-weight:300;letter-spacing:.12em;color:var(--m);text-transform:uppercase}
-.logo strong{display:block;font-size:17px;font-weight:500;letter-spacing:0;color:var(--t);margin-bottom:2px}
-.header-right{display:flex;align-items:center;gap:10px}
-.fbadge{background:var(--bg3);border:.5px solid var(--b2);padding:6px 14px;border-radius:20px;font-size:12px;color:var(--v);letter-spacing:.08em;font-weight:500}
-.btn-icon{background:transparent;border:.5px solid var(--b);color:var(--m);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.btn-icon:hover{border-color:var(--b2);color:var(--v)}
+/* ─ APP ─ */
+#A{display:none}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 5rem}
 
-/* TABS */
-.tabs{display:flex;gap:4px;margin-bottom:2rem;background:var(--bg2);padding:4px;border-radius:10px;border:.5px solid var(--b)}
-.tab{flex:1;padding:9px 16px;border:none;border-radius:7px;background:transparent;color:var(--m);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;font-weight:400}
-.tab.active{background:var(--bg3);color:var(--t);font-weight:500;border:.5px solid var(--b)}
-.tab-panel{display:none}
-.tab-panel.active{display:block}
+/* Header */
+.hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:1.25rem;border-bottom:1px solid var(--bd);margin-bottom:1.75rem;flex-wrap:wrap;gap:.75rem}
+.hdr-l .brand{font-size:16px;font-weight:600;color:var(--tx)}
+.hdr-l .sub{font-size:11px;color:var(--mt);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.fbadge{background:var(--s2);border:1px solid var(--bdg);padding:5px 12px;border-radius:20px;font-size:11px;color:var(--g);font-weight:600;letter-spacing:.08em}
+.ibtn{background:transparent;border:1px solid var(--bd);color:var(--mt);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.ibtn:hover{border-color:var(--bdg);color:var(--g)}
 
-h1{font-family:'Playfair Display',serif;font-size:clamp(24px,3.5vw,38px);font-weight:400;line-height:1.15;margin-bottom:.4rem}
-h1 em{font-style:italic;color:var(--v)}
-.hero-sub{font-size:13px;color:var(--m);margin-bottom:2.5rem}
-.sec{margin-bottom:2rem}
-.slbl{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--v);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
-.slbl::after{content:'';flex:1;height:.5px;background:var(--b)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.fld{display:flex;flex-direction:column;gap:5px}
-label{font-size:11px;color:var(--m);letter-spacing:.05em;font-weight:500}
-input,select,textarea{background:var(--bg3);border:.5px solid var(--b);color:var(--t);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;border-radius:6px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;width:100%}
-input:focus,select:focus,textarea:focus{border-color:var(--v)}
-textarea{resize:vertical;min-height:60px}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+/* Tabs */
+.tabs{display:flex;gap:3px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad2);padding:3px;margin-bottom:1.75rem;overflow-x:auto}
+.tab{flex:1;min-width:120px;padding:8px 14px;border:none;border-radius:var(--rad);background:transparent;color:var(--mt);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab.on{background:var(--s2);color:var(--tx);border:1px solid var(--bd)}
+.panel{display:none}
+.panel.on{display:block}
+
+/* Typography */
+.ptit{font-family:'Playfair Display',serif;font-size:clamp(22px,3.5vw,36px);font-weight:400;line-height:1.15;margin-bottom:.25rem}
+.ptit em{font-style:italic;color:var(--g)}
+.psub{font-size:12px;color:var(--mt);margin-bottom:2rem}
+
+/* Section */
+.sec{margin-bottom:1.75rem}
+.slbl{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--g);margin-bottom:.625rem;display:flex;align-items:center;gap:8px}
+.slbl::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:10px;color:var(--mt);letter-spacing:.06em;font-weight:500;text-transform:uppercase}
+input,select,textarea{background:var(--s2);border:1px solid var(--bd);color:var(--tx);font-family:'Inter',sans-serif;font-size:13px;padding:9px 11px;border-radius:var(--rad);outline:none;transition:border-color .15s;width:100%;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--g)}
+textarea{resize:vertical;min-height:56px;line-height:1.5}
+input[type=date]{color-scheme:dark}
 
 /* Autocomplete */
 .acw{position:relative}
-.acd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;background:var(--bg3);border:.5px solid var(--b2);border-radius:8px;overflow:hidden;display:none;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.acd.open{display:block}
-.aci{padding:10px 14px;font-size:13px;cursor:pointer;transition:background .12s;border-bottom:.5px solid var(--b)}
+.acd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;background:var(--s2);border:1px solid var(--bdg);border-radius:var(--rad2);overflow:hidden;display:none;max-height:200px;overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,.6)}
+.acd.on{display:block}
+.aci{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .1s}
 .aci:last-child{border-bottom:none}
-.aci:hover,.aci.active{background:rgba(122,224,106,.1)}
-.aci .an{color:var(--t);font-weight:500}
-.aci .ad{color:var(--m);font-size:11px;margin-top:1px}
-.acbadge{display:inline-block;font-size:10px;background:rgba(122,224,106,.15);color:var(--v);padding:1px 6px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.aci:hover,.aci.hl{background:rgba(122,224,106,.08)}
+.aci .an{font-size:13px;font-weight:500;color:var(--tx)}
+.aci .ad{font-size:11px;color:var(--mt);margin-top:2px}
+.abadge{display:inline-block;font-size:9px;background:rgba(122,224,106,.12);color:var(--g);padding:1px 6px;border-radius:10px;margin-left:5px;vertical-align:middle;font-weight:600}
 
-/* Catálogo productos */
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px}
-.cat-item{background:var(--bg3);border:.5px solid var(--b);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;position:relative}
-.cat-item:hover{border-color:var(--b2);background:rgba(122,224,106,.06)}
-.cat-item .ci-nombre{font-size:13px;font-weight:500;color:var(--t);margin-bottom:3px}
-.cat-item .ci-precio{font-size:12px;color:var(--v);font-weight:500}
-.cat-item .ci-desc{font-size:11px;color:var(--m);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cat-add{position:absolute;top:8px;right:8px;width:22px;height:22px;background:var(--vdk);color:#fff;border:none;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
-.cat-item:hover .cat-add{opacity:1}
+/* Catálogo grid */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:7px;margin-bottom:10px}
+.ccard{background:var(--s2);border:1px solid var(--bd);border-radius:var(--rad);padding:10px 12px;cursor:pointer;transition:all .15s;position:relative}
+.ccard:hover{border-color:var(--bdg);background:rgba(122,224,106,.04)}
+.cc-n{font-size:12px;font-weight:600;color:var(--tx);margin-bottom:3px;padding-right:22px;line-height:1.3}
+.cc-p{font-size:12px;color:var(--g);font-weight:600}
+.cc-d{font-size:10px;color:var(--mt);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-add{position:absolute;top:8px;right:8px;width:20px;height:20px;background:var(--gdk);color:#fff;border:none;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;line-height:1}
+.ccard:hover .cc-add{opacity:1}
 
-/* Productos líneas */
-.pbox{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;overflow:hidden}
-.phead{display:grid;grid-template-columns:3fr 80px 110px 36px;gap:8px;padding:9px 14px;background:var(--bg3);border-bottom:.5px solid var(--b);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--m)}
-.plst{padding:8px;display:flex;flex-direction:column;gap:6px}
-.prow{display:grid;grid-template-columns:3fr 80px 110px 36px;gap:8px;align-items:center}
-.prow input{padding:8px 10px;font-size:13px}
+/* Tabla productos */
+.pbox{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad2);overflow:hidden}
+.phd{display:grid;grid-template-columns:1fr 72px 106px 32px;gap:6px;padding:8px 12px;background:var(--s2);border-bottom:1px solid var(--bd);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mt)}
+.plst{padding:6px;display:flex;flex-direction:column;gap:5px}
+.prow{display:grid;grid-template-columns:1fr 72px 106px 32px;gap:6px;align-items:center}
+.prow input{padding:7px 9px;font-size:12px}
 .prow input[type=number]{text-align:right}
 .pcell{position:relative}
-.pcell::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--m);font-size:12px;pointer-events:none}
-.pcell input{padding-left:22px}
-.bdel{width:34px;height:34px;border-radius:6px;background:transparent;border:.5px solid var(--b);color:var(--m);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
-.bdel:hover{background:rgba(224,80,80,.12);border-color:var(--r);color:var(--r)}
-.pfoot{padding:10px 14px;border-top:.5px solid var(--b);display:flex;justify-content:space-between;align-items:center}
-.badd{font-size:12px;font-weight:500;color:var(--v);background:transparent;border:.5px solid var(--b2);border-radius:20px;padding:6px 14px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
-.badd:hover{background:rgba(122,224,106,.08)}
+.pcell::before{content:'$';position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--mt);font-size:11px;pointer-events:none}
+.pcell input{padding-left:20px}
+.bdel{width:30px;height:30px;border-radius:6px;background:transparent;border:1px solid var(--bd);color:var(--mt);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.bdel:hover{background:rgba(224,80,80,.1);border-color:var(--rd);color:var(--rd)}
+.pft{padding:9px 12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.badd{font-size:11px;font-weight:500;color:var(--g);background:transparent;border:1px solid var(--bdg);border-radius:20px;padding:5px 12px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.badd:hover{background:rgba(122,224,106,.07)}
+.badd.sec{color:var(--mt);border-color:var(--bd);margin-left:6px}
+.badd.sec:hover{color:var(--g);border-color:var(--bdg)}
 
 /* Totales */
-.tbox{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;padding:1.25rem 1.5rem}
-.trow{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
-.trow .lb{font-size:13px;color:var(--m)}
-.trow .vl{font-size:13px}
-.trow.grand{border-top:.5px solid var(--b);margin-top:8px;padding-top:14px}
-.trow.grand .lb{font-size:15px;color:var(--t);font-weight:500}
-.trow.grand .vl{font-family:'Playfair Display',serif;font-size:28px;color:var(--v);letter-spacing:-.02em}
-.iva-note{font-size:11px;color:var(--m);margin-top:6px}
-.sw-row{display:flex;align-items:center;gap:10px;margin-top:12px}
-.sw{position:relative;width:38px;height:22px}
+.tbox{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad2);padding:1.125rem 1.375rem}
+.tr{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+.tr .l{font-size:13px;color:var(--mt)}
+.tr .v{font-size:13px}
+.tr.gd{border-top:1px solid var(--bd);margin-top:8px;padding-top:12px}
+.tr.gd .l{font-size:14px;color:var(--tx);font-weight:500}
+.tr.gd .v{font-family:'Playfair Display',serif;font-size:26px;color:var(--g);letter-spacing:-.02em}
+.ivn{font-size:11px;color:var(--mt);margin-top:5px}
+.swr{display:flex;align-items:center;gap:8px;margin-top:10px}
+.sw{position:relative;width:36px;height:20px}
 .sw input{opacity:0;width:0;height:0}
-.sl{position:absolute;cursor:pointer;inset:0;background:var(--bg4);border-radius:22px;border:.5px solid var(--b);transition:.2s}
-.sl::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--m);border-radius:50%;transition:.2s}
-.sw input:checked+.sl{background:rgba(122,224,106,.2);border-color:var(--v)}
-.sw input:checked+.sl::before{background:var(--v);transform:translateX(16px)}
+.sl{position:absolute;cursor:pointer;inset:0;background:var(--s3);border-radius:20px;border:1px solid var(--bd);transition:.18s}
+.sl::before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;background:var(--mt);border-radius:50%;transition:.18s}
+.sw input:checked+.sl{background:rgba(122,224,106,.18);border-color:var(--g)}
+.sw input:checked+.sl::before{background:var(--g);transform:translateX(16px)}
 
 /* Pipeline */
-.sr{display:flex;gap:8px;flex-wrap:wrap}
-.sc{padding:6px 14px;border-radius:20px;font-size:12px;border:.5px solid var(--b);background:var(--bg3);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;color:var(--m)}
-.sc.an{background:rgba(122,224,106,.12);border-color:var(--v);color:var(--v)}
-.sc.ae{background:rgba(58,130,246,.12);border-color:#3a82f6;color:#3a82f6}
-.sc.ag{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
-.sc.ac{background:rgba(34,197,94,.12);border-color:#22c55e;color:#22c55e}
-.sc.ap{background:rgba(224,80,80,.12);border-color:var(--r);color:var(--r)}
+.sr{display:flex;gap:6px;flex-wrap:wrap}
+.sc{padding:5px 13px;border-radius:20px;font-size:11px;border:1px solid var(--bd);background:var(--s2);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;color:var(--mt);font-weight:500}
+.sc.sn{background:rgba(122,224,106,.1);border-color:var(--g);color:var(--g)}
+.sc.se{background:rgba(58,130,246,.1);border-color:#3a82f6;color:#3a82f6}
+.sc.sg{background:rgba(251,191,36,.1);border-color:#fbbf24;color:#fbbf24}
+.sc.sc2{background:rgba(34,197,94,.1);border-color:#22c55e;color:#22c55e}
+.sc.sp{background:rgba(224,80,80,.1);border-color:var(--rd);color:var(--rd)}
 
 /* Preview */
-.pvbox{background:var(--bg2);border:.5px solid var(--b2);border-radius:10px;padding:1.25rem 1.5rem}
-.pvf{font-size:11px;color:var(--v);letter-spacing:.1em;margin-bottom:4px}
-.pvc{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:2px}
-.pvg{font-size:12px;color:var(--m);margin-bottom:12px}
-.pvi{display:flex;justify-content:space-between;padding:3px 0;border-bottom:.5px solid var(--b);font-size:12px;color:var(--m)}
+.pvbox{background:var(--s1);border:1px solid var(--bdg);border-radius:var(--rad2);padding:1.125rem 1.375rem}
+.pvf{font-size:10px;color:var(--g);letter-spacing:.12em;font-weight:600;margin-bottom:3px}
+.pvc{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:1px}
+.pvg{font-size:11px;color:var(--mt);margin-bottom:10px}
+.pvi{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bd);font-size:11px;color:var(--mt)}
 .pvi:last-child{border-bottom:none}
-.pvt{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:.5px solid var(--b2)}
-.pvt .lb{font-size:13px;color:var(--m)}
-.pvt .num{font-family:'Playfair Display',serif;font-size:22px;color:var(--v)}
-.vrow{display:flex;align-items:center;gap:10px}
-.vrow input[type=number]{width:70px;text-align:center}
-.vrow span{font-size:13px;color:var(--m)}
+.pvt{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdg)}
+.pvt .l{font-size:12px;color:var(--mt)}
+.pvt .n{font-family:'Playfair Display',serif;font-size:20px;color:var(--g)}
 
-/* Buscador */
-.search-bar{display:flex;gap:10px;margin-bottom:1rem}
-.search-bar input{flex:1}
-.search-results{display:flex;flex-direction:column;gap:8px}
-.result-card{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
-.result-card:hover{border-color:var(--b2)}
-.rc-left .rc-folio{font-size:12px;color:var(--v);font-weight:500;margin-bottom:2px}
-.rc-left .rc-cliente{font-size:14px;color:var(--t);font-weight:500}
-.rc-left .rc-meta{font-size:11px;color:var(--m)}
-.rc-right{text-align:right;flex-shrink:0}
-.rc-total{font-family:'Playfair Display',serif;font-size:18px;color:var(--t)}
-.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:.05em;margin-top:4px}
-.sp-nueva{background:rgba(122,224,106,.12);color:var(--v)}
-.sp-enviada{background:rgba(58,130,246,.12);color:#3a82f6}
-.sp-negociando{background:rgba(251,191,36,.12);color:#fbbf24}
-.sp-cerrada{background:rgba(34,197,94,.12);color:#22c55e}
-.sp-perdida{background:rgba(224,80,80,.12);color:var(--r)}
-.empty-state{text-align:center;padding:3rem;color:var(--m);font-size:13px}
+/* Vigencia */
+.vrow{display:flex;align-items:center;gap:8px}
+.vrow input[type=number]{width:66px;text-align:center}
+.vrow span{font-size:12px;color:var(--mt)}
 
 /* Acciones */
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:2rem}
-.bmain{flex:1;min-width:200px;padding:14px 24px;background:var(--v);color:#0d0d0d;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
-.bmain:hover{background:var(--vd);transform:translateY(-1px)}
-.bmain:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.bsec{flex:1;min-width:130px;padding:14px 20px;background:transparent;color:var(--t);border:.5px solid var(--b);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
-.bsec:hover{border-color:rgba(255,255,255,.25);background:var(--bg3)}
-.bsec:disabled{opacity:.4;cursor:not-allowed}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:.5px solid var(--b2);color:var(--v);padding:12px 24px;border-radius:30px;font-size:13px;transition:transform .3s ease;z-index:200;white-space:nowrap}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.err{border-color:rgba(224,80,80,.4);color:var(--r)}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--v);display:inline-block;margin-right:8px;vertical-align:middle}
-.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(13,13,13,.3);border-top-color:#0d0d0d;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px;vertical-align:middle}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:1.75rem}
+.bmain{flex:1;min-width:180px;padding:13px 20px;background:var(--g);color:#0a0a0a;border:none;border-radius:var(--rad);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;letter-spacing:.01em}
+.bmain:hover{background:var(--gd);transform:translateY(-1px)}
+.bmain:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.bsec{flex:1;min-width:130px;padding:13px 16px;background:transparent;color:var(--tx);border:1px solid var(--bd);border-radius:var(--rad);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .18s}
+.bsec:hover{border-color:rgba(255,255,255,.2);background:var(--s2)}
+.bsec:disabled{opacity:.35;cursor:not-allowed}
+
+/* Buscador */
+.sbar{display:flex;gap:8px;margin-bottom:1rem}
+.sbar input{flex:1}
+.sres{display:flex;flex-direction:column;gap:6px}
+.rcard{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad2);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;transition:border-color .15s}
+.rcard:hover{border-color:var(--bdg)}
+.rc-l .rf{font-size:10px;color:var(--g);font-weight:700;letter-spacing:.08em;margin-bottom:2px}
+.rc-l .rn{font-size:14px;font-weight:600;color:var(--tx)}
+.rc-l .rm{font-size:11px;color:var(--mt);margin-top:1px}
+.rc-r{text-align:right;flex-shrink:0}
+.rc-r .rt{font-family:'Playfair Display',serif;font-size:17px;color:var(--tx)}
+.spill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.06em;margin-top:4px;text-transform:uppercase}
+.sp-n{background:rgba(122,224,106,.1);color:var(--g)}
+.sp-e{background:rgba(58,130,246,.1);color:#3a82f6}
+.sp-g{background:rgba(251,191,36,.1);color:#fbbf24}
+.sp-c{background:rgba(34,197,94,.1);color:#22c55e}
+.sp-p{background:rgba(224,80,80,.1);color:var(--rd)}
+.empty{text-align:center;padding:2.5rem;color:var(--mt);font-size:13px}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--s2);border:1px solid var(--bdg);color:var(--g);padding:11px 22px;border-radius:30px;font-size:12px;font-weight:500;transition:transform .25s ease;z-index:300;white-space:nowrap;pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:rgba(224,80,80,.35);color:var(--rd)}
+.spin{display:inline-block;width:11px;height:11px;border:1.5px solid rgba(10,10,10,.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .65s linear infinite;margin-right:6px;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
-@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}.phead{display:none}.prow{grid-template-columns:1fr 1fr}.prow .dc{grid-column:1/-1}.actions{flex-direction:column}.tabs{flex-direction:column}}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--gdk);display:inline-block;margin-right:7px;vertical-align:middle}
+
+/* Divider */
+.div{height:1px;background:var(--bd);margin:1.5rem 0}
+
+@media(max-width:580px){
+  .g2,.g3{grid-template-columns:1fr}
+  .phd{display:none}
+  .prow{grid-template-columns:1fr 1fr}
+  .prow .dc{grid-column:1/-1}
+  .actions{flex-direction:column}
+  .tabs{flex-wrap:wrap}
+}
 </style>
 </head>
 <body>
 
-<!-- ════════ LOGIN SCREEN ════════ -->
-<div id="login-screen">
-  <div class="login-box">
-    <h2 class="login-title">Cotizador <em>OGB</em></h2>
-    <p class="login-sub">Omar García Brena · Consultor Tecnológico</p>
-    <div class="login-note">
-      🔐 Ingresa la URL de tu Apps Script y tu token de acceso.<br>
-      Se guardan en este navegador. Para revocar acceso, genera una nueva versión del Apps Script.
-    </div>
-    <div class="login-field">
-      <label>URL del Apps Script</label>
-      <input type="url" id="login-url" placeholder="https://script.google.com/macros/s/...">
-    </div>
-    <div class="login-field" style="margin-bottom:1.5rem">
-      <label>Token de acceso</label>
-      <input type="password" id="login-token" placeholder="Tu token secreto">
-    </div>
-    <button class="btn-login" onclick="doLogin()">Conectar y continuar →</button>
-    <p id="login-err" style="font-size:12px;color:var(--r);margin-top:10px;display:none"></p>
+<!-- LOGIN -->
+<div id="L">
+  <div class="lbox">
+    <div class="ltit">Cotizador <em>OGB</em></div>
+    <div class="lsub">Omar García Brena · Consultor Tecnológico</div>
+    <div class="lnote">Ingresa la URL de tu Apps Script y tu token. Se guardan en este navegador. Para revocar acceso, crea una nueva implementación del Apps Script.</div>
+    <div class="lf"><label>URL del Apps Script</label><input type="url" id="lu" placeholder="https://script.google.com/macros/s/…/exec"></div>
+    <div class="lf" style="margin-bottom:1.25rem"><label>Token de acceso</label><input type="password" id="lt" placeholder="Tu token secreto"></div>
+    <button class="lbtn" id="lbtn" onclick="doLogin()">Conectar →</button>
+    <div class="lerr" id="lerr"></div>
   </div>
 </div>
 
-<!-- ════════ MAIN APP ════════ -->
-<div id="app">
-<div class="page">
+<!-- APP -->
+<div id="A">
+<div class="wrap">
 
-  <div class="header">
-    <div class="logo"><strong>Omar García Brena</strong>Consultor Tecnológico · México</div>
-    <div class="header-right">
-      <div class="fbadge" id="folio-display">…</div>
-      <button class="btn-icon" onclick="openBuscador()">🔍 Buscar</button>
-      <button class="btn-icon" onclick="logout()" title="Cerrar sesión">⏏ Salir</button>
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="brand">Omar García Brena</div>
+      <div class="sub">Consultor Tecnológico · México</div>
+    </div>
+    <div class="hdr-r">
+      <div class="fbadge" id="fbadge">…</div>
+      <button class="ibtn" onclick="st('buscador')">🔍 Buscar</button>
+      <button class="ibtn" onclick="logout()">⏏ Salir</button>
     </div>
   </div>
 
   <div class="tabs">
-    <button class="tab active" onclick="showTab('cotizador',this)">Nueva cotización</button>
-    <button class="tab" onclick="showTab('buscador',this)">Buscar cotizaciones</button>
-    <button class="tab" onclick="showTab('catalogo-tab',this)">Catálogo de productos</button>
+    <button class="tab on" id="t0" onclick="st('cotizador',this)">Nueva cotización</button>
+    <button class="tab"    id="t1" onclick="st('buscador',this)">Buscar cotizaciones</button>
+    <button class="tab"    id="t2" onclick="st('catalogo',this)">Catálogo</button>
   </div>
 
-  <!-- ══ TAB: COTIZADOR ══ -->
-  <div id="cotizador" class="tab-panel active">
+  <!-- ═══════ COTIZADOR ═══════ -->
+  <div id="cotizador" class="panel on">
 
     <div class="sec">
       <div class="slbl">Datos del cliente</div>
@@ -223,31 +249,31 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fld">
           <label>Nombre / Negocio *</label>
           <div class="acw">
-            <input type="text" id="cn" placeholder="Escribe para buscar o nuevo…" oninput="onNI()" onkeydown="onNK(event)" autocomplete="off">
+            <input type="text" id="cn" placeholder="Busca cliente anterior o escribe nuevo…" oninput="onNI()" onkeydown="onNK(event)" autocomplete="off">
             <div class="acd" id="acd"></div>
           </div>
         </div>
-        <div class="fld"><label>Giro</label><input type="text" id="cg" placeholder="Comedor, Postrería…" oninput="upPrev()"></div>
+        <div class="fld"><label>Giro</label><input type="text" id="cg" placeholder="Comedor, Postrería…" oninput="upPv()"></div>
       </div>
       <div class="g3">
         <div class="fld"><label>Teléfono</label><input type="tel" id="ct" placeholder="+52 951 000 0000"></div>
-        <div class="fld"><label>Correo (opcional)</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
-        <div class="fld"><label>Zona de servicio</label><input type="text" id="cz" placeholder="Miahuatlán, Oaxaca"></div>
+        <div class="fld"><label>Correo</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
+        <div class="fld"><label>Zona</label><input type="text" id="cz" placeholder="Miahuatlán, Oaxaca"></div>
       </div>
     </div>
 
     <div class="sec">
       <div class="slbl">Productos / Servicios</div>
-      <div class="cat-grid" id="cat-grid" style="display:none"></div>
+      <div class="cgrid" id="cgrid" style="display:none"></div>
       <div class="pbox">
-        <div class="phead"><span>Descripción</span><span style="text-align:right">Cant.</span><span style="text-align:right">Precio unit.</span><span></span></div>
+        <div class="phd"><span>Descripción</span><span style="text-align:right">Cant.</span><span style="text-align:right">Precio unit.</span><span></span></div>
         <div class="plst" id="plst"></div>
-        <div class="pfoot">
-          <div style="display:flex;gap:8px">
-            <button class="badd" onclick="addP()">+ Línea vacía</button>
-            <button class="badd" onclick="toggleCatalogo()" id="btn-cat" style="border-color:rgba(122,224,106,.4)">📦 Del catálogo</button>
+        <div class="pft">
+          <div>
+            <button class="badd" onclick="addP()">+ Línea</button>
+            <button class="badd sec" id="bcat" onclick="togCat()">📦 Catálogo</button>
           </div>
-          <span style="font-size:11px;color:var(--m)" id="pcnt">0 conceptos</span>
+          <span style="font-size:10px;color:var(--mt)" id="pcnt">0 conceptos</span>
         </div>
       </div>
     </div>
@@ -256,27 +282,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="slbl">Totales y configuración</div>
       <div class="g2">
         <div class="tbox">
-          <div class="trow"><span class="lb">Subtotal</span><span class="vl" id="sv">$0</span></div>
-          <div class="trow" id="iva-row" style="display:none"><span class="lb">IVA (16%)</span><span class="vl" id="iv">$0</span></div>
-          <div class="trow grand"><span class="lb">Total</span><span class="vl" id="tv">$0</span></div>
-          <p class="iva-note" id="iva-note">* Precios en MXN. IVA no incluido.</p>
-          <div class="sw-row">
-            <label class="sw"><input type="checkbox" id="iva-toggle" onchange="togIVA()"><span class="sl"></span></label>
-            <span style="font-size:12px;color:var(--m)">Incluir IVA 16%</span>
+          <div class="tr"><span class="l">Subtotal</span><span class="v" id="sv">$0</span></div>
+          <div class="tr" id="ivr" style="display:none"><span class="l">IVA (16%)</span><span class="v" id="iv">$0</span></div>
+          <div class="tr gd"><span class="l">Total</span><span class="v" id="tv">$0</span></div>
+          <p class="ivn" id="ivn">* Precios en MXN. IVA no incluido.</p>
+          <div class="swr">
+            <label class="sw"><input type="checkbox" id="ivt" onchange="togIV()"><span class="sl"></span></label>
+            <span style="font-size:12px;color:var(--mt)">Incluir IVA 16%</span>
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:10px">
           <div class="fld">
             <label>Vigencia</label>
-            <div class="vrow"><input type="number" id="vig" value="15" min="1" max="90" oninput="upPrev()"><span>días naturales</span></div>
+            <div class="vrow"><input type="number" id="vig" value="15" min="1" max="90" oninput="upPv()"><span>días naturales</span></div>
           </div>
           <div class="fld">
-            <label>Fecha de cierre estimada → columna P</label>
-            <input type="date" id="fecha-cierre">
+            <label>Fecha de cierre estimada → Sheets col. P</label>
+            <input type="date" id="fc">
           </div>
           <div class="fld">
             <label>Notas internas (solo en Sheets)</label>
-            <textarea id="notas" placeholder="Ej. cliente interesado en fase 2…"></textarea>
+            <textarea id="no" placeholder="Ej. cliente interesado en fase 2…"></textarea>
           </div>
         </div>
       </div>
@@ -285,329 +311,272 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="sec">
       <div class="slbl">Pipeline CRM</div>
       <div class="sr">
-        <button class="sc an" data-s="NUEVA"      onclick="setSt(this)">⬤ Nueva</button>
-        <button class="sc"    data-s="ENVIADA"    onclick="setSt(this)">⬤ Enviada</button>
-        <button class="sc"    data-s="NEGOCIANDO" onclick="setSt(this)">⬤ Negociando</button>
-        <button class="sc"    data-s="CERRADA"    onclick="setSt(this)">⬤ Cerrada ✓</button>
-        <button class="sc"    data-s="PERDIDA"    onclick="setSt(this)">⬤ Perdida</button>
+        <button class="sc sn" data-s="NUEVA"      onclick="setSt(this)">● Nueva</button>
+        <button class="sc"    data-s="ENVIADA"    onclick="setSt(this)">● Enviada</button>
+        <button class="sc"    data-s="NEGOCIANDO" onclick="setSt(this)">● Negociando</button>
+        <button class="sc"    data-s="CERRADA"    onclick="setSt(this)">● Cerrada ✓</button>
+        <button class="sc"    data-s="PERDIDA"    onclick="setSt(this)">● Perdida</button>
       </div>
     </div>
 
     <div class="sec">
       <div class="slbl">Vista previa</div>
       <div class="pvbox">
-        <div class="pvf" id="pv-f">…</div>
-        <div class="pvc" id="pv-c">—</div>
-        <div class="pvg" id="pv-g">—</div>
-        <div id="pv-i"></div>
-        <div class="pvt"><span class="lb">Total estimado</span><span class="num" id="pv-t">$0</span></div>
+        <div class="pvf" id="pvf">…</div>
+        <div class="pvc" id="pvc">—</div>
+        <div class="pvg" id="pvg">—</div>
+        <div id="pvi"></div>
+        <div class="pvt"><span class="l">Total estimado</span><span class="n" id="pvt2">$0</span></div>
       </div>
     </div>
 
     <div class="actions">
-      <button class="bmain" id="btn-g"   onclick="guardar()"><span class="dot"></span>1 — Guardar en Sheets</button>
-      <button class="bsec"  id="btn-pdf" onclick="descargarPDF()" disabled>📄 Descargar PDF</button>
-      <button class="bsec"  id="btn-doc" onclick="descargarDOC()" disabled>📝 Descargar DOC</button>
+      <button class="bmain" id="bg" onclick="guardar()"><span class="dot"></span>1 — Guardar en Sheets</button>
+      <button class="bsec disabled" id="bp" onclick="genPDF()" disabled>📄 PDF</button>
+      <button class="bsec disabled" id="bd" onclick="genDOC()" disabled>📝 DOC</button>
     </div>
-    <p style="font-size:11px;color:var(--m);margin-top:10px;text-align:center">Los términos y condiciones se jalan de tu hoja Config automáticamente.</p>
+    <p style="font-size:11px;color:var(--mt);margin-top:10px;text-align:center">Los términos y condiciones se jalan automáticamente de tu hoja Config.</p>
 
   </div>
 
-  <!-- ══ TAB: BUSCADOR ══ -->
-  <div id="buscador" class="tab-panel">
-    <div class="search-bar">
-      <input type="text" id="search-input" placeholder="Buscar por folio, cliente o descripción…" oninput="buscar()">
+  <!-- ═══════ BUSCADOR ═══════ -->
+  <div id="buscador" class="panel">
+    <div class="sbar">
+      <input type="text" id="si" placeholder="Busca por folio, nombre de cliente, giro…" oninput="buscar()">
     </div>
-    <div class="search-results" id="search-results">
-      <div class="empty-state">Escribe algo para buscar cotizaciones</div>
-    </div>
+    <div class="sres" id="sres"><div class="empty">Escribe para buscar cotizaciones</div></div>
   </div>
 
-  <!-- ══ TAB: CATÁLOGO ══ -->
-  <div id="catalogo-tab" class="tab-panel">
-    <div class="slbl" style="margin-bottom:1rem">Productos en catálogo</div>
-    <div id="catalogo-lista" class="cat-grid"></div>
-    <div style="height:1px;background:var(--b);margin:1.5rem 0"></div>
+  <!-- ═══════ CATÁLOGO ═══════ -->
+  <div id="catalogo" class="panel">
+    <div class="slbl">Catálogo actual</div>
+    <div class="cgrid" id="catfull"></div>
+
+    <div class="div"></div>
     <div class="slbl">Agregar producto al catálogo</div>
     <div class="g2" style="margin-bottom:10px">
-      <div class="fld"><label>Nombre del servicio *</label><input type="text" id="np-nombre" placeholder="Sistema POS completo"></div>
-      <div class="fld"><label>Descripción corta</label><input type="text" id="np-desc" placeholder="Equipo + instalación + capacitación"></div>
+      <div class="fld"><label>Nombre del servicio *</label><input type="text" id="pn" placeholder="Sistema POS completo"></div>
+      <div class="fld"><label>Descripción corta</label><input type="text" id="pd" placeholder="Equipo + instalación + capacitación"></div>
     </div>
-    <div class="g3" style="margin-bottom:1rem">
+    <div class="g3" style="margin-bottom:.75rem">
       <div class="fld">
-        <label>Tu costo ($) — privado</label>
-        <input type="number" id="np-costo" placeholder="14000" oninput="calcPrecio()">
+        <label>Tu costo ($) — privado, nunca visible al cliente</label>
+        <input type="number" id="pc" placeholder="14000" min="0" oninput="calcP()">
       </div>
       <div class="fld">
         <label>Margen de ganancia (%)</label>
-        <input type="number" id="np-margen" placeholder="30" min="0" max="99" oninput="calcPrecio()">
+        <input type="number" id="pm" placeholder="30" min="0" max="99" oninput="calcP()">
       </div>
       <div class="fld">
-        <label>Precio para el cliente (calculado)</label>
-        <input type="text" id="np-precio" readonly style="background:rgba(122,224,106,.08);color:var(--v);font-weight:500;cursor:default">
+        <label>Precio para el cliente (calculado automático)</label>
+        <input type="text" id="pp" readonly style="background:rgba(122,224,106,.07);color:var(--g);font-weight:600;cursor:default">
       </div>
     </div>
-    <p style="font-size:11px;color:var(--m);margin-bottom:1rem">El costo y margen <strong>nunca</strong> aparecen en el PDF ni en el DOC — solo el precio del cliente. La ganancia se calcula en tu Sheets.</p>
-    <button class="bmain" style="max-width:260px" onclick="guardarProducto()"><span class="dot"></span>Guardar en catálogo</button>
+    <p style="font-size:11px;color:var(--mt);margin-bottom:1rem">El costo y margen son privados — solo aparecen en tu Sheets. El PDF y DOC muestran únicamente el precio del cliente.</p>
+    <button class="bmain" style="max-width:240px" onclick="saveProd()"><span class="dot"></span>Guardar en catálogo</button>
   </div>
 
-</div><!-- /page -->
-</div><!-- /app -->
+</div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CREDENCIALES (localStorage) ───────────────────────────────
-var GAS_URL = '';
-var TOKEN   = '';
-var cfgCache     = null;
-var productosCache = [];
+var GAS='', TOK='', cfg=null, prods=[], status='NUEVA';
+var folio='…', folioSaved='', clientes=[], acIdx=-1, catProds=[], catVis=false;
 
-function doLogin() {
-  var url = document.getElementById('login-url').value.trim();
-  var tok = document.getElementById('login-token').value.trim();
-  if (!url || !tok) { showLoginErr('Completa ambos campos.'); return; }
-  if (!url.startsWith('https://script.google.com')) { showLoginErr('URL inválida — debe ser de Apps Script.'); return; }
-
-  var btn = document.querySelector('.btn-login');
-  btn.textContent = 'Verificando…'; btn.disabled = true;
-
-  // Verificar token haciendo una petición real
-  fetch(url+'?accion=siguiente_folio&token='+encodeURIComponent(tok))
+// ── LOGIN ─────────────────────────────────────────────────────
+function doLogin(){
+  var u=document.getElementById('lu').value.trim();
+  var t=document.getElementById('lt').value.trim();
+  if(!u||!t){lerr('Completa ambos campos.');return;}
+  if(!u.startsWith('https://script.google.com')){lerr('URL inválida — debe ser de Apps Script.');return;}
+  var btn=document.getElementById('lbtn');
+  btn.textContent='Verificando…';btn.disabled=true;
+  fetch(u+'?accion=folio&token='+encodeURIComponent(t))
     .then(function(r){return r.json();})
     .then(function(d){
-      if (d.ok) {
-        GAS_URL = url; TOKEN = tok;
-        localStorage.setItem('ogb_url', url);
-        localStorage.setItem('ogb_tok', tok);
-        iniciarApp(d.folio);
-      } else {
-        showLoginErr('Token incorrecto o URL inválida.');
-        btn.textContent = 'Conectar y continuar →'; btn.disabled = false;
+      if(d.ok){
+        GAS=u;TOK=t;
+        localStorage.setItem('ogb_u',u);localStorage.setItem('ogb_t',t);
+        startApp(d.folio);
+      }else{
+        lerr('Token incorrecto o URL inválida. Verifica.');
+        btn.textContent='Conectar →';btn.disabled=false;
       }
-    })
-    .catch(function(){
-      showLoginErr('No se pudo conectar. Verifica la URL.');
-      btn.textContent = 'Conectar y continuar →'; btn.disabled = false;
+    }).catch(function(){
+      lerr('No se pudo conectar. Verifica la URL.');
+      btn.textContent='Conectar →';btn.disabled=false;
     });
 }
-
-function showLoginErr(msg) {
-  var el = document.getElementById('login-err');
-  el.textContent = msg; el.style.display = 'block';
-}
-
-function logout() {
-  if (!confirm('¿Cerrar sesión? Tendrás que ingresar la URL y token de nuevo.')) return;
-  localStorage.removeItem('ogb_url');
-  localStorage.removeItem('ogb_tok');
+function lerr(m){var e=document.getElementById('lerr');e.textContent=m;e.style.display='block';}
+function logout(){
+  if(!confirm('¿Cerrar sesión?'))return;
+  localStorage.removeItem('ogb_u');localStorage.removeItem('ogb_t');
   location.reload();
 }
 
-window.addEventListener('DOMContentLoaded', function(){
-  var savedUrl = localStorage.getItem('ogb_url');
-  var savedTok = localStorage.getItem('ogb_tok');
-  if (savedUrl && savedTok) {
-    document.getElementById('login-url').value = savedUrl;
-    document.getElementById('login-token').value = savedTok;
-    GAS_URL = savedUrl; TOKEN = savedTok;
-    // Auto-login silencioso
-    fetch(GAS_URL+'?accion=siguiente_folio&token='+encodeURIComponent(TOKEN))
+window.addEventListener('DOMContentLoaded',function(){
+  var u=localStorage.getItem('ogb_u'), t=localStorage.getItem('ogb_t');
+  if(u&&t){
+    document.getElementById('lu').value=u;document.getElementById('lt').value=t;
+    GAS=u;TOK=t;
+    fetch(GAS+'?accion=folio&token='+encodeURIComponent(TOK))
       .then(function(r){return r.json();})
-      .then(function(d){
-        if(d.ok) iniciarApp(d.folio);
-        else { GAS_URL=''; TOKEN=''; }
-      }).catch(function(){});
+      .then(function(d){if(d.ok)startApp(d.folio);else{GAS='';TOK='';}})
+      .catch(function(){});
   }
 });
 
-function iniciarApp(folio) {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  folioActual = folio || 'cargando…';
-  upPrev();
-  addP('',1,0);
-  gasGet('listar_clientes', function(d){if(d.ok&&d.clientes)clientes=d.clientes;});
-  gasGet('leer_config',     function(d){if(d.ok&&d.config)cfgCache=d.config;});
-  gasGet('listar_productos',function(d){
-    if(d.ok&&d.productos){
-      productosCache=d.productos;
-      renderCatalogoTab();
-    }
-  });
+function startApp(f){
+  document.getElementById('L').style.display='none';
+  document.getElementById('A').style.display='block';
+  folio=f||'…';upPv();addP('',1,0);
+  get('clientes',function(d){if(d.ok&&d.clientes)clientes=d.clientes;});
+  get('config',  function(d){if(d.ok&&d.config)cfg=d.config;});
+  get('productos',function(d){if(d.ok&&d.productos){catProds=d.productos;renderCatFull();}});
 }
-
-// ── STATE ─────────────────────────────────────────────────────
-var prods=[], status='NUEVA', folioActual='…', folioGuardado='';
-var clientes=[], acIdx=-1;
 
 // ── TABS ──────────────────────────────────────────────────────
-function showTab(id, btn) {
-  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-}
-function openBuscador() {
-  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  document.getElementById('buscador').classList.add('active');
-  document.querySelectorAll('.tab')[1].classList.add('active');
-  document.getElementById('search-input').focus();
+function st(id,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  if(btn)btn.classList.add('on');
+  else{
+    var map={buscador:1,catalogo:2};
+    var idx=map[id];
+    if(idx!==undefined) document.querySelectorAll('.tab')[idx].classList.add('on');
+  }
 }
 
-// ── AUTOCOMPLETE CLIENTE ──────────────────────────────────────
+// ── AUTOCOMPLETE ──────────────────────────────────────────────
 function onNI(){
-  upPrev();
-  var q=gv('cn').toLowerCase(); if(!q){cDD();return;}
-  var ms=clientes.filter(function(c){return c.nombre.toLowerCase().indexOf(q)!==-1;}).slice(0,6);
+  upPv();
+  var q=gv('cn').toLowerCase();if(!q){cDD();return;}
+  var ms=clientes.filter(function(c){return c.nombre.toLowerCase().indexOf(q)!==-1;}).slice(0,7);
   if(!ms.length){cDD();return;}
-  var dd=document.getElementById('acd');
-  dd.innerHTML=''; acIdx=-1; dd._m=ms;
+  var dd=document.getElementById('acd');dd.innerHTML='';acIdx=-1;dd._m=ms;
   ms.forEach(function(c){
-    var el=document.createElement('div'); el.className='aci';
-    el.innerHTML='<div class="an">'+esc(c.nombre)+'<span class="acbadge">anterior</span></div>'
-      +'<div class="ad">'+(c.giro?esc(c.giro)+'  ':'')+( c.tel?'📞 '+esc(c.tel):'' )+'</div>';
+    var el=document.createElement('div');el.className='aci';
+    el.innerHTML='<div class="an">'+esc(c.nombre)+'<span class="abadge">anterior</span></div>'
+      +'<div class="ad">'+(c.giro?esc(c.giro)+' · ':'')+( c.tel?esc(c.tel):'' )+'</div>';
     el.addEventListener('mousedown',function(e){e.preventDefault();selC(c);});
     dd.appendChild(el);
   });
-  dd.classList.add('open');
+  dd.classList.add('on');
 }
 function onNK(e){
-  var dd=document.getElementById('acd'); if(!dd.classList.contains('open'))return;
+  var dd=document.getElementById('acd');if(!dd.classList.contains('on'))return;
   var its=dd.querySelectorAll('.aci');
   if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,its.length-1);}
   else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);}
   else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();selC(dd._m[acIdx]);}
-  else if(e.key==='Escape'){cDD();}
-  its.forEach(function(it,i){it.classList.toggle('active',i===acIdx);});
+  else if(e.key==='Escape')cDD();
+  its.forEach(function(it,i){it.classList.toggle('hl',i===acIdx);});
 }
 function selC(c){
-  document.getElementById('cn').value=c.nombre;
-  document.getElementById('cg').value=c.giro||'';
-  document.getElementById('ct').value=c.tel||'';
-  document.getElementById('ce').value=c.email||'';
-  document.getElementById('cz').value=c.zona||'';
-  cDD(); upPrev(); toast('✓ '+c.nombre+' precargado');
+  sv('cn',c.nombre);sv('cg',c.giro||'');sv('ct',c.tel||'');sv('ce',c.email||'');sv('cz',c.zona||'');
+  cDD();upPv();toast('✓ '+c.nombre+' precargado');
 }
-function cDD(){var dd=document.getElementById('acd');dd.classList.remove('open');dd.innerHTML='';acIdx=-1;}
+function cDD(){var dd=document.getElementById('acd');dd.classList.remove('on');dd.innerHTML='';acIdx=-1;}
 document.addEventListener('click',function(e){if(!e.target.closest('.acw'))cDD();});
 
 // ── CATÁLOGO INLINE ───────────────────────────────────────────
-var catVisible = false;
-function toggleCatalogo(){
-  catVisible=!catVisible;
-  var grid=document.getElementById('cat-grid');
-  if(catVisible && productosCache.length){
-    grid.style.display='grid';
-    renderCatGrid();
-  } else {
-    grid.style.display='none';
-  }
+function togCat(){
+  catVis=!catVis;
+  var g=document.getElementById('cgrid');
+  if(catVis&&catProds.length){g.style.display='grid';renderCatInline();}
+  else g.style.display='none';
 }
-function renderCatGrid(){
-  var g=document.getElementById('cat-grid'); g.innerHTML='';
-  productosCache.forEach(function(p){
-    var d=document.createElement('div'); d.className='cat-item';
-    d.innerHTML='<button class="cat-add" onclick="addDesdecat(\''+esc(p.nombre)+'\','+p.precio+')">+</button>'
-      +'<div class="ci-nombre">'+esc(p.nombre)+'</div>'
-      +'<div class="ci-precio">'+fmto(p.precio)+'</div>'
-      +(p.descripcion?'<div class="ci-desc">'+esc(p.descripcion)+'</div>':'');
-    d.addEventListener('click',function(e){
-      if(e.target.classList.contains('cat-add'))return;
-      addDesdecat(p.nombre,p.precio);
-    });
+function renderCatInline(){
+  var g=document.getElementById('cgrid');g.innerHTML='';
+  catProds.forEach(function(p){
+    var d=document.createElement('div');d.className='ccard';
+    d.innerHTML='<button class="cc-add" onclick="fromCat(\''+escAttr(p.nombre)+'\','+p.precio+')">+</button>'
+      +'<div class="cc-n">'+esc(p.nombre)+'</div>'
+      +'<div class="cc-p">'+fmto(p.precio)+'</div>'
+      +(p.descripcion?'<div class="cc-d">'+esc(p.descripcion)+'</div>':'');
+    d.addEventListener('click',function(e){if(!e.target.classList.contains('cc-add'))fromCat(p.nombre,p.precio);});
     g.appendChild(d);
   });
 }
-function addDesdecat(nombre,precio){
-  addP(nombre,1,precio);
-  toast('✓ "'+nombre+'" agregado');
-}
-function renderCatalogoTab(){
-  var g=document.getElementById('catalogo-lista'); g.innerHTML='';
-  if(!productosCache.length){g.innerHTML='<p style="color:var(--m);font-size:13px">Sin productos aún. Agrega el primero abajo.</p>';return;}
-  productosCache.forEach(function(p){
-    var d=document.createElement('div'); d.className='cat-item';
-    d.style.cursor='default';
-    d.innerHTML='<div class="ci-nombre">'+esc(p.nombre)+'</div>'
-      +'<div class="ci-precio">'+fmto(p.precio)+'</div>'
-      +(p.descripcion?'<div class="ci-desc">'+esc(p.descripcion)+'</div>':'');
+function renderCatFull(){
+  var g=document.getElementById('catfull');g.innerHTML='';
+  if(!catProds.length){g.innerHTML='<p style="color:var(--mt);font-size:12px">Sin productos. Agrega el primero abajo.</p>';return;}
+  catProds.forEach(function(p){
+    var d=document.createElement('div');d.className='ccard';d.style.cursor='default';
+    d.innerHTML='<div class="cc-n">'+esc(p.nombre)+'</div>'
+      +'<div class="cc-p">'+fmto(p.precio)+'</div>'
+      +(p.descripcion?'<div class="cc-d">'+esc(p.descripcion)+'</div>':'');
     g.appendChild(d);
   });
 }
-function calcPrecio(){
-  var costo  = parseFloat(document.getElementById('np-costo').value)||0;
-  var margen = parseFloat(document.getElementById('np-margen').value)||0;
-  var precio = margen >= 100 ? 0 : Math.round(costo / (1 - margen/100));
-  document.getElementById('np-precio').value = precio ? fmto(precio) : '';
+function fromCat(nombre,precio){addP(nombre,1,precio);toast('✓ '+nombre+' agregado');}
+function calcP(){
+  var c=parseFloat(document.getElementById('pc').value)||0;
+  var m=parseFloat(document.getElementById('pm').value)||0;
+  var p=m>=100?0:Math.round(c/(1-m/100));
+  document.getElementById('pp').value=p?fmto(p):'';
 }
-function guardarProducto(){
-  var nombre = document.getElementById('np-nombre').value.trim();
-  var costo  = parseFloat(document.getElementById('np-costo').value)||0;
-  var margen = parseFloat(document.getElementById('np-margen').value)||0;
-  if(!nombre){toast('⚠ Ingresa el nombre del producto',true);return;}
-  if(!costo) {toast('⚠ Ingresa el costo',true);return;}
-  var precio = Math.round(costo/(1-margen/100));
-  gasPost({token:TOKEN,accion:'guardar_producto',
-    nombre:nombre,descripcion:document.getElementById('np-desc').value.trim(),
-    costo:costo,margen:margen,precio:precio},
+function saveProd(){
+  var nombre=gv('pn');var costo=parseFloat(document.getElementById('pc').value)||0;
+  var margen=parseFloat(document.getElementById('pm').value)||0;
+  if(!nombre){toast('⚠ Ingresa el nombre',true);return;}
+  if(!costo){toast('⚠ Ingresa el costo',true);return;}
+  post({token:TOK,accion:'guardar_producto',nombre:nombre,
+        descripcion:gv('pd'),costo:costo,margen:margen},
   function(d){
     if(d.ok){
-      toast('✓ Producto guardado en catálogo');
-      productosCache.push({nombre:nombre,descripcion:document.getElementById('np-desc').value.trim(),precio:precio});
-      renderCatalogoTab();
-      document.getElementById('np-nombre').value='';
-      document.getElementById('np-desc').value='';
-      document.getElementById('np-costo').value='';
-      document.getElementById('np-margen').value='';
-      document.getElementById('np-precio').value='';
-    } else {
-      toast('⚠ '+(d.error||'Error'),true);
-    }
+      var precio=Math.round(costo/(1-margen/100));
+      catProds.push({nombre:nombre,descripcion:gv('pd'),precio:precio});
+      renderCatFull();
+      ['pn','pd','pc','pm'].forEach(function(i){document.getElementById(i).value='';});
+      document.getElementById('pp').value='';
+      toast('✓ Producto guardado');
+    }else toast('⚠ '+(d.e||'Error'),true);
   });
 }
 
 // ── BUSCADOR ──────────────────────────────────────────────────
-var buscarTimeout;
+var busT;
 function buscar(){
-  var q=document.getElementById('search-input').value.trim();
-  clearTimeout(buscarTimeout);
-  if(!q){document.getElementById('search-results').innerHTML='<div class="empty-state">Escribe algo para buscar</div>';return;}
-  buscarTimeout=setTimeout(function(){
-    gasGet('buscar&q='+encodeURIComponent(q), function(d){
-      var el=document.getElementById('search-results');
+  var q=document.getElementById('si').value.trim();
+  clearTimeout(busT);
+  if(!q){document.getElementById('sres').innerHTML='<div class="empty">Escribe para buscar</div>';return;}
+  busT=setTimeout(function(){
+    get('buscar&q='+encodeURIComponent(q),function(d){
+      var el=document.getElementById('sres');
       if(!d.ok||!d.resultados||!d.resultados.length){
-        el.innerHTML='<div class="empty-state">Sin resultados para "'+esc(q)+'"</div>';return;
+        el.innerHTML='<div class="empty">Sin resultados para "'+esc(q)+'"</div>';return;
       }
+      var spMap={NUEVA:'sp-n',ENVIADA:'sp-e',NEGOCIANDO:'sp-g',CERRADA:'sp-c',PERDIDA:'sp-p'};
       el.innerHTML=d.resultados.map(function(r){
-        var spClass='sp-'+(r.status||'nueva').toLowerCase();
-        return '<div class="result-card" onclick="cargarCotizacion(\''+esc(r.folio)+'\',\''+esc(r.cliente)+'\')">'
-          +'<div class="rc-left">'
-          +'<div class="rc-folio">'+esc(r.folio)+'</div>'
-          +'<div class="rc-cliente">'+esc(r.cliente)+'</div>'
-          +'<div class="rc-meta">'+esc(r.giro||'')+(r.fecha?' · '+r.fecha:'')+'</div>'
-          +'</div>'
-          +'<div class="rc-right">'
-          +'<div class="rc-total">'+fmto(r.total)+'</div>'
-          +'<div class="status-pill '+spClass+'">'+r.status+'</div>'
+        return '<div class="rcard">'
+          +'<div class="rc-l"><div class="rf">'+esc(r.folio)+'</div>'
+          +'<div class="rn">'+esc(r.cliente)+'</div>'
+          +'<div class="rm">'+(r.giro?esc(r.giro)+' · ':'')+(r.fecha?r.fecha:'')+'</div></div>'
+          +'<div class="rc-r"><div class="rt">'+fmto(r.total)+'</div>'
+          +'<div class="spill '+(spMap[r.status]||'sp-n')+'">'+r.status+'</div>'
+          +(r.fecha_cierre?'<div style="font-size:10px;color:var(--mt);margin-top:3px">Cierre: '+r.fecha_cierre+'</div>':'')
           +'</div></div>';
       }).join('');
     });
-  },350);
-}
-function cargarCotizacion(folio,cliente){
-  toast('Folio: '+folio+' — '+cliente);
+  },320);
 }
 
 // ── PRODUCTOS ─────────────────────────────────────────────────
-function addP(d,c,p){d=d||'';c=c!==undefined?c:1;p=p!==undefined?p:0;var id=Date.now()+Math.random();prods.push({id:id,d:d,c:c,p:p});renderP();upPrev();}
-function rmP(id){prods=prods.filter(function(x){return x.id!==id;});renderP();upPrev();}
+function addP(d,c,p){
+  d=d||'';c=c!==undefined?c:1;p=p!==undefined?p:0;
+  var id=Date.now()+Math.random();
+  prods.push({id:id,d:d,c:c,p:p});renderP();upPv();
+}
+function rmP(id){prods=prods.filter(function(x){return x.id!==id;});renderP();upPv();}
 function renderP(){
   var l=document.getElementById('plst');l.innerHTML='';
   prods.forEach(function(pr){
     var row=document.createElement('div');row.className='prow';
-    row.innerHTML='<div class="dc"><input type="text" placeholder="Descripción…" value="'+esc(pr.d)+'" oninput="upP('+pr.id+',\'d\',this.value)"></div>'
+    row.innerHTML='<div class="dc"><input type="text" placeholder="Descripción del servicio…" value="'+esc(pr.d)+'" oninput="upP('+pr.id+',\'d\',this.value)"></div>'
       +'<div><input type="number" min="1" value="'+pr.c+'" oninput="upP('+pr.id+',\'c\',this.value)"></div>'
       +'<div class="pcell"><input type="number" min="0" value="'+(pr.p||'')+'" placeholder="0" oninput="upP('+pr.id+',\'p\',this.value)"></div>'
       +'<button class="bdel" onclick="rmP('+pr.id+')">×</button>';
@@ -615,335 +584,405 @@ function renderP(){
   });
   document.getElementById('pcnt').textContent=prods.length+' concepto'+(prods.length!==1?'s':'');
 }
-function upP(id,f,val){var pr=prods.find(function(x){return x.id===id;});if(!pr)return;if(f==='d')pr.d=val;else if(f==='c')pr.c=parseFloat(val)||1;else pr.p=parseFloat(val)||0;upPrev();}
-function calc(){var sub=prods.reduce(function(a,p){return a+(p.c*p.p);},0);var iva=document.getElementById('iva-toggle')&&document.getElementById('iva-toggle').checked?sub*0.16:0;return{sub:sub,iva:iva,tot:sub+iva};}
-function togIVA(){var on=document.getElementById('iva-toggle').checked;document.getElementById('iva-row').style.display=on?'flex':'none';document.getElementById('iva-note').textContent=on?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.';upPrev();}
+function upP(id,f,val){
+  var pr=prods.find(function(x){return x.id===id;});if(!pr)return;
+  if(f==='d')pr.d=val;else if(f==='c')pr.c=parseFloat(val)||1;else pr.p=parseFloat(val)||0;upPv();
+}
+function calc(){
+  var sub=prods.reduce(function(a,p){return a+(p.c*p.p);},0);
+  var iva=document.getElementById('ivt')&&document.getElementById('ivt').checked?sub*0.16:0;
+  return{sub:sub,iva:iva,tot:sub+iva};
+}
+function togIV(){
+  var on=document.getElementById('ivt').checked;
+  document.getElementById('ivr').style.display=on?'flex':'none';
+  document.getElementById('ivn').textContent=on?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.';
+  upPv();
+}
 function fmt(n){return '$'+Math.round(n).toLocaleString('es-MX');}
-function upPrev(){
+function upPv(){
   var t=calc();
-  document.getElementById('sv').textContent=fmt(t.sub);
-  if(document.getElementById('iv'))document.getElementById('iv').textContent=fmt(t.iva);
-  document.getElementById('tv').textContent=fmt(t.tot);
-  document.getElementById('folio-display').textContent=folioActual;
-  document.getElementById('pv-f').textContent=folioActual;
-  document.getElementById('pv-c').textContent=gv('cn')||'—';
-  document.getElementById('pv-g').textContent=gv('cg')||'—';
-  document.getElementById('pv-t').textContent=fmt(t.tot);
-  document.getElementById('pv-i').innerHTML=prods.map(function(p){return '<div class="pvi"><span>'+esc(p.d||'(sin desc)')+'</span><span>'+fmt(p.c*p.p)+'</span></div>';}).join('');
+  sei('sv',fmt(t.sub));sei('iv',fmt(t.iva));sei('tv',fmt(t.tot));
+  sei('fbadge',folio);sei('pvf',folio);
+  sei('pvc',gv('cn')||'—');sei('pvg',gv('cg')||'—');sei('pvt2',fmt(t.tot));
+  document.getElementById('pvi').innerHTML=prods.map(function(p){
+    return '<div class="pvi"><span>'+esc(p.d||'(sin descripción)')+'</span><span>'+fmt(p.c*p.p)+'</span></div>';
+  }).join('');
 }
 function setSt(btn){
   document.querySelectorAll('.sc').forEach(function(c){c.className='sc';});
   status=btn.dataset.s;
-  var map={NUEVA:'an',ENVIADA:'ae',NEGOCIANDO:'ag',CERRADA:'ac',PERDIDA:'ap'};
-  btn.classList.add(map[status]||'an');
+  var m={NUEVA:'sn',ENVIADA:'se',NEGOCIANDO:'sg',CERRADA:'sc2',PERDIDA:'sp'};
+  btn.classList.add(m[status]||'sn');
 }
 
 // ── GUARDAR ───────────────────────────────────────────────────
-function mkPayload(){
+function mkPay(){
   var t=calc();
-  return{token:TOKEN,accion:'guardar',folio:folioActual,
-    fecha:new Date().toISOString().split('T')[0],
-    cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
+  return{token:TOK,accion:'guardar',folio:folio,
+    fecha:hoy(),cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
     vigencia:document.getElementById('vig').value,
-    fecha_cierre:document.getElementById('fecha-cierre').value,
-    status:status,notas:gv('notas'),
+    fecha_cierre:document.getElementById('fc').value,
+    status:status,notas:gv('no'),
     productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
-    incluye_iva:document.getElementById('iva-toggle').checked};
+    incluye_iva:document.getElementById('ivt').checked};
 }
 function valid(){
   if(!gv('cn')){toast('⚠ Ingresa el nombre del cliente',true);return false;}
-  if(!prods.length||prods.every(function(p){return !p.d;})){toast('⚠ Agrega al menos un producto',true);return false;}
+  if(!prods.length||prods.every(function(p){return !p.d.trim();})){toast('⚠ Agrega al menos un producto con descripción',true);return false;}
+  if(prods.some(function(p){return p.d.trim()&&p.p<=0;})){toast('⚠ Verifica que todos los productos tengan precio mayor a 0',true);return false;}
   return true;
 }
 function guardar(){
   if(!valid())return;
-  var btn=document.getElementById('btn-g');
+  var btn=document.getElementById('bg');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Guardando…';
-  gasPost(mkPayload(),function(data){
-    if(data.ok){
-      folioGuardado=folioActual;
-      toast('✓ Guardado — '+folioActual);
-      btn.textContent='✓ Guardado';
-      document.getElementById('btn-pdf').disabled=false;
-      document.getElementById('btn-doc').disabled=false;
-      gasGet('siguiente_folio',function(d){if(d.ok&&d.folio){folioActual=d.folio;upPrev();}});
+  post(mkPay(),function(d){
+    if(d.ok){
+      folioSaved=folio;toast('✓ Guardado — '+folio);btn.textContent='✓ Guardado';
+      document.getElementById('bp').disabled=false;
+      document.getElementById('bd').disabled=false;
+      get('folio',function(r){if(r.ok&&r.folio){folio=r.folio;upPv();}});
       var n=gv('cn');
       if(n&&!clientes.some(function(c){return c.nombre.toLowerCase()===n.toLowerCase();}))
         clientes.push({nombre:n,giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz')});
     }else{
-      toast('⚠ '+(data.error||'Error'),true);
+      toast('⚠ '+(d.e||'Error al guardar'),true);
       btn.disabled=false;btn.innerHTML='<span class="dot"></span>1 — Guardar en Sheets';
     }
   });
 }
 
-// ── DATOS PARA PDF/DOC ────────────────────────────────────────
+// ── DATOS PARA DOCUMENTOS ────────────────────────────────────
 function getDatos(){
-  var t=calc(), cfg=cfgCache||{};
+  var t=calc(),c=cfg||{};
   return{
-    folio:       folioGuardado||folioActual,
-    fecha:       new Date().toISOString().split('T')[0],
-    vigencia:    document.getElementById('vig').value,
-    fecha_cierre:document.getElementById('fecha-cierre').value,
+    folio:folioSaved||folio,fecha:hoy(),
+    vigencia:document.getElementById('vig').value,
+    fecha_cierre:document.getElementById('fc').value,
     cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
     productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
-    incluye_iva:document.getElementById('iva-toggle').checked,
-    terminos: cfg.b1||TERM_DEF,
-    slogan:   cfg.b2||'Moderniza tu negocio desde el primer día',
-    nota_pie: cfg.b3||'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202',
-    zona_srv: cfg.b4||'Miahuatlán de Porfirio Díaz, Oaxaca',
-    pago:     cfg.b9||'',
+    incluye_iva:document.getElementById('ivt').checked,
+    terminos:c.b1||TD,slogan:c.b2||'Moderniza tu negocio desde el primer día',
+    nota_pie:c.b3||'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202',
+    pago:c.b9||''
   };
 }
-var TERM_DEF='1. Cotizacion valida por el tiempo indicado.\n2. Precios en MXN, IVA no incluido.\n3. Zona sin viaticos: Miahuatlan, Oaxaca.\n4. CCTV sujeto a revision presencial.\n5. Primer mes de soporte incluido.\n6. Aceptacion implica conformidad.';
+var TD='1. Cotizacion valida por el tiempo indicado.\n2. Precios en MXN, IVA no incluido.\n3. Zona sin viaticos: Miahuatlan, Oaxaca.\n4. CCTV sujeto a revision presencial.\n5. Primer mes de soporte incluido.\n6. Aceptacion = conformidad.';
 
-// ── PDF ───────────────────────────────────────────────────────
-function descargarPDF(){
+// ── PDF con jsPDF + autoTable ─────────────────────────────────
+function genPDF(){
   if(!valid())return;
-  var btn=document.getElementById('btn-pdf');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generando…';
+  var btn=document.getElementById('bp');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>PDF…';
   function go(){
-    try{_buildPDF(getDatos());toast('✓ PDF descargado');}
+    try{buildPDF(getDatos());toast('✓ PDF descargado');}
     catch(err){toast('⚠ '+err.message,true);}
-    btn.textContent='📄 Descargar PDF';btn.disabled=false;
+    btn.textContent='📄 PDF';btn.disabled=false;
   }
-  if(!cfgCache){gasGet('leer_config',function(d){if(d.ok&&d.config)cfgCache=d.config;go();});}
-  else go();
+  if(!cfg){get('config',function(d){if(d.ok)cfg=d.config;go();});}else go();
 }
 
-function _buildPDF(p){
-  var jsPDF=window.jspdf.jsPDF;
-  var doc=new jsPDF({unit:'mm',format:'a4'});
-  var W=210,ml=15,mr=15,cw=W-ml-mr,y=15;
-  var VM=[46,125,50],VD=[27,94,32],VL=[232,245,233];
-  var BL=[17,17,17],GR=[100,100,100],GB=[245,245,245],WH=[255,255,255];
+function buildPDF(p){
+  var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  var W=210,ml=14,mr=14,cw=W-ml-mr;
 
-  function sf(st,sz,col){doc.setFont('helvetica',st||'normal');doc.setFontSize(sz||10);doc.setTextColor.apply(doc,col||BL);}
-  function fr(x,ry,w,h,col){doc.setFillColor.apply(doc,col);doc.rect(x,ry,w,h,'F');}
-  function tx(t,x,ty,opts){doc.text(String(t||''),x,ty,opts||{});}
-  function ln(x1,y1,x2,y2,col){doc.setDrawColor.apply(doc,col||[200,200,200]);doc.line(x1,y1,x2,y2);}
+  // Colores
+  var VD=[27,94,32],VM=[46,125,50],VL=[232,245,233];
+  var BL=[30,30,30],GR=[110,110,110],GB=[248,248,248],WH=[255,255,255];
 
-  // HEADER
-  sf('bold',15,VM); tx('Omar García Brena',ml,y);
-  sf('normal',8,GR); tx('Consultor Tecnológico · México',ml,y+5);
-  // Box COTIZACIÓN
-  var bw=54,bx=W-mr-bw;
-  fr(bx,y-7,bw,20,VD);
-  sf('bold',12,WH); tx('COTIZACIÓN',bx+bw/2,y,{align:'center'});
-  sf('normal',7,[200,230,201]); tx(p.folio,bx+bw/2,y+5,{align:'center'});
-  y+=16; ln(ml,y,W-mr,y); y+=5;
+  function sf(st,sz,col){doc.setFont('helvetica',st);doc.setFontSize(sz);doc.setTextColor.apply(doc,col);}
+  function fr(x,y,w,h,col){doc.setFillColor.apply(doc,col);doc.rect(x,y,w,h,'F');}
+  function tx(t,x,y,opts){doc.text(String(t||''),x,y,opts);}
 
-  // Fecha / vigencia box
-  fr(bx,y-2,bw,16,GB);
-  sf('bold',7,GR); tx('FECHA:',bx+bw/2,y+3,{align:'center'});
-  sf('bold',9,BL); tx(fmtF(p.fecha),bx+bw/2,y+8,{align:'center'});
-  sf('normal',7,GR); tx('Vigencia: '+p.vigencia+' días',bx+bw/2,y+13,{align:'center'});
-  y+=20;
+  var y=16;
 
-  // Cliente
-  sf('bold',8,VM); tx('Cotización para:',ml,y); y+=4;
-  sf('bold',11,BL); tx(p.cliente||'—',ml,y);
-  if(p.email){sf('normal',8,GR);tx('Correo:',ml+80,y);sf('normal',8,BL);tx(p.email,ml+100,y);}
+  // ── HEADER ─────────────────────────────────────────────────
+  // Banda superior verde
+  fr(0,0,W,10,VD);
+  sf('bold',10,WH); tx('Omar García Brena — Consultor Tecnológico',W/2,6.5,{align:'center'});
+
+  y=18;
+  // Título izquierda
+  sf('bold',16,VM); tx('PROPUESTA TECNOLÓGICA',ml,y);
+  sf('bold',16,[180,230,180]); tx('INTEGRAL',ml+85,y);
   y+=5;
-  if(p.giro){sf('normal',8,GR);tx('Negocio:',ml,y);sf('normal',8,BL);tx(p.giro,ml+22,y);}
-  if(p.tel){sf('normal',8,GR);tx('Tel:',ml+80,y);sf('normal',8,BL);tx(p.tel,ml+90,y);}
+  sf('normal',8,GR); tx(p.slogan||'',ml,y);
+
+  // Box folio derecha
+  var bw=52,bx=W-mr-bw;
+  fr(bx,13,bw,22,VD);
+  sf('bold',7,[180,230,180]); tx('COTIZACIÓN',bx+bw/2,18,{align:'center'});
+  sf('bold',11,WH); tx(p.folio,bx+bw/2,24,{align:'center'});
+  sf('normal',7,[180,230,180]); tx(fmtF(p.fecha),bx+bw/2,30,{align:'center'});
+
+  y=40;
+  doc.setDrawColor.apply(doc,VL); doc.setLineWidth(0.3); doc.line(ml,y,W-mr,y);
   y+=5;
-  if(p.zona){sf('normal',8,GR);tx('Zona:',ml,y);sf('normal',8,BL);tx(p.zona,ml+14,y);}
-  y+=8; ln(ml,y,W-mr,y); y+=5;
 
-  // Descripción del proyecto
-  if(p.slogan){
-    sf('bold',8,VM); tx('Descripción del proyecto:',ml,y); y+=4;
-    sf('italic',8,GR);
-    var sl=doc.splitTextToSize(p.slogan,cw);
-    sl.forEach(function(l){tx(l,ml,y);y+=4;}); y+=3;
-  }
+  // ── INFO CONSULTOR Y VIGENCIA ─────────────────────────────
+  sf('normal',8,GR);
+  tx('Consultor:',ml,y); sf('normal',8,BL); tx('Omar García Brena',ml+22,y);
+  tx('Folio:',ml+90,y,{}); sf('bold',8,VD); tx(p.folio,ml+102,y);
+  y+=4.5;
+  sf('normal',8,GR); tx('Correo:',ml,y); sf('normal',8,BL); tx('ogarciabrena@gmail.com',ml+22,y);
+  tx('Vigencia:',ml+90,y); sf('normal',8,BL); tx(p.vigencia+' días naturales',ml+106,y);
+  y+=4.5;
+  sf('normal',8,GR); tx('Tel:',ml,y); sf('normal',8,BL); tx('+52 55 1455 2202',ml+22,y);
+  tx('Fecha:',ml+90,y); sf('normal',8,BL); tx(fmtF(p.fecha),ml+106,y);
+  y+=8;
 
-  // Tabla productos — 4 cols
-  var c4=[cw*0.1,cw*0.5,cw*0.2,cw*0.2];
-  fr(ml,y,cw,7,VD); sf('bold',8,WH);
-  var hx=ml,hn=['Cantidad','Descripción','Precio U','Total'];
-  hn.forEach(function(h,i){
-    if(i===0)tx(h,hx+c4[0]/2,y+5,{align:'center'});
-    else tx(h,hx+2,y+5);
-    hx+=c4[i];
-  });
-  y+=7;
+  // ── CLIENTE ───────────────────────────────────────────────
+  sf('bold',8,VM); tx('COTIZACIÓN PARA',ml,y); y+=4;
+  fr(ml,y,cw,6,VL);
+  sf('bold',11,VD); tx(p.cliente||'—',ml+3,y+4.5);
+  y+=8;
+  sf('normal',8,GR);
+  if(p.giro) {tx('Giro:',ml,y); sf('normal',8,BL); tx(p.giro,ml+12,y);}
+  if(p.tel)  {tx('Tel:',ml+65,y); sf('normal',8,BL); tx(p.tel,ml+74,y);}
+  y+=4.5;
+  if(p.email){sf('normal',8,GR);tx('Correo:',ml,y); sf('normal',8,BL); tx(p.email,ml+16,y);}
+  if(p.zona) {sf('normal',8,GR);tx('Zona:',ml+65,y); sf('normal',8,BL); tx(p.zona,ml+77,y);}
+  y+=8;
 
-  (p.productos||[]).forEach(function(pr,ri){
-    var rh=7,rbg=ri%2===0?WH:GB;
-    fr(ml,y,cw,rh,rbg); sf('normal',8,BL);
-    var rx=ml;
-    var rv=[String(pr.cant),pr.desc||'—',fmto(pr.precio),fmto(pr.subtotal)];
-    rv.forEach(function(v,i){
-      if(i===0)tx(v,rx+c4[0]/2,y+5,{align:'center'});
-      else if(i>=2)tx(v,rx+c4[i]-1,y+5,{align:'right'});
-      else{var tr=doc.splitTextToSize(v,c4[i]-3);tx(tr[0]+(tr.length>1?'…':''),rx+2,y+5);}
-      rx+=c4[i];
-    });
-    y+=rh;
+  // ── TABLA PRODUCTOS con autoTable ─────────────────────────
+  sf('bold',8,VM); tx('DESCRIPCIÓN DE SERVICIOS',ml,y); y+=4;
+
+  var rows=(p.productos||[]).map(function(pr,i){
+    return [String(i+1), pr.desc||'—', String(pr.cant), fmto(pr.precio), fmto(pr.subtotal)];
   });
 
-  // Vigencia nota
-  y+=3; sf('italic',7,GR);
+  doc.autoTable({
+    startY: y,
+    head:   [['#','Descripción','Cant.','Precio unit.','Subtotal']],
+    body:   rows,
+    theme:  'plain',
+    styles: {font:'helvetica',fontSize:9,cellPadding:4,textColor:BL,lineColor:[220,220,220],lineWidth:0.2},
+    headStyles: {fillColor:VD,textColor:WH,fontStyle:'bold',fontSize:9},
+    columnStyles: {
+      0:{cellWidth:10,halign:'center'},
+      1:{cellWidth:'auto'},
+      2:{cellWidth:15,halign:'right'},
+      3:{cellWidth:28,halign:'right'},
+      4:{cellWidth:28,halign:'right'}
+    },
+    alternateRowStyles:{fillColor:GB},
+    margin:{left:ml,right:mr},
+    tableWidth:cw,
+    didDrawPage:function(d){y=d.cursor.y;}
+  });
+
+  y=doc.lastAutoTable.finalY+4;
+
+  // Nota vigencia
+  sf('italic',7,GR);
   tx('Esta cotización es válida por los próximos '+p.vigencia+' días.',W-mr,y,{align:'right'});
   y+=7;
 
-  // Totales (derecha)
-  var tw=58,tx0=W-mr-tw;
-  [['Subtotal',fmto(p.subtotal)],['IVA',p.incluye_iva?fmto(p.iva):'No aplica'],['Total',fmto(p.total)]].forEach(function(row,i){
-    var isT=i===2;
-    fr(tx0,y,tw,6,isT?VD:GB);
-    sf(isT?'bold':'normal',isT?9:8,isT?WH:GR); tx(row[0],tx0+2,y+4.5);
-    sf(isT?'bold':'normal',isT?9:8,isT?WH:BL); tx(row[1],tx0+tw-1,y+4.5,{align:'right'});
-    y+=6;
+  // ── TOTALES ───────────────────────────────────────────────
+  var tw=60,tx0=W-mr-tw;
+  var tots=[['Subtotal',fmto(p.subtotal),false],['IVA',p.incluye_iva?fmto(p.iva):'No aplica',false],['TOTAL',fmto(p.total),true]];
+  tots.forEach(function(row){
+    var isT=row[2];
+    fr(tx0,y,tw,6.5,isT?VD:GB);
+    sf('normal',isT?9:8,isT?WH:GR); tx(row[0],tx0+3,y+4.5);
+    sf(isT?'bold':'normal',isT?9:8,isT?WH:BL); tx(row[1],tx0+tw-2,y+4.5,{align:'right'});
+    y+=6.5;
   });
-  sf('normal',7,GR); tx(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.',ml,y+4); y+=10;
+  sf('normal',7,GR);
+  tx(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.',ml,y+4);
+  y+=10;
 
   // Forma de pago
-  if(p.pago){sf('bold',8,VM);tx('Forma de pago:',ml,y);y+=4;sf('normal',7,GR);tx(p.pago,ml,y);y+=8;}
+  if(p.pago){
+    if(y>255){doc.addPage();y=15;}
+    sf('bold',8,VM);tx('Forma de pago:',ml,y);y+=4;
+    sf('normal',7,GR);
+    var plines=doc.splitTextToSize(p.pago,cw);
+    plines.forEach(function(l){tx(l,ml,y);y+=3.5;});
+    y+=4;
+  }
 
-  // Términos
-  if(y>240){doc.addPage();y=15;}
-  sf('bold',8,VM); tx('Términos:',ml,y); y+=4;
+  // ── TÉRMINOS ──────────────────────────────────────────────
+  if(y>245){doc.addPage();y=15;}
+  sf('bold',8,VM);tx('TÉRMINOS Y CONDICIONES',ml,y);y+=4;
   sf('normal',7,GR);
   (p.terminos||'').split('\n').forEach(function(l){
     if(!l.trim())return;
+    if(y>278){doc.addPage();y=15;}
     var wr=doc.splitTextToSize(l.trim(),cw);
-    wr.forEach(function(wl){if(y>275){doc.addPage();y=15;}tx(wl,ml,y);y+=3.5;});
+    wr.forEach(function(wl){if(y>278){doc.addPage();y=15;}tx(wl,ml,y);y+=3.5;});
   });
   y+=5;
 
-  // Firma
-  if(y>248){doc.addPage();y=15;}
-  sf('normal',8,VM); tx(p.nota_pie,ml,y); y+=5;
-  sf('bold',9,BL); tx('Omar García Brena',ml,y); y+=4;
-  sf('normal',7,GR); tx('Consultor Tecnológico · ogarciabrena@gmail.com',ml,y); y+=10;
-  ln(ml,y,ml+70,y,[150,150,150]); ln(ml+85,y,ml+155,y,[150,150,150]); y+=4;
-  sf('normal',7,GR); tx('Nombre y firma del cliente',ml,y); tx('Fecha de aceptación',ml+85,y);
+  // ── FIRMA ─────────────────────────────────────────────────
+  if(y>255){doc.addPage();y=15;}
+  fr(ml,y,cw,1,VL);y+=5;
+  sf('bold',9,VD);tx('Omar García Brena',ml,y);y+=4;
+  sf('normal',8,GR);tx('Consultor Tecnológico · ogarciabrena@gmail.com · +52 55 1455 2202',ml,y);y+=10;
+  doc.setDrawColor(180,180,180);doc.line(ml,y,ml+72,y);doc.line(ml+85,y,ml+72+85,y);y+=4;
+  sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Fecha de aceptación',ml+85,y);
 
   // Footer
-  fr(ml,283,cw,8,VD);
-  sf('normal',7,[200,230,201]);
-  tx('ogarciabrena@gmail.com',ml+4,288);
-  tx('+52 55 1455 2202',W-mr-4,288,{align:'right'});
+  fr(0,290,W,7,VD);
+  sf('normal',7,[180,230,180]);
+  tx('ogarciabrena@gmail.com',ml+2,294.5);
+  tx('+52 55 1455 2202',W-mr-2,294.5,{align:'right'});
 
   doc.save(p.folio+' - '+p.cliente+'.pdf');
 }
 
-// ── DOC ───────────────────────────────────────────────────────
-function descargarDOC(){
+// ── DOC editable (HTML limpio — abre bien en LibreOffice) ──────
+function genDOC(){
   if(!valid())return;
-  var btn=document.getElementById('btn-doc');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generando…';
+  var btn=document.getElementById('bd');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>DOC…';
   function go(){
-    try{_buildDOC(getDatos());toast('✓ DOC descargado');}
+    try{buildDOC(getDatos());toast('✓ DOC descargado');}
     catch(err){toast('⚠ '+err.message,true);}
-    btn.textContent='📝 Descargar DOC';btn.disabled=false;
+    btn.textContent='📝 DOC';btn.disabled=false;
   }
-  if(!cfgCache){gasGet('leer_config',function(d){if(d.ok&&d.config)cfgCache=d.config;go();});}
-  else go();
+  if(!cfg){get('config',function(d){if(d.ok)cfg=d.config;go();});}else go();
 }
 
-function _buildDOC(p){
+function buildDOC(p){
   var rows=(p.productos||[]).map(function(pr,i){
-    return '<tr style="background:'+(i%2===0?'#fff':'#f5f5f5')+'">'
+    var bg=i%2===0?'#ffffff':'#f8f8f8';
+    return '<tr style="background:'+bg+'">'
       +'<td style="text-align:center;padding:5px 8px;border:1px solid #ddd">'+pr.cant+'</td>'
       +'<td style="padding:5px 8px;border:1px solid #ddd">'+esc(pr.desc||'—')+'</td>'
       +'<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.precio)+'</td>'
       +'<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.subtotal)+'</td>'
       +'</tr>';
   }).join('');
-  var termHtml=(p.terminos||'').split('\n').filter(function(l){return l.trim();})
-    .map(function(l){return '<p style="margin:2px 0;font-size:9pt;color:#555">'+esc(l)+'</p>';}).join('');
-  var cliInfo='';
-  if(p.giro)  cliInfo+='<p style="margin:1px 0"><b>Giro:</b> '+esc(p.giro)+'</p>';
-  if(p.tel)   cliInfo+='<p style="margin:1px 0"><b>Tel:</b> '+esc(p.tel)+'</p>';
-  if(p.email) cliInfo+='<p style="margin:1px 0"><b>Correo:</b> '+esc(p.email)+'</p>';
-  if(p.zona)  cliInfo+='<p style="margin:1px 0"><b>Zona:</b> '+esc(p.zona)+'</p>';
 
-  var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
-  +'<head><meta charset="UTF-8"><meta name=ProgId content=Word.Document>'
-  +'<style>body{font-family:Arial,sans-serif;font-size:10pt;margin:2cm}table{border-collapse:collapse;width:100%}</style></head><body>'
-  +'<table style="width:100%;margin-bottom:16px"><tr>'
-  +'<td><p style="font-size:16pt;font-weight:bold;color:#2E7D32;margin:0">PROPUESTA TECNOLÓGICA INTEGRAL</p>'
-  +'<p style="font-size:9pt;color:#666;margin:2px 0">'+esc(p.slogan||'')+'</p></td>'
-  +'<td style="text-align:right;vertical-align:top">'
-  +'<div style="background:#1B5E20;color:#fff;padding:8px 14px;display:inline-block">'
-  +'<p style="margin:0;font-size:7pt;color:#A5D6A7">COTIZACIÓN</p>'
-  +'<p style="margin:0;font-size:13pt;font-weight:bold">'+esc(p.folio)+'</p>'
-  +'<p style="margin:0;font-size:8pt;color:#C8E6C9">'+fmtF(p.fecha)+'</p>'
+  var termH=(p.terminos||'').split('\n').filter(Boolean)
+    .map(function(l){return '<p style="margin:2px 0;font-size:9pt;color:#555">'+esc(l)+'</p>';}).join('');
+
+  var cliInfo='';
+  if(p.giro)  cliInfo+='<tr><td style="color:#666;padding:3px 8px;width:100px">Giro:</td><td style="padding:3px 8px">'+esc(p.giro)+'</td></tr>';
+  if(p.tel)   cliInfo+='<tr><td style="color:#666;padding:3px 8px">Tel:</td><td style="padding:3px 8px">'+esc(p.tel)+'</td></tr>';
+  if(p.email) cliInfo+='<tr><td style="color:#666;padding:3px 8px">Correo:</td><td style="padding:3px 8px">'+esc(p.email)+'</td></tr>';
+  if(p.zona)  cliInfo+='<tr><td style="color:#666;padding:3px 8px">Zona:</td><td style="padding:3px 8px">'+esc(p.zona)+'</td></tr>';
+
+  var html='<!DOCTYPE html><html><head>'
+  +'<meta charset="UTF-8"><title>'+esc(p.folio)+'</title>'
+  +'<style>'
+  +'body{font-family:Arial,Helvetica,sans-serif;font-size:10pt;margin:2cm;color:#222;line-height:1.4}'
+  +'table{border-collapse:collapse;width:100%}'
+  +'h1{font-size:16pt;color:#2E7D32;margin:0 0 3px}'
+  +'h2{font-size:9pt;color:#2E7D32;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 5px;border-bottom:1px solid #E8F5E9;padding-bottom:3px}'
+  +'p{margin:3px 0}'
+  +'</style></head><body>'
+
+  // Header
+  +'<table style="margin-bottom:14px"><tr>'
+  +'<td><h1>PROPUESTA TECNOLÓGICA INTEGRAL</h1>'
+  +'<p style="font-size:9pt;color:#666;font-style:italic">'+esc(p.slogan||'')+'</p></td>'
+  +'<td style="text-align:right;vertical-align:top;width:140px">'
+  +'<div style="background:#1B5E20;color:#fff;padding:8px 12px;font-family:Arial">'
+  +'<div style="font-size:8pt;color:#a5d6a7">COTIZACIÓN</div>'
+  +'<div style="font-size:13pt;font-weight:bold">'+esc(p.folio)+'</div>'
+  +'<div style="font-size:8pt;color:#c8e6c9">'+fmtF(p.fecha)+'</div>'
   +'</div></td></tr></table>'
-  +'<hr style="border:none;border-top:2px solid #2E7D32;margin-bottom:12px">'
-  +'<table style="width:100%;margin-bottom:12px"><tr>'
-  +'<td style="font-size:9pt;color:#555"><b>Consultor:</b> Omar García Brena<br><b>Correo:</b> ogarciabrena@gmail.com<br><b>Tel:</b> +52 55 1455 2202</td>'
-  +'<td style="text-align:right;font-size:9pt;color:#555"><b>Folio:</b> '+esc(p.folio)+'<br><b>Fecha:</b> '+fmtF(p.fecha)+'<br><b>Vigencia:</b> '+p.vigencia+' días naturales</td>'
+  +'<hr style="border:none;border-top:2px solid #2E7D32;margin:0 0 12px">'
+
+  // Consultor info
+  +'<table style="margin-bottom:12px;width:100%"><tr>'
+  +'<td style="font-size:9pt;color:#555">'
+  +'<b>Consultor:</b> Omar García Brena<br>'
+  +'<b>Correo:</b> ogarciabrena@gmail.com<br>'
+  +'<b>Tel:</b> +52 55 1455 2202</td>'
+  +'<td style="text-align:right;font-size:9pt;color:#555">'
+  +'<b>Folio:</b> '+esc(p.folio)+'<br>'
+  +'<b>Fecha:</b> '+fmtF(p.fecha)+'<br>'
+  +'<b>Vigencia:</b> '+p.vigencia+' días naturales</td>'
   +'</tr></table>'
-  +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:8px 0 4px">COTIZACIÓN PARA</p>'
+
+  // Cliente
+  +'<h2>Cotización para</h2>'
   +'<div style="background:#E8F5E9;padding:8px 12px;margin-bottom:12px">'
   +'<p style="font-size:12pt;font-weight:bold;color:#1B5E20;margin:0 0 4px">'+esc(p.cliente||'—')+'</p>'
-  +cliInfo+'</div>'
-  +(p.slogan?'<p style="font-size:9pt;color:#666;font-style:italic;margin-bottom:12px">'+esc(p.slogan)+'</p>':'')
-  +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:8px 0 4px">DESCRIPCIÓN DE SERVICIOS</p>'
-  +'<table style="margin-bottom:8px"><thead>'
-  +'<tr style="background:#1B5E20">'
-  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:center;width:8%">Cant.</th>'
-  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:left;width:52%">Descripción</th>'
-  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Precio U</th>'
-  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Total</th>'
-  +'</tr></thead><tbody>'+rows+'</tbody></table>'
-  +'<p style="font-size:8pt;font-style:italic;color:#666;text-align:right;margin-bottom:12px">Esta cotización es válida por los próximos '+p.vigencia+' días.</p>'
-  +'<table style="width:40%;margin-left:auto;margin-bottom:4px">'
-  +'<tr style="background:#f5f5f5"><td style="padding:4px 8px;border:1px solid #ddd;color:#666">Subtotal</td><td style="padding:4px 8px;border:1px solid #ddd;text-align:right">'+fmto(p.subtotal)+'</td></tr>'
-  +'<tr><td style="padding:4px 8px;border:1px solid #ddd;color:#666">IVA</td><td style="padding:4px 8px;border:1px solid #ddd;text-align:right">'+(p.incluye_iva?fmto(p.iva):'No aplica')+'</td></tr>'
-  +'<tr style="background:#1B5E20"><td style="padding:6px 8px;border:1px solid #1B5E20;color:#fff;font-weight:bold">TOTAL</td><td style="padding:6px 8px;border:1px solid #1B5E20;color:#fff;font-weight:bold;text-align:right">'+fmto(p.total)+'</td></tr>'
-  +'</table>'
-  +'<p style="font-size:8pt;color:#888;margin-bottom:12px">'+(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.')+'</p>'
-  +(p.pago?'<p style="font-size:8pt;color:#555;margin-bottom:8px"><b>Forma de pago:</b> '+esc(p.pago)+'</p>':'')
-  +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:12px 0 4px">TÉRMINOS Y CONDICIONES</p>'
-  +termHtml
-  +'<div style="margin-top:24px"><table style="width:100%"><tr>'
-  +'<td style="width:50%;padding-top:30px;border-top:1px solid #999;font-size:8pt;color:#555">Nombre y firma del cliente</td>'
-  +'<td style="width:10%"></td>'
-  +'<td style="width:40%;padding-top:30px;border-top:1px solid #999;font-size:8pt;color:#555">Fecha de aceptación</td>'
-  +'</tr></table></div>'
-  +'<div style="background:#1B5E20;color:#C8E6C9;padding:8px 12px;margin-top:20px;font-size:8pt;text-align:center">'
-  +esc(p.nota_pie||'Omar García Brena · ogarciabrena@gmail.com')
-  +'</div></body></html>';
+  +(cliInfo?'<table style="width:auto">'+cliInfo+'</table>':'')
+  +'</div>'
 
-  var blob=new Blob([html],{type:'application/msword;charset=utf-8'});
+  // Productos
+  +'<h2>Descripción de servicios</h2>'
+  +'<table style="margin-bottom:6px">'
+  +'<thead><tr style="background:#1B5E20">'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:center;width:7%">Cant.</th>'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:left;width:53%">Descripción</th>'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Precio unit.</th>'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Subtotal</th>'
+  +'</tr></thead><tbody>'+rows+'</tbody></table>'
+  +'<p style="font-size:8pt;font-style:italic;color:#888;text-align:right;margin-bottom:12px">Esta cotización es válida por los próximos '+p.vigencia+' días.</p>'
+
+  // Totales
+  +'<table style="width:42%;margin-left:auto;margin-bottom:6px">'
+  +'<tr style="background:#f5f5f5"><td style="padding:4px 10px;border:1px solid #ddd;color:#666">Subtotal</td><td style="padding:4px 10px;border:1px solid #ddd;text-align:right">'+fmto(p.subtotal)+'</td></tr>'
+  +'<tr><td style="padding:4px 10px;border:1px solid #ddd;color:#666">IVA</td><td style="padding:4px 10px;border:1px solid #ddd;text-align:right">'+(p.incluye_iva?fmto(p.iva):'No aplica')+'</td></tr>'
+  +'<tr style="background:#1B5E20"><td style="padding:6px 10px;border:1px solid #1B5E20;color:#fff;font-weight:bold">TOTAL</td><td style="padding:6px 10px;border:1px solid #1B5E20;color:#fff;font-weight:bold;text-align:right">'+fmto(p.total)+'</td></tr>'
+  +'</table>'
+  +'<p style="font-size:8pt;color:#888;margin-bottom:14px">'+(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.')+'</p>'
+
+  // Forma de pago
+  +(p.pago?'<h2>Forma de pago</h2><p style="font-size:9pt;color:#555">'+esc(p.pago)+'</p>':'')
+
+  // Términos
+  +'<h2>Términos y condiciones</h2>'+termH
+
+  // Firma
+  +'<div style="margin-top:28px"><table style="width:100%"><tr>'
+  +'<td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Nombre y firma del cliente</td>'
+  +'<td style="width:6%"></td>'
+  +'<td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Fecha de aceptación</td>'
+  +'</tr></table></div>'
+
+  // Footer
+  +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px 12px;margin-top:22px;font-size:8pt;text-align:center">'
+  +esc(p.nota_pie||'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202')
+  +'</div>'
+  +'</body></html>';
+
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
-  a.href=url; a.download=p.folio+' - '+p.cliente+'.doc';
-  document.body.appendChild(a); a.click();
-  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+  a.href=url;a.download=p.folio+' - '+p.cliente+'.html';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},800);
 }
 
 // ── UTILS ─────────────────────────────────────────────────────
+function hoy(){return new Date().toISOString().split('T')[0];}
 function fmtF(iso){
-  try{if(!iso)return new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
-  var pts=iso.split('-');return new Date(Number(pts[0]),Number(pts[1])-1,Number(pts[2])).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});}
-  catch(e){return iso||'';}
+  try{
+    if(!iso)return new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+    var p=iso.split('-');
+    return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+  }catch(e){return iso||'';}
 }
 function fmto(n){return '$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});}
-function gv(id){var el=document.getElementById(id);return el?el.value.trim():'';}
-function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function gasGet(ac,cb){
-  fetch(GAS_URL+'?accion='+ac+'&token='+encodeURIComponent(TOKEN))
+function gv(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+function sv(id,val){var e=document.getElementById(id);if(e)e.value=val;}
+function sei(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return esc(s).replace(/'/g,'&#39;');}
+function get(ac,cb){
+  fetch(GAS+'?accion='+ac+'&token='+encodeURIComponent(TOK))
     .then(function(r){return r.json();}).then(cb).catch(function(){cb({ok:false});});
 }
-function gasPost(payload,cb){
-  fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+function post(payload,cb){
+  fetch(GAS,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
     .then(function(r){return r.json();}).then(cb)
-    .catch(function(err){cb({ok:false,error:err.message});});
+    .catch(function(err){cb({ok:false,e:err.message});});
 }
 function toast(msg,isErr){
   var t=document.getElementById('toast');
   t.textContent=msg;t.className='toast'+(isErr?' err':'');
-  t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},3200);
+  t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},3200);
 }
 </script>
 </body>
