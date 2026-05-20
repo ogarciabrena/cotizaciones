@@ -5,650 +5,635 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cotizador | Omar García Brena</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{
-    --verde:#7AE06A;--verde-dk:#5bc44d;--bg:#0d0d0d;--bg2:#141414;
-    --bg3:#1a1a1a;--bg4:#222;--border:rgba(255,255,255,.08);
-    --border2:rgba(122,224,106,.25);--text:#f0f0f0;--muted:#888;--danger:#e05050;
-  }
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-  .page{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
-
-  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:.5px solid var(--border);padding-bottom:1.5rem;margin-bottom:2.5rem}
-  .logo{font-size:13px;font-weight:300;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
-  .logo strong{display:block;font-size:17px;font-weight:500;letter-spacing:0;color:var(--text);margin-bottom:2px}
-  .folio-badge{background:var(--bg3);border:.5px solid var(--border2);padding:6px 14px;border-radius:20px;font-size:12px;color:var(--verde);letter-spacing:.08em;font-weight:500}
-
-  h1{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:400;line-height:1.15;margin-bottom:.4rem}
-  h1 em{font-style:italic;color:var(--verde)}
-  .hero-sub{font-size:13px;color:var(--muted);margin-bottom:2.5rem}
-
-  .section{margin-bottom:2rem}
-  .section-label{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--verde);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
-  .section-label::after{content:'';flex:1;height:.5px;background:var(--border)}
-
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .field{display:flex;flex-direction:column;gap:5px}
-  label{font-size:11px;color:var(--muted);letter-spacing:.05em;font-weight:500}
-
-  input,select,textarea{background:var(--bg3);border:.5px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;border-radius:6px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;width:100%}
-  input:focus,select:focus,textarea:focus{border-color:var(--verde)}
-  textarea{resize:vertical;min-height:70px}
-
-  /* Autocomplete */
-  .autocomplete-wrap{position:relative}
-  .autocomplete-dropdown{
-    position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;
-    background:var(--bg3);border:.5px solid var(--border2);border-radius:8px;
-    overflow:hidden;display:none;max-height:220px;overflow-y:auto;
-    box-shadow:0 8px 24px rgba(0,0,0,.5);
-  }
-  .autocomplete-dropdown.open{display:block}
-  .ac-item{padding:10px 14px;font-size:13px;cursor:pointer;transition:background .12s;border-bottom:.5px solid var(--border)}
-  .ac-item:last-child{border-bottom:none}
-  .ac-item:hover,.ac-item.active{background:rgba(122,224,106,.1)}
-  .ac-item .ac-nombre{color:var(--text);font-weight:500}
-  .ac-item .ac-detalle{color:var(--muted);font-size:11px;margin-top:1px}
-  .ac-badge{display:inline-block;font-size:10px;background:rgba(122,224,106,.15);color:var(--verde);padding:1px 6px;border-radius:10px;margin-left:6px;vertical-align:middle}
-
-  /* Productos */
-  .productos-box{background:var(--bg2);border:.5px solid var(--border);border-radius:10px;overflow:hidden}
-  .productos-header{display:grid;grid-template-columns:3fr 80px 110px 36px;gap:8px;padding:9px 14px;background:var(--bg3);border-bottom:.5px solid var(--border);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  .productos-lista{padding:8px;display:flex;flex-direction:column;gap:6px}
-  .producto-row{display:grid;grid-template-columns:3fr 80px 110px 36px;gap:8px;align-items:center}
-  .producto-row input{padding:8px 10px;font-size:13px}
-  .producto-row input[type=number]{text-align:right}
-  .precio-cell{position:relative}
-  .precio-cell::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none}
-  .precio-cell input{padding-left:22px}
-  .btn-del{width:34px;height:34px;border-radius:6px;background:transparent;border:.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
-  .btn-del:hover{background:rgba(224,80,80,.12);border-color:var(--danger);color:var(--danger)}
-  .productos-footer{padding:10px 14px;border-top:.5px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-  .btn-add{font-size:12px;font-weight:500;color:var(--verde);background:transparent;border:.5px solid var(--border2);border-radius:20px;padding:6px 14px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
-  .btn-add:hover{background:rgba(122,224,106,.08)}
-
-  /* Totales */
-  .totales-box{background:var(--bg2);border:.5px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem}
-  .total-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
-  .total-row .lbl{font-size:13px;color:var(--muted)}
-  .total-row .val{font-size:13px}
-  .total-row.grand{border-top:.5px solid var(--border);margin-top:8px;padding-top:14px}
-  .total-row.grand .lbl{font-size:15px;color:var(--text);font-weight:500}
-  .total-row.grand .val{font-family:'Playfair Display',serif;font-size:28px;color:var(--verde);letter-spacing:-.02em}
-  .iva-note{font-size:11px;color:var(--muted);margin-top:6px}
-  .switch-row{display:flex;align-items:center;gap:10px;margin-top:12px}
-  .switch{position:relative;width:38px;height:22px}
-  .switch input{opacity:0;width:0;height:0}
-  .slider{position:absolute;cursor:pointer;inset:0;background:var(--bg4);border-radius:22px;border:.5px solid var(--border);transition:.2s}
-  .slider::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.2s}
-  .switch input:checked+.slider{background:rgba(122,224,106,.2);border-color:var(--verde)}
-  .switch input:checked+.slider::before{background:var(--verde);transform:translateX(16px)}
-
-  /* Pipeline */
-  .status-row{display:flex;gap:8px;flex-wrap:wrap}
-  .status-chip{padding:6px 14px;border-radius:20px;font-size:12px;border:.5px solid var(--border);background:var(--bg3);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;color:var(--muted)}
-  .status-chip.active-nueva    {background:rgba(122,224,106,.12);border-color:var(--verde);color:var(--verde)}
-  .status-chip.active-enviada  {background:rgba(58,130,246,.12); border-color:#3a82f6;color:#3a82f6}
-  .status-chip.active-negociando{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
-  .status-chip.active-cerrada  {background:rgba(34,197,94,.12);  border-color:#22c55e;color:#22c55e}
-  .status-chip.active-perdida  {background:rgba(224,80,80,.12);  border-color:var(--danger);color:var(--danger)}
-
-  .vigencia-row{display:flex;align-items:center;gap:10px}
-  .vigencia-row input[type=number]{width:70px;text-align:center}
-  .vigencia-row span{font-size:13px;color:var(--muted)}
-
-  /* Preview */
-  .preview-box{background:var(--bg2);border:.5px solid var(--border2);border-radius:10px;padding:1.25rem 1.5rem}
-  .preview-folio{font-size:11px;color:var(--verde);letter-spacing:.1em;margin-bottom:4px}
-  .preview-cliente{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:2px}
-  .preview-giro{font-size:12px;color:var(--muted);margin-bottom:12px}
-  .preview-item{display:flex;justify-content:space-between;padding:3px 0;border-bottom:.5px solid var(--border);font-size:12px;color:var(--muted)}
-  .preview-item:last-child{border-bottom:none}
-  .preview-total{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:.5px solid var(--border2)}
-  .preview-total .lbl{font-size:13px;color:var(--muted)}
-  .preview-total .num{font-family:'Playfair Display',serif;font-size:22px;color:var(--verde)}
-
-  /* Acciones */
-  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:2rem}
-  .btn-main{flex:1;min-width:200px;padding:14px 24px;background:var(--verde);color:#0d0d0d;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
-  .btn-main:hover{background:var(--verde-dk);transform:translateY(-1px)}
-  .btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none}
-  .btn-sec{flex:1;min-width:160px;padding:14px 24px;background:transparent;color:var(--text);border:.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .2s}
-  .btn-sec:hover{border-color:rgba(255,255,255,.25);background:var(--bg3)}
-  .btn-sec:disabled{opacity:.4;cursor:not-allowed}
-
-  .result-box{background:var(--bg2);border:.5px solid var(--border2);border-radius:10px;padding:1rem 1.5rem;margin-top:1rem;display:none}
-  .result-box.show{display:block}
-  .result-links{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
-  .result-links a{color:var(--verde);font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:.5px solid var(--border2);border-radius:20px;transition:all .15s}
-  .result-links a:hover{background:rgba(122,224,106,.08)}
-
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:.5px solid var(--border2);color:var(--verde);padding:12px 24px;border-radius:30px;font-size:13px;letter-spacing:.05em;transition:transform .3s ease;z-index:100;white-space:nowrap}
-  .toast.show{transform:translateX(-50%) translateY(0)}
-  .toast.error{border-color:rgba(224,80,80,.4);color:var(--danger)}
-
-  .step-dot{width:6px;height:6px;border-radius:50%;background:var(--verde);display:inline-block;margin-right:8px;vertical-align:middle}
-  .loader{display:inline-block;width:12px;height:12px;border:2px solid rgba(13,13,13,.3);border-top-color:#0d0d0d;border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  @media(max-width:600px){
-    .grid2,.grid3{grid-template-columns:1fr}
-    .productos-header{display:none}
-    .producto-row{grid-template-columns:1fr 1fr}
-    .producto-row .desc-cell{grid-column:1/-1}
-    .actions{flex-direction:column}
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--v:#7AE06A;--vd:#5bc44d;--bg:#0d0d0d;--bg2:#141414;--bg3:#1a1a1a;--bg4:#222;--b:rgba(255,255,255,.08);--b2:rgba(122,224,106,.25);--t:#f0f0f0;--m:#888;--r:#e05050}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+.page{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:.5px solid var(--b);padding-bottom:1.5rem;margin-bottom:2.5rem}
+.logo{font-size:13px;font-weight:300;letter-spacing:.12em;color:var(--m);text-transform:uppercase}
+.logo strong{display:block;font-size:17px;font-weight:500;letter-spacing:0;color:var(--t);margin-bottom:2px}
+.fbadge{background:var(--bg3);border:.5px solid var(--b2);padding:6px 14px;border-radius:20px;font-size:12px;color:var(--v);letter-spacing:.08em;font-weight:500}
+h1{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:400;line-height:1.15;margin-bottom:.4rem}
+h1 em{font-style:italic;color:var(--v)}
+.hero-sub{font-size:13px;color:var(--m);margin-bottom:2.5rem}
+.sec{margin-bottom:2rem}
+.slbl{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--v);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.slbl::after{content:'';flex:1;height:.5px;background:var(--b)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.fld{display:flex;flex-direction:column;gap:5px}
+label{font-size:11px;color:var(--m);letter-spacing:.05em;font-weight:500}
+input,select,textarea{background:var(--bg3);border:.5px solid var(--b);color:var(--t);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;border-radius:6px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--v)}
+textarea{resize:vertical;min-height:60px}
+.acw{position:relative}
+.acd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;background:var(--bg3);border:.5px solid var(--b2);border-radius:8px;overflow:hidden;display:none;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.acd.open{display:block}
+.aci{padding:10px 14px;font-size:13px;cursor:pointer;transition:background .12s;border-bottom:.5px solid var(--b)}
+.aci:last-child{border-bottom:none}
+.aci:hover,.aci.active{background:rgba(122,224,106,.1)}
+.aci .an{color:var(--t);font-weight:500}
+.aci .ad{color:var(--m);font-size:11px;margin-top:1px}
+.acbadge{display:inline-block;font-size:10px;background:rgba(122,224,106,.15);color:var(--v);padding:1px 6px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.pbox{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;overflow:hidden}
+.phead{display:grid;grid-template-columns:3fr 80px 110px 36px;gap:8px;padding:9px 14px;background:var(--bg3);border-bottom:.5px solid var(--b);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--m)}
+.plst{padding:8px;display:flex;flex-direction:column;gap:6px}
+.prow{display:grid;grid-template-columns:3fr 80px 110px 36px;gap:8px;align-items:center}
+.prow input{padding:8px 10px;font-size:13px}
+.prow input[type=number]{text-align:right}
+.pcell{position:relative}
+.pcell::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--m);font-size:12px;pointer-events:none}
+.pcell input{padding-left:22px}
+.bdel{width:34px;height:34px;border-radius:6px;background:transparent;border:.5px solid var(--b);color:var(--m);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.bdel:hover{background:rgba(224,80,80,.12);border-color:var(--r);color:var(--r)}
+.pfoot{padding:10px 14px;border-top:.5px solid var(--b);display:flex;justify-content:space-between;align-items:center}
+.badd{font-size:12px;font-weight:500;color:var(--v);background:transparent;border:.5px solid var(--b2);border-radius:20px;padding:6px 14px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
+.badd:hover{background:rgba(122,224,106,.08)}
+.tbox{background:var(--bg2);border:.5px solid var(--b);border-radius:10px;padding:1.25rem 1.5rem}
+.trow{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.trow .lb{font-size:13px;color:var(--m)}
+.trow .vl{font-size:13px}
+.trow.grand{border-top:.5px solid var(--b);margin-top:8px;padding-top:14px}
+.trow.grand .lb{font-size:15px;color:var(--t);font-weight:500}
+.trow.grand .vl{font-family:'Playfair Display',serif;font-size:28px;color:var(--v);letter-spacing:-.02em}
+.iva-note{font-size:11px;color:var(--m);margin-top:6px}
+.sw-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.sw{position:relative;width:38px;height:22px}
+.sw input{opacity:0;width:0;height:0}
+.sl{position:absolute;cursor:pointer;inset:0;background:var(--bg4);border-radius:22px;border:.5px solid var(--b);transition:.2s}
+.sl::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--m);border-radius:50%;transition:.2s}
+.sw input:checked+.sl{background:rgba(122,224,106,.2);border-color:var(--v)}
+.sw input:checked+.sl::before{background:var(--v);transform:translateX(16px)}
+.sr{display:flex;gap:8px;flex-wrap:wrap}
+.sc{padding:6px 14px;border-radius:20px;font-size:12px;border:.5px solid var(--b);background:var(--bg3);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;color:var(--m)}
+.sc.an{background:rgba(122,224,106,.12);border-color:var(--v);color:var(--v)}
+.sc.ae{background:rgba(58,130,246,.12);border-color:#3a82f6;color:#3a82f6}
+.sc.ag{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
+.sc.ac{background:rgba(34,197,94,.12);border-color:#22c55e;color:#22c55e}
+.sc.ap{background:rgba(224,80,80,.12);border-color:var(--r);color:var(--r)}
+.vrow{display:flex;align-items:center;gap:10px}
+.vrow input[type=number]{width:70px;text-align:center}
+.vrow span{font-size:13px;color:var(--m)}
+.pvbox{background:var(--bg2);border:.5px solid var(--b2);border-radius:10px;padding:1.25rem 1.5rem}
+.pvf{font-size:11px;color:var(--v);letter-spacing:.1em;margin-bottom:4px}
+.pvc{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:2px}
+.pvg{font-size:12px;color:var(--m);margin-bottom:12px}
+.pvi{display:flex;justify-content:space-between;padding:3px 0;border-bottom:.5px solid var(--b);font-size:12px;color:var(--m)}
+.pvi:last-child{border-bottom:none}
+.pvt{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:.5px solid var(--b2)}
+.pvt .lb{font-size:13px;color:var(--m)}
+.pvt .num{font-family:'Playfair Display',serif;font-size:22px;color:var(--v)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:2rem}
+.bmain{flex:1;min-width:200px;padding:14px 24px;background:var(--v);color:#0d0d0d;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.bmain:hover{background:var(--vd);transform:translateY(-1px)}
+.bmain:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.bsec{flex:1;min-width:140px;padding:14px 20px;background:transparent;color:var(--t);border:.5px solid var(--b);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.bsec:hover{border-color:rgba(255,255,255,.25);background:var(--bg3)}
+.bsec:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:.5px solid var(--b2);color:var(--v);padding:12px 24px;border-radius:30px;font-size:13px;transition:transform .3s ease;z-index:100;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:rgba(224,80,80,.4);color:var(--r)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--v);display:inline-block;margin-right:8px;vertical-align:middle}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(13,13,13,.3);border-top-color:#0d0d0d;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}.phead{display:none}.prow{grid-template-columns:1fr 1fr}.prow .dc{grid-column:1/-1}.actions{flex-direction:column}}
 </style>
 </head>
 <body>
 <div class="page">
-
   <div class="header">
     <div class="logo"><strong>Omar García Brena</strong>Consultor Tecnológico · México</div>
-    <div class="folio-badge" id="folio-display">COT-001-2026</div>
+    <div class="fbadge" id="folio-display">COT-001-2026</div>
   </div>
-
   <h1>Nueva <em>cotización</em></h1>
-  <p class="hero-sub">Completa los datos — el Doc y PDF se generan automáticamente en tu Drive.</p>
+  <p class="hero-sub">Completa los datos — PDF y DOC se descargan automáticamente.</p>
 
-  <!-- CLIENTE -->
-  <div class="section">
-    <div class="section-label">Datos del cliente</div>
-    <div class="grid2" style="margin-bottom:10px">
-      <div class="field">
+  <div class="sec">
+    <div class="slbl">Datos del cliente</div>
+    <div class="g2" style="margin-bottom:10px">
+      <div class="fld">
         <label>Nombre / Negocio *</label>
-        <div class="autocomplete-wrap">
-          <input type="text" id="cliente-nombre" placeholder="Escribe para buscar o nuevo cliente…"
-            oninput="onNombreInput()" onkeydown="onNombreKey(event)" autocomplete="off">
-          <div class="autocomplete-dropdown" id="ac-dropdown"></div>
+        <div class="acw">
+          <input type="text" id="cn" placeholder="Escribe para buscar o nuevo…" oninput="onNI()" onkeydown="onNK(event)" autocomplete="off">
+          <div class="acd" id="acd"></div>
         </div>
       </div>
-      <div class="field">
-        <label>Giro</label>
-        <input type="text" id="cliente-giro" placeholder="Comedor, Postrería…" oninput="updatePreview()">
-      </div>
+      <div class="fld"><label>Giro</label><input type="text" id="cg" placeholder="Comedor, Postrería…" oninput="upPrev()"></div>
     </div>
-    <div class="grid3">
-      <div class="field">
-        <label>Teléfono</label>
-        <input type="tel" id="cliente-tel" placeholder="+52 951 000 0000">
-      </div>
-      <div class="field">
-        <label>Correo (opcional)</label>
-        <input type="email" id="cliente-email" placeholder="contacto@negocio.mx">
-      </div>
-      <div class="field">
-        <label>Zona de servicio</label>
-        <input type="text" id="cliente-zona" placeholder="Miahuatlán, Oaxaca">
+    <div class="g3">
+      <div class="fld"><label>Teléfono</label><input type="tel" id="ct" placeholder="+52 951 000 0000"></div>
+      <div class="fld"><label>Correo (opcional)</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
+      <div class="fld"><label>Zona de servicio</label><input type="text" id="cz" placeholder="Miahuatlán, Oaxaca"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="slbl">Productos / Servicios</div>
+    <div class="pbox">
+      <div class="phead"><span>Descripción</span><span style="text-align:right">Cant.</span><span style="text-align:right">Precio unit.</span><span></span></div>
+      <div class="plst" id="plst"></div>
+      <div class="pfoot">
+        <button class="badd" onclick="addP()">+ Agregar línea</button>
+        <span style="font-size:11px;color:var(--m)" id="pcnt">0 conceptos</span>
       </div>
     </div>
   </div>
 
-  <!-- PRODUCTOS -->
-  <div class="section">
-    <div class="section-label">Productos / Servicios</div>
-    <div class="productos-box">
-      <div class="productos-header">
-        <span>Descripción</span><span style="text-align:right">Cant.</span>
-        <span style="text-align:right">Precio unit.</span><span></span>
-      </div>
-      <div class="productos-lista" id="productos-lista"></div>
-      <div class="productos-footer">
-        <button class="btn-add" onclick="addProducto()">+ Agregar línea</button>
-        <span style="font-size:11px;color:var(--muted)" id="cant-items">0 conceptos</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOTALES -->
-  <div class="section">
-    <div class="section-label">Totales y configuración</div>
-    <div class="grid2">
-      <div class="totales-box">
-        <div class="total-row"><span class="lbl">Subtotal</span><span class="val" id="subtotal-val">$0</span></div>
-        <div class="total-row" id="iva-row" style="display:none"><span class="lbl">IVA (16%)</span><span class="val" id="iva-val">$0</span></div>
-        <div class="total-row grand"><span class="lbl">Total</span><span class="val" id="total-val">$0</span></div>
+  <div class="sec">
+    <div class="slbl">Totales y configuración</div>
+    <div class="g2">
+      <div class="tbox">
+        <div class="trow"><span class="lb">Subtotal</span><span class="vl" id="sv">$0</span></div>
+        <div class="trow" id="iva-row" style="display:none"><span class="lb">IVA (16%)</span><span class="vl" id="iv">$0</span></div>
+        <div class="trow grand"><span class="lb">Total</span><span class="vl" id="tv">$0</span></div>
         <p class="iva-note" id="iva-note">* Precios en MXN. IVA no incluido.</p>
-        <div class="switch-row">
-          <label class="switch"><input type="checkbox" id="iva-toggle" onchange="toggleIVA()"><span class="slider"></span></label>
-          <span style="font-size:12px;color:var(--muted)">Incluir IVA 16%</span>
+        <div class="sw-row">
+          <label class="sw"><input type="checkbox" id="iva-toggle" onchange="togIVA()"><span class="sl"></span></label>
+          <span style="font-size:12px;color:var(--m)">Incluir IVA 16%</span>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="field">
+        <div class="fld">
           <label>Vigencia</label>
-          <div class="vigencia-row">
-            <input type="number" id="vigencia" value="15" min="1" max="90" oninput="updatePreview()">
-            <span>días naturales</span>
-          </div>
+          <div class="vrow"><input type="number" id="vig" value="15" min="1" max="90" oninput="upPrev()"><span>días naturales</span></div>
         </div>
-        <div class="field">
-          <label>Notas internas (solo en Sheets, no en el Doc)</label>
-          <textarea id="notas" placeholder="Ej. cliente interesado en fase 2…" style="min-height:60px"></textarea>
+        <div class="fld">
+          <label>Fecha de cierre estimada (col. P en Sheets)</label>
+          <input type="date" id="fecha-cierre">
+        </div>
+        <div class="fld">
+          <label>Notas internas (solo en Sheets)</label>
+          <textarea id="notas" placeholder="Ej. cliente interesado en fase 2…"></textarea>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- PIPELINE -->
-  <div class="section">
-    <div class="section-label">Pipeline CRM</div>
-    <div class="status-row">
-      <button class="status-chip active-nueva" data-status="NUEVA"      onclick="setStatus(this)">⬤ Nueva</button>
-      <button class="status-chip"              data-status="ENVIADA"    onclick="setStatus(this)">⬤ Enviada</button>
-      <button class="status-chip"              data-status="NEGOCIANDO" onclick="setStatus(this)">⬤ Negociando</button>
-      <button class="status-chip"              data-status="CERRADA"    onclick="setStatus(this)">⬤ Cerrada ✓</button>
-      <button class="status-chip"              data-status="PERDIDA"    onclick="setStatus(this)">⬤ Perdida</button>
+  <div class="sec">
+    <div class="slbl">Pipeline CRM</div>
+    <div class="sr">
+      <button class="sc an" data-s="NUEVA"      onclick="setSt(this)">⬤ Nueva</button>
+      <button class="sc"    data-s="ENVIADA"    onclick="setSt(this)">⬤ Enviada</button>
+      <button class="sc"    data-s="NEGOCIANDO" onclick="setSt(this)">⬤ Negociando</button>
+      <button class="sc"    data-s="CERRADA"    onclick="setSt(this)">⬤ Cerrada ✓</button>
+      <button class="sc"    data-s="PERDIDA"    onclick="setSt(this)">⬤ Perdida</button>
     </div>
   </div>
 
-  <!-- PREVIEW -->
-  <div class="section">
-    <div class="section-label">Vista previa del metadata</div>
-    <div class="preview-box">
-      <div class="preview-folio" id="prev-folio">COT-001-2026</div>
-      <div class="preview-cliente" id="prev-cliente">—</div>
-      <div class="preview-giro" id="prev-giro">—</div>
-      <div id="prev-items"></div>
-      <div class="preview-total">
-        <span class="lbl">Total estimado</span>
-        <span class="num" id="prev-total">$0</span>
-      </div>
+  <div class="sec">
+    <div class="slbl">Vista previa</div>
+    <div class="pvbox">
+      <div class="pvf" id="pv-f">COT-001-2026</div>
+      <div class="pvc" id="pv-c">—</div>
+      <div class="pvg" id="pv-g">—</div>
+      <div id="pv-i"></div>
+      <div class="pvt"><span class="lb">Total estimado</span><span class="num" id="pv-t">$0</span></div>
     </div>
   </div>
 
-  <!-- RESULTADO -->
-  <div class="result-box" id="result-box">
-    <p style="font-size:12px;color:var(--muted);margin-bottom:4px">✓ Documentos generados en tu Drive:</p>
-    <div class="result-links">
-      <a id="link-doc" href="#" target="_blank">📄 Abrir Google Doc</a>
-      <a id="link-pdf" href="#" target="_blank">📥 Abrir PDF</a>
-    </div>
-  </div>
-
-  <!-- ACCIONES -->
   <div class="actions">
-    <button class="btn-main" id="btn-guardar" onclick="guardarCotizacion()">
-      <span class="step-dot"></span>1 — Guardar en Sheets
-    </button>
-    <button class="btn-sec" id="btn-doc" onclick="generarDoc()" disabled>
-      📄 2 — Generar Doc + PDF
-    </button>
+    <button class="bmain" id="btn-g" onclick="guardar()"><span class="dot"></span>1 — Guardar en Sheets</button>
+    <button class="bsec"  id="btn-pdf" onclick="descargarPDF()" disabled>📄 Descargar PDF</button>
+    <button class="bsec"  id="btn-doc" onclick="descargarDOC()" disabled>📝 Descargar DOC</button>
   </div>
-  <p style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">
-    Primero guarda → luego genera el Doc. Ambos van a tu Drive automáticamente.
-  </p>
-
+  <p style="font-size:11px;color:var(--m);margin-top:10px;text-align:center">Guarda primero → luego descarga PDF y DOC. Los términos y condiciones se jalán de tu hoja Config automáticamente.</p>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbzvmdb-7yV4-wf65JSd1-XI9-3W_4cMZ6LoOYTEGunadfPFkvairIk4mPX5s9-xUEza_g/exec';
 var TOKEN   = 'rDMyQqrnbm1grpqQdzeq21urdWw+q2X0gWq9Q5cMo4o=';
-// ─────────────────────────────────────────────────────────────
 
-var productos      = [];
-var currentStatus  = 'NUEVA';
-var folioActual    = 'COT-001-2026';
-var folioGuardado  = '';
-var guardado       = false;
-var clientesCache  = [];
-var acIdx          = -1;
+var prods=[], status='NUEVA', folioActual='COT-001-2026', folioGuardado='';
+var clientes=[], acIdx=-1;
+var cfgCache=null; // Config jalada del GS
 
-var folioStr = function() { return folioActual; };
-
-window.addEventListener('DOMContentLoaded', function() {
-  addProducto('', 1, 0);
-  updatePreview();
-  cargarFolioYClientes();
+window.addEventListener('DOMContentLoaded',function(){
+  addP('',1,0); upPrev();
+  gasGet('siguiente_folio',function(d){if(d.ok&&d.folio){folioActual=d.folio;upPrev();}});
+  gasGet('listar_clientes',function(d){if(d.ok&&d.clientes)clientes=d.clientes;});
+  gasGet('leer_config',function(d){if(d.ok&&d.config)cfgCache=d.config;});
 });
-
-function cargarFolioYClientes() {
-  var urlFolio    = GAS_URL + '?accion=siguiente_folio&token=' + encodeURIComponent(TOKEN);
-  var urlClientes = GAS_URL + '?accion=listar_clientes&token=' + encodeURIComponent(TOKEN);
-  fetch(urlFolio)
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if (data.ok && data.folio) {
-        folioActual = data.folio;
-        updatePreview();
-      }
-    }).catch(function(){});
-  fetch(urlClientes)
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if (data.ok && data.clientes) clientesCache = data.clientes;
-    }).catch(function(){});
-}
 
 // ── Autocomplete ──────────────────────────────────────────────
-function onNombreInput() {
-  updatePreview();
-  var q = document.getElementById('cliente-nombre').value.trim().toLowerCase();
-  if (!q || clientesCache.length === 0) { cerrarDropdown(); return; }
-
-  var matches = clientesCache.filter(function(c) {
-    return c.nombre.toLowerCase().indexOf(q) !== -1;
-  }).slice(0, 6);
-
-  if (matches.length === 0) { cerrarDropdown(); return; }
-
-  var dd = document.getElementById('ac-dropdown');
-  dd.innerHTML = '';
-  acIdx = -1;
-
-  matches.forEach(function(c, i) {
-    var item = document.createElement('div');
-    item.className = 'ac-item';
-    item.dataset.idx = i;
-    item.innerHTML =
-      '<div class="ac-nombre">' + esc(c.nombre) +
-      '<span class="ac-badge">cliente anterior</span></div>' +
-      '<div class="ac-detalle">' +
-        (c.giro  ? esc(c.giro)  + '  ' : '') +
-        (c.tel   ? '📞 ' + esc(c.tel) : '') +
-      '</div>';
-    item.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      seleccionarCliente(c);
-    });
-    dd.appendChild(item);
+function onNI(){
+  upPrev();
+  var q=gv('cn').toLowerCase(); if(!q){cDD();return;}
+  var ms=clientes.filter(function(c){return c.nombre.toLowerCase().indexOf(q)!==-1;}).slice(0,6);
+  if(!ms.length){cDD();return;}
+  var dd=document.getElementById('acd');
+  dd.innerHTML=''; acIdx=-1; dd._m=ms;
+  ms.forEach(function(c){
+    var el=document.createElement('div'); el.className='aci';
+    el.innerHTML='<div class="an">'+esc(c.nombre)+'<span class="acbadge">anterior</span></div><div class="ad">'+(c.giro?esc(c.giro)+'  ':'')+( c.tel?'📞 '+esc(c.tel):'' )+'</div>';
+    el.addEventListener('mousedown',function(e){e.preventDefault();selC(c);});
+    dd.appendChild(el);
   });
-
   dd.classList.add('open');
-  // Guardar matches para navegación con teclado
-  dd._matches = matches;
 }
-
-function onNombreKey(e) {
-  var dd = document.getElementById('ac-dropdown');
-  if (!dd.classList.contains('open')) return;
-  var items = dd.querySelectorAll('.ac-item');
-
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    acIdx = Math.min(acIdx + 1, items.length - 1);
-    actualizarHighlight(items);
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    acIdx = Math.max(acIdx - 1, 0);
-    actualizarHighlight(items);
-  } else if (e.key === 'Enter' && acIdx >= 0) {
-    e.preventDefault();
-    seleccionarCliente(dd._matches[acIdx]);
-  } else if (e.key === 'Escape') {
-    cerrarDropdown();
-  }
+function onNK(e){
+  var dd=document.getElementById('acd'); if(!dd.classList.contains('open'))return;
+  var its=dd.querySelectorAll('.aci');
+  if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,its.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);}
+  else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();selC(dd._m[acIdx]);}
+  else if(e.key==='Escape'){cDD();}
+  its.forEach(function(it,i){it.classList.toggle('active',i===acIdx);});
 }
-
-function actualizarHighlight(items) {
-  items.forEach(function(it, i) {
-    it.classList.toggle('active', i === acIdx);
-  });
+function selC(c){
+  document.getElementById('cn').value=c.nombre;
+  document.getElementById('cg').value=c.giro||'';
+  document.getElementById('ct').value=c.tel||'';
+  document.getElementById('ce').value=c.email||'';
+  document.getElementById('cz').value=c.zona||'';
+  cDD(); upPrev(); toast('✓ '+c.nombre+' precargado');
 }
-
-function seleccionarCliente(c) {
-  document.getElementById('cliente-nombre').value = c.nombre;
-  document.getElementById('cliente-giro').value   = c.giro  || '';
-  document.getElementById('cliente-tel').value    = c.tel   || '';
-  document.getElementById('cliente-email').value  = c.email || '';
-  document.getElementById('cliente-zona').value   = c.zona  || '';
-  cerrarDropdown();
-  updatePreview();
-  showToast('✓ Datos de ' + c.nombre + ' precargados');
-}
-
-function cerrarDropdown() {
-  var dd = document.getElementById('ac-dropdown');
-  dd.classList.remove('open');
-  dd.innerHTML = '';
-  acIdx = -1;
-}
-
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.autocomplete-wrap')) cerrarDropdown();
-});
+function cDD(){var dd=document.getElementById('acd');dd.classList.remove('open');dd.innerHTML='';acIdx=-1;}
+document.addEventListener('click',function(e){if(!e.target.closest('.acw'))cDD();});
 
 // ── Productos ─────────────────────────────────────────────────
-function addProducto(desc, cant, precio) {
-  desc  = desc  !== undefined ? desc  : '';
-  cant  = cant  !== undefined ? cant  : 1;
-  precio = precio !== undefined ? precio : 0;
-  var id = Date.now() + Math.random();
-  productos.push({ id: id, desc: desc, cant: cant, precio: precio });
-  renderProductos();
-  updatePreview();
-}
-
-function removeProducto(id) {
-  productos = productos.filter(function(p){ return p.id !== id; });
-  renderProductos(); updatePreview();
-}
-
-function renderProductos() {
-  var lista = document.getElementById('productos-lista');
-  lista.innerHTML = '';
-  productos.forEach(function(p) {
-    var row = document.createElement('div');
-    row.className = 'producto-row';
-    row.innerHTML =
-      '<div class="desc-cell"><input type="text" placeholder="Descripción del servicio…" value="' + esc(p.desc) + '" oninput="updateProd(' + p.id + ',\'desc\',this.value)"></div>' +
-      '<div><input type="number" min="1" value="' + p.cant + '" oninput="updateProd(' + p.id + ',\'cant\',this.value)"></div>' +
-      '<div class="precio-cell"><input type="number" min="0" value="' + (p.precio||'') + '" placeholder="0" oninput="updateProd(' + p.id + ',\'precio\',this.value)"></div>' +
-      '<button class="btn-del" onclick="removeProducto(' + p.id + ')" title="Eliminar">×</button>';
-    lista.appendChild(row);
+function addP(d,c,p){d=d||'';c=c!==undefined?c:1;p=p!==undefined?p:0;var id=Date.now()+Math.random();prods.push({id:id,d:d,c:c,p:p});renderP();upPrev();}
+function rmP(id){prods=prods.filter(function(x){return x.id!==id;});renderP();upPrev();}
+function renderP(){
+  var l=document.getElementById('plst');l.innerHTML='';
+  prods.forEach(function(pr){
+    var row=document.createElement('div');row.className='prow';
+    row.innerHTML='<div class="dc"><input type="text" placeholder="Descripción…" value="'+esc(pr.d)+'" oninput="upP('+pr.id+',\'d\',this.value)"></div>'
+      +'<div><input type="number" min="1" value="'+pr.c+'" oninput="upP('+pr.id+',\'c\',this.value)"></div>'
+      +'<div class="pcell"><input type="number" min="0" value="'+(pr.p||'')+'" placeholder="0" oninput="upP('+pr.id+',\'p\',this.value)"></div>'
+      +'<button class="bdel" onclick="rmP('+pr.id+')">×</button>';
+    l.appendChild(row);
   });
-  document.getElementById('cant-items').textContent =
-    productos.length + ' concepto' + (productos.length !== 1 ? 's' : '');
+  document.getElementById('pcnt').textContent=prods.length+' concepto'+(prods.length!==1?'s':'');
 }
-
-function updateProd(id, field, val) {
-  var p = productos.find(function(p){ return p.id === id; });
-  if (!p) return;
-  if (field === 'desc')   p.desc   = val;
-  if (field === 'cant')   p.cant   = parseFloat(val) || 1;
-  if (field === 'precio') p.precio = parseFloat(val) || 0;
-  updatePreview();
+function upP(id,f,val){var pr=prods.find(function(x){return x.id===id;});if(!pr)return;if(f==='d')pr.d=val;else if(f==='c')pr.c=parseFloat(val)||1;else pr.p=parseFloat(val)||0;upPrev();}
+function calc(){var sub=prods.reduce(function(a,p){return a+(p.c*p.p);},0);var iva=document.getElementById('iva-toggle').checked?sub*0.16:0;return{sub:sub,iva:iva,tot:sub+iva};}
+function togIVA(){var on=document.getElementById('iva-toggle').checked;document.getElementById('iva-row').style.display=on?'flex':'none';document.getElementById('iva-note').textContent=on?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.';upPrev();}
+function fmt(n){return '$'+Math.round(n).toLocaleString('es-MX');}
+function upPrev(){
+  var t=calc();
+  document.getElementById('sv').textContent=fmt(t.sub);
+  document.getElementById('iv').textContent=fmt(t.iva);
+  document.getElementById('tv').textContent=fmt(t.tot);
+  document.getElementById('folio-display').textContent=folioActual;
+  document.getElementById('pv-f').textContent=folioActual;
+  document.getElementById('pv-c').textContent=gv('cn')||'—';
+  document.getElementById('pv-g').textContent=gv('cg')||'—';
+  document.getElementById('pv-t').textContent=fmt(t.tot);
+  document.getElementById('pv-i').innerHTML=prods.map(function(p){return '<div class="pvi"><span>'+esc(p.d||'(sin desc)')+'</span><span>'+fmt(p.c*p.p)+'</span></div>';}).join('');
 }
-
-// ── Totales ───────────────────────────────────────────────────
-function calcTotals() {
-  var sub = productos.reduce(function(a,p){ return a + (p.cant * p.precio); }, 0);
-  var ivaOn = document.getElementById('iva-toggle').checked;
-  var iva = ivaOn ? sub * 0.16 : 0;
-  return { sub: sub, iva: iva, total: sub + iva };
+function setSt(btn){
+  document.querySelectorAll('.sc').forEach(function(c){c.className='sc';});
+  status=btn.dataset.s;
+  var map={NUEVA:'an',ENVIADA:'ae',NEGOCIANDO:'ag',CERRADA:'ac',PERDIDA:'ap'};
+  btn.classList.add(map[status]||'an');
 }
-
-function toggleIVA() {
-  var on = document.getElementById('iva-toggle').checked;
-  document.getElementById('iva-row').style.display = on ? 'flex' : 'none';
-  document.getElementById('iva-note').textContent  =
-    on ? '* IVA incluido (16%).' : '* Precios en MXN. IVA no incluido.';
-  updatePreview();
+function mkPayload(){
+  var t=calc();
+  return{token:TOKEN,accion:'guardar',folio:folioActual,
+    fecha:new Date().toISOString().split('T')[0],
+    cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
+    vigencia:document.getElementById('vig').value,
+    fecha_cierre:document.getElementById('fecha-cierre').value,
+    status:status,notas:gv('notas'),
+    productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
+    subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
+    incluye_iva:document.getElementById('iva-toggle').checked};
 }
-
-function fmt(n) {
-  return '$' + Math.round(n).toLocaleString('es-MX');
-}
-
-function updatePreview() {
-  var t = calcTotals();
-  document.getElementById('subtotal-val').textContent = fmt(t.sub);
-  document.getElementById('iva-val').textContent      = fmt(t.iva);
-  document.getElementById('total-val').textContent    = fmt(t.total);
-  document.getElementById('folio-display').textContent = folioStr();
-  document.getElementById('prev-folio').textContent    = folioStr();
-  document.getElementById('prev-cliente').textContent  = document.getElementById('cliente-nombre').value || '—';
-  document.getElementById('prev-giro').textContent     = document.getElementById('cliente-giro').value   || '—';
-  document.getElementById('prev-total').textContent    = fmt(t.total);
-  document.getElementById('prev-items').innerHTML = productos.map(function(p){
-    return '<div class="preview-item"><span>' + esc(p.desc||'(sin descripción)') + '</span><span>' + fmt(p.cant*p.precio) + '</span></div>';
-  }).join('');
-}
-
-function setStatus(btn) {
-  document.querySelectorAll('.status-chip').forEach(function(c){ c.className = 'status-chip'; });
-  currentStatus = btn.dataset.status;
-  btn.classList.add('active-' + currentStatus.toLowerCase());
-}
-
-// ── Payload ───────────────────────────────────────────────────
-function buildPayload(accion) {
-  var t = calcTotals();
-  return {
-    token: TOKEN, accion: accion,
-    folio:    folioStr(),
-    fecha:    new Date().toISOString().split('T')[0],
-    cliente:  document.getElementById('cliente-nombre').value.trim(),
-    giro:     document.getElementById('cliente-giro').value.trim(),
-    tel:      document.getElementById('cliente-tel').value.trim(),
-    email:    document.getElementById('cliente-email').value.trim(),
-    zona:     document.getElementById('cliente-zona').value.trim(),
-    vigencia: document.getElementById('vigencia').value,
-    status:   currentStatus,
-    notas:    document.getElementById('notas').value.trim(),
-    productos: productos.map(function(p){
-      return { desc:p.desc, cant:p.cant, precio:Math.round(p.precio), subtotal:Math.round(p.cant*p.precio) };
-    }),
-    subtotal:    Math.round(t.sub),
-    iva:         Math.round(t.iva),
-    total:       Math.round(t.total),
-    incluye_iva: document.getElementById('iva-toggle').checked,
-  };
-}
-
-function validar() {
-  if (!document.getElementById('cliente-nombre').value.trim()) {
-    showToast('⚠ Ingresa el nombre del cliente', true); return false;
-  }
-  if (productos.length === 0 || productos.every(function(p){ return !p.desc.trim(); })) {
-    showToast('⚠ Agrega al menos un producto con descripción', true); return false;
-  }
+function valid(){
+  if(!gv('cn')){toast('⚠ Ingresa el nombre del cliente',true);return false;}
+  if(!prods.length||prods.every(function(p){return !p.d;})){toast('⚠ Agrega al menos un producto',true);return false;}
   return true;
 }
 
-// ── Fetch helper ──────────────────────────────────────────────
-function gasPost(payload) {
-  return fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(payload)
-  }).then(function(r){
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  });
-}
-
 // ── Guardar ───────────────────────────────────────────────────
-function guardarCotizacion() {
-  if (!validar()) return;
-  var btn = document.getElementById('btn-guardar');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="loader"></span>Guardando…';
-
-  gasPost(buildPayload('guardar'))
-    .then(function(data){
-      if (data.ok) {
-        guardado = true;
-        folioGuardado = folioActual;
-        showToast('✓ Guardado en Google Sheets');
-        btn.textContent = '✓ Guardado';
-        document.getElementById('btn-doc').disabled = false;
-        // Pedir al GS el siguiente folio real
-        fetch(GAS_URL + '?accion=siguiente_folio&token=' + encodeURIComponent(TOKEN))
-          .then(function(r){ return r.json(); })
-          .then(function(d){ if(d.ok && d.folio){ folioActual = d.folio; updatePreview(); } })
-          .catch(function(){});
-        // Actualizar cache de clientes con el nuevo
-        var nombre = document.getElementById('cliente-nombre').value.trim();
-        if (nombre) {
-          var existe = clientesCache.some(function(c){ return c.nombre.toLowerCase() === nombre.toLowerCase(); });
-          if (!existe) {
-            clientesCache.push({
-              nombre: nombre,
-              giro:   document.getElementById('cliente-giro').value.trim(),
-              tel:    document.getElementById('cliente-tel').value.trim(),
-              email:  document.getElementById('cliente-email').value.trim(),
-              zona:   document.getElementById('cliente-zona').value.trim()
-            });
-          }
-        }
-      } else {
-        throw new Error(data.error || 'Error desconocido');
-      }
-    })
-    .catch(function(err){
-      showToast('⚠ ' + err.message, true);
-      btn.disabled = false;
-      btn.innerHTML = '<span class="step-dot"></span>1 — Guardar en Sheets';
-    });
-}
-
-// ── Generar Doc + PDF ─────────────────────────────────────────
-function generarDoc() {
-  if (!validar()) return;
-  var btn = document.getElementById('btn-doc');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="loader"></span>Generando Doc + PDF…';
-
-  var payload    = buildPayload('generar_doc');
-  payload.folio  = folioGuardado || folioActual;
-
-  gasPost(payload)
-    .then(function(data){
-      if (data.ok) {
-        showToast('✓ Doc y PDF listos en tu Drive');
-        btn.textContent = '✓ Generado';
-        document.getElementById('link-doc').href = data.doc_url;
-        document.getElementById('link-pdf').href = data.pdf_url;
-        document.getElementById('result-box').classList.add('show');
-        setTimeout(function(){
-          if (confirm('¿Iniciar una nueva cotización?')) resetForm();
-        }, 1500);
-      } else {
-        throw new Error(data.error || 'Error desconocido');
-      }
-    })
-    .catch(function(err){
-      showToast('⚠ ' + err.message, true);
-      btn.disabled = false;
-      btn.textContent = '📄 2 — Generar Doc + PDF';
-    });
-}
-
-// ── Reset ─────────────────────────────────────────────────────
-function resetForm() {
-  productos = []; currentStatus = 'NUEVA'; guardado = false;
-  ['cliente-nombre','cliente-giro','cliente-tel','cliente-email','cliente-zona','notas'].forEach(function(id){
-    document.getElementById(id).value = '';
+function guardar(){
+  if(!valid())return;
+  var btn=document.getElementById('btn-g');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Guardando…';
+  gasPost(mkPayload(),function(data){
+    if(data.ok){
+      folioGuardado=folioActual;
+      toast('✓ Guardado en Sheets');
+      btn.textContent='✓ Guardado';
+      document.getElementById('btn-pdf').disabled=false;
+      document.getElementById('btn-doc').disabled=false;
+      gasGet('siguiente_folio',function(d){if(d.ok&&d.folio){folioActual=d.folio;upPrev();}});
+      var n=gv('cn');
+      if(n&&!clientes.some(function(c){return c.nombre.toLowerCase()===n.toLowerCase();}))
+        clientes.push({nombre:n,giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz')});
+    }else{
+      toast('⚠ '+(data.error||'Error'),true);
+      btn.disabled=false;btn.innerHTML='<span class="dot"></span>1 — Guardar en Sheets';
+    }
   });
-  document.getElementById('vigencia').value = '15';
-  document.getElementById('iva-toggle').checked = false;
-  document.querySelectorAll('.status-chip').forEach(function(c){ c.className = 'status-chip'; });
-  document.querySelector('[data-status="NUEVA"]').classList.add('active-nueva');
-  document.getElementById('btn-guardar').disabled  = false;
-  document.getElementById('btn-guardar').innerHTML = '<span class="step-dot"></span>1 — Guardar en Sheets';
-  document.getElementById('btn-doc').disabled     = true;
-  document.getElementById('btn-doc').textContent  = '📄 2 — Generar Doc + PDF';
-  document.getElementById('result-box').classList.remove('show');
-  toggleIVA(); addProducto('',1,0); updatePreview();
+}
+
+// ── Datos para PDF/DOC ────────────────────────────────────────
+function getDatos(){
+  var t=calc();
+  var cfg=cfgCache||{};
+  return{
+    folio:     folioGuardado||folioActual,
+    fecha:     new Date().toISOString().split('T')[0],
+    vigencia:  document.getElementById('vig').value,
+    fecha_cierre: document.getElementById('fecha-cierre').value,
+    cliente:   gv('cn'), giro:gv('cg'), tel:gv('ct'), email:gv('ce'), zona:gv('cz'),
+    productos: prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
+    subtotal:  Math.round(t.sub), iva:Math.round(t.iva), total:Math.round(t.tot),
+    incluye_iva: document.getElementById('iva-toggle').checked,
+    // Config jalada del GS
+    terminos:  cfg.terminos || cfg.fila1 || TERM_DEFAULT,
+    slogan:    cfg.slogan   || cfg.fila2 || 'Moderniza tu negocio desde el primer día',
+    nota_pie:  cfg.nota_pie || cfg.fila3 || 'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202',
+  };
+}
+
+var TERM_DEFAULT='1. Esta cotizacion tiene vigencia indicada.\n2. Precios en MXN. IVA no incluido.\n3. Zona sin viaticos: Miahuatlan de Porfirio Diaz, Oaxaca.\n4. Instalacion CCTV sujeta a revision presencial.\n5. Primer mes de soporte incluido.\n6. La aceptacion implica conformidad con estos terminos.';
+
+// ── PDF con jsPDF ─────────────────────────────────────────────
+function descargarPDF(){
+  if(!valid())return;
+  var btn=document.getElementById('btn-pdf');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generando…';
+  // Si no tenemos config aún, recargarla
+  if(!cfgCache){
+    gasGet('leer_config',function(d){
+      if(d.ok&&d.config)cfgCache=d.config;
+      _buildPDF();
+      btn.textContent='📄 Descargar PDF';btn.disabled=false;
+    });
+  } else {
+    _buildPDF();
+    btn.textContent='📄 Descargar PDF';btn.disabled=false;
+  }
+}
+
+function _buildPDF(){
+  var p=getDatos();
+  var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  var W=210, ml=15, mr=15, cw=W-ml-mr;
+  var y=15;
+
+  // Colores como arrays RGB
+  var VD=[27,94,32], VM=[46,125,50], VL=[232,245,233];
+  var PK=[219,68,120]; // rosa como en la referencia — acento para el título
+  var BL=[17,17,17], GR=[100,100,100], GB=[245,245,245], WH=[255,255,255];
+  var LINE=[220,220,220];
+
+  function sf(style,size,color){doc.setFont('helvetica',style||'normal');doc.setFontSize(size||10);doc.setTextColor.apply(doc,color||BL);}
+  function fr(x,ry,w,h,color){doc.setFillColor.apply(doc,color);doc.rect(x,ry,w,h,'F');}
+  function ln(x1,y1,x2,y2,color){doc.setDrawColor.apply(doc,color||LINE);doc.line(x1,y1,x2,y2);}
+  function tx(t,x,ty,opts){doc.text(String(t||''),x,ty,opts||{});}
+
+  // ── HEADER — nombre consultor izq, COTIZACIÓN der ──────────
+  sf('bold',14,VM);
+  tx('Omar García Brena', ml, y);
+  sf('normal',8,GR);
+  tx('Consultor Tecnológico · México', ml, y+5);
+
+  // Box derecho tipo "FACTURA" de la referencia
+  var bw=52, bx=W-mr-bw;
+  fr(bx, y-6, bw, 18, VM);
+  sf('bold',13,WH);
+  tx('COTIZACIÓN', bx+bw/2, y+1, {align:'center'});
+  sf('normal',7,[200,230,201]);
+  tx(p.folio, bx+bw/2, y+6, {align:'center'});
+
+  y+=16;
+  ln(ml, y, W-mr, y, LINE);
+  y+=5;
+
+  // ── FECHA y VIGENCIA en box pequeño ───────────────────────
+  fr(bx, y-1, bw, 14, GB);
+  sf('bold',7,GR); tx('FECHA:', bx+bw/2, y+3, {align:'center'});
+  sf('bold',9,BL); tx(fmtF(p.fecha), bx+bw/2, y+8, {align:'center'});
+  sf('normal',7,GR); tx('Vigencia: '+p.vigencia+' días', bx+bw/2, y+12, {align:'center'});
+  y+=18;
+
+  // ── CLIENTE ───────────────────────────────────────────────
+  sf('bold',8,VM); tx('Cotización para:', ml, y); y+=4;
+  sf('bold',10,BL); tx(p.cliente||'—', ml, y);
+  if(p.email){sf('normal',8,GR);tx('Correo:', ml+80, y);sf('normal',8,BL);tx(p.email,ml+100,y);}
+  y+=5;
+  if(p.giro){sf('normal',8,GR);tx('Negocio:', ml, y);sf('normal',8,BL);tx(p.giro,ml+20,y);}
+  if(p.tel){sf('normal',8,GR);tx('Tel:', ml+80, y);sf('normal',8,BL);tx(p.tel,ml+92,y);}
+  y+=5;
+  if(p.zona){sf('normal',8,GR);tx('Zona:', ml, y);sf('normal',8,BL);tx(p.zona,ml+14,y);}
+  y+=8;
+  ln(ml,y,W-mr,y,LINE); y+=5;
+
+  // ── DESCRIPCIÓN ───────────────────────────────────────────
+  sf('bold',8,VM); tx('Descripción del proyecto:', ml, y); y+=5;
+  if(p.slogan){sf('normal',8,GR);var sl=doc.splitTextToSize(p.slogan,cw);sl.forEach(function(l){tx(l,ml,y);y+=4;});y+=2;}
+
+  // ── TABLA PRODUCTOS ───────────────────────────────────────
+  var colW=[cw*0.07,cw*0.45,cw*0.18,cw*0.15,cw*0.15];
+  var hh=7;
+  fr(ml,y,cw,hh,VM);
+  sf('bold',8,WH);
+  var hx=ml,hnames=['Cant.','Descripción','Precio U','Total',''];
+  // 4 columnas reales: cant, desc, precio, total
+  var cols4=[cw*0.1,cw*0.52,cw*0.19,cw*0.19];
+  var hnames4=['Cantidad','Descripción','Precio U','Total'];
+  var hx4=ml;
+  hnames4.forEach(function(h,i){
+    if(i>0)tx(h,hx4+2,y+5);
+    else tx(h,hx4+cols4[0]/2,y+5,{align:'center'});
+    hx4+=cols4[i];
+  });
+  y+=hh;
+
+  (p.productos||[]).forEach(function(pr,ri){
+    var rh=6, rbg=ri%2===0?WH:GB;
+    fr(ml,y,cw,rh,rbg);
+    sf('normal',8,BL);
+    var rx=ml;
+    var rvals=[String(pr.cant), pr.desc||'—', fmto(pr.precio), fmto(pr.subtotal)];
+    rvals.forEach(function(val,i){
+      var maxW=cols4[i]-3;
+      if(i===0)tx(val,rx+cols4[0]/2,y+4.5,{align:'center'});
+      else if(i>=2)tx(val,rx+cols4[i]-1,y+4.5,{align:'right'});
+      else{var trunc=doc.splitTextToSize(val,maxW);tx(trunc[0]+(trunc.length>1?'…':''),rx+2,y+4.5);}
+      rx+=cols4[i];
+    });
+    y+=rh;
+  });
+
+  // Nota vigencia
+  y+=3;
+  sf('italic',7,GR);
+  tx('Esta cotización es válida por los próximos '+p.vigencia+' días.',W-mr,y,{align:'right'});
+  y+=6;
+
+  // ── TOTALES (alineados a la derecha como en la referencia) ─
+  var tw=55, tx0=W-mr-tw;
+  [['Subtotal',fmto(p.subtotal)],['IVA',p.incluye_iva?fmto(p.iva):'No aplica'],['Total',fmto(p.total)]].forEach(function(row,i){
+    var isT=i===2, rbg=isT?VM:GB;
+    fr(tx0,y,tw,6,rbg);
+    sf(isT?'bold':'normal',isT?9:8,isT?WH:GR);
+    tx(row[0],tx0+2,y+4.5);
+    sf(isT?'bold':'normal',isT?9:8,isT?WH:BL);
+    tx(row[1],tx0+tw-1,y+4.5,{align:'right'});
+    y+=6;
+  });
+
+  sf('normal',7,GR);
+  tx(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.',ml,y+4);
+  y+=10;
+
+  // ── TÉRMINOS ──────────────────────────────────────────────
+  sf('bold',8,VM); tx('Términos:', ml, y); y+=4;
+  sf('normal',7,GR);
+  (p.terminos||'').split('\n').forEach(function(l){
+    if(!l.trim())return;
+    var wrapped=doc.splitTextToSize(l.trim(),cw);
+    wrapped.forEach(function(wl){
+      if(y>270){doc.addPage();y=15;}
+      tx(wl,ml,y);y+=3.5;
+    });
+  });
+  y+=4;
+
+  // ── FIRMA ─────────────────────────────────────────────────
+  if(y>240){doc.addPage();y=15;}
+  sf('normal',8,VM); tx(p.nota_pie||'Omar García Brena',ml,y);
+  y+=5;
+  sf('bold',9,BL); tx('Omar García Brena',ml,y);
+  y+=4;
+  sf('normal',7,GR); tx('Consultor Tecnológico · ogarciabrena@gmail.com',ml,y);
+  y+=10;
+  ln(ml,y,ml+70,y,[150,150,150]);
+  ln(ml+85,y,ml+155,y,[150,150,150]);
+  y+=4;
+  sf('normal',7,GR);
+  tx('Nombre y firma del cliente',ml,y);
+  tx('Fecha de aceptación',ml+85,y);
+
+  // ── PIE DE PÁGINA ─────────────────────────────────────────
+  fr(ml,282,cw,8,VM);
+  sf('normal',7,[200,230,201]);
+  tx('ogarciabrena@gmail.com',ml+5,287);
+  tx('+52 55 1455 2202',W-mr-5,287,{align:'right'});
+
+  doc.save((p.folio||'COT')+' - '+(p.cliente||'cliente')+'.pdf');
+}
+
+// ── DOC editable (HTML descargable que Word abre) ─────────────
+function descargarDOC(){
+  if(!valid())return;
+  var btn=document.getElementById('btn-doc');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generando…';
+  if(!cfgCache){
+    gasGet('leer_config',function(d){
+      if(d.ok&&d.config)cfgCache=d.config;
+      _buildDOC();
+      btn.textContent='📝 Descargar DOC';btn.disabled=false;
+    });
+  } else {
+    _buildDOC();
+    btn.textContent='📝 Descargar DOC';btn.disabled=false;
+  }
+}
+
+function _buildDOC(){
+  var p=getDatos();
+  var rows=p.productos.map(function(pr,i){
+    return '<tr style="background:'+(i%2===0?'#fff':'#f5f5f5')+'">'+
+      '<td style="text-align:center;padding:5px 8px;border:1px solid #ddd">'+pr.cant+'</td>'+
+      '<td style="padding:5px 8px;border:1px solid #ddd">'+esc(pr.desc||'—')+'</td>'+
+      '<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.precio)+'</td>'+
+      '<td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.subtotal)+'</td>'+
+      '</tr>';
+  }).join('');
+
+  var termHtml=(p.terminos||'').split('\n').filter(function(l){return l.trim();})
+    .map(function(l){return '<p style="margin:2px 0;font-size:9pt;color:#555">'+esc(l)+'</p>';}).join('');
+
+  var cliInfo='';
+  if(p.giro)   cliInfo+='<p style="margin:1px 0"><b>Giro:</b> '+esc(p.giro)+'</p>';
+  if(p.tel)    cliInfo+='<p style="margin:1px 0"><b>Tel:</b> '+esc(p.tel)+'</p>';
+  if(p.email)  cliInfo+='<p style="margin:1px 0"><b>Correo:</b> '+esc(p.email)+'</p>';
+  if(p.zona)   cliInfo+='<p style="margin:1px 0"><b>Zona:</b> '+esc(p.zona)+'</p>';
+
+  var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
+  +'<head><meta charset="UTF-8"><meta name=ProgId content=Word.Document>'
+  +'<style>body{font-family:Arial,sans-serif;font-size:10pt;margin:2cm}table{border-collapse:collapse;width:100%}</style></head>'
+  +'<body>'
+  // Encabezado
+  +'<table style="width:100%;margin-bottom:16px"><tr>'
+  +'<td><p style="font-size:16pt;font-weight:bold;color:#2E7D32;margin:0">PROPUESTA TECNOLÓGICA INTEGRAL</p>'
+  +'<p style="font-size:9pt;color:#666;margin:2px 0">'+esc(p.slogan||'Moderniza tu negocio desde el primer día')+'</p></td>'
+  +'<td style="text-align:right;vertical-align:top">'
+  +'<div style="background:#1B5E20;color:#fff;padding:8px 14px;display:inline-block">'
+  +'<p style="margin:0;font-size:7pt;color:#A5D6A7">COTIZACIÓN</p>'
+  +'<p style="margin:0;font-size:13pt;font-weight:bold">'+esc(p.folio)+'</p>'
+  +'<p style="margin:0;font-size:8pt;color:#C8E6C9">'+fmtF(p.fecha)+'</p>'
+  +'</div></td></tr></table>'
+  +'<hr style="border:none;border-top:2px solid #2E7D32;margin-bottom:12px">'
+  // Info consultor / vigencia
+  +'<table style="width:100%;margin-bottom:12px"><tr>'
+  +'<td style="font-size:9pt;color:#555"><b>Consultor:</b> Omar García Brena<br><b>Correo:</b> ogarciabrena@gmail.com<br><b>Tel:</b> +52 55 1455 2202</td>'
+  +'<td style="text-align:right;font-size:9pt;color:#555"><b>Folio:</b> '+esc(p.folio)+'<br><b>Fecha:</b> '+fmtF(p.fecha)+'<br><b>Vigencia:</b> '+p.vigencia+' días naturales</td>'
+  +'</tr></table>'
+  // Cliente
+  +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:8px 0 4px">COTIZACIÓN PARA</p>'
+  +'<div style="background:#E8F5E9;padding:8px 12px;margin-bottom:12px">'
+  +'<p style="font-size:12pt;font-weight:bold;color:#1B5E20;margin:0 0 4px">'+esc(p.cliente||'—')+'</p>'
+  +cliInfo+'</div>'
+  // Tabla productos
+  +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:8px 0 4px">DESCRIPCIÓN DE SERVICIOS</p>'
+  +'<table style="margin-bottom:8px"><thead>'
+  +'<tr style="background:#1B5E20"><th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:center;width:8%">Cant.</th>'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:left;width:52%">Descripción</th>'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Precio U</th>'
+  +'<th style="color:#fff;padding:6px 8px;border:1px solid #1B5E20;text-align:right;width:20%">Total</th></tr></thead>'
+  +'<tbody>'+rows+'</tbody></table>'
+  // Totales
+  +'<table style="width:40%;margin-left:auto;margin-bottom:12px">'
+  +'<tr style="background:#f5f5f5"><td style="padding:4px 8px;border:1px solid #ddd;color:#666">Subtotal</td><td style="padding:4px 8px;border:1px solid #ddd;text-align:right">'+fmto(p.subtotal)+'</td></tr>'
+  +'<tr><td style="padding:4px 8px;border:1px solid #ddd;color:#666">IVA</td><td style="padding:4px 8px;border:1px solid #ddd;text-align:right">'+(p.incluye_iva?fmto(p.iva):'No aplica')+'</td></tr>'
+  +'<tr style="background:#1B5E20"><td style="padding:6px 8px;border:1px solid #1B5E20;color:#fff;font-weight:bold">TOTAL</td><td style="padding:6px 8px;border:1px solid #1B5E20;color:#fff;font-weight:bold;text-align:right">'+fmto(p.total)+'</td></tr>'
+  +'</table>'
+  +'<p style="font-size:8pt;color:#888">'+(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.')+'</p>'
+  // Términos
+  +'<p style="font-size:8pt;font-weight:bold;color:#2E7D32;margin:12px 0 4px">TÉRMINOS Y CONDICIONES</p>'
+  +termHtml
+  // Firma
+  +'<div style="margin-top:24px"><table style="width:100%"><tr>'
+  +'<td style="width:50%;padding-top:30px;border-top:1px solid #999;font-size:8pt;color:#555">Nombre y firma del cliente</td>'
+  +'<td style="width:10%"></td>'
+  +'<td style="width:40%;padding-top:30px;border-top:1px solid #999;font-size:8pt;color:#555">Fecha de aceptación</td>'
+  +'</tr></table></div>'
+  // Footer
+  +'<div style="background:#1B5E20;color:#C8E6C9;padding:8px 12px;margin-top:20px;font-size:8pt;text-align:center">'
+  +esc(p.nota_pie||'Omar García Brena · ogarciabrena@gmail.com · +52 55 1455 2202')
+  +'</div>'
+  +'</body></html>';
+
+  var blob=new Blob([html],{type:'application/msword;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=(p.folio||'COT')+' - '+(p.cliente||'cliente')+'.doc';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+  toast('✓ DOC descargado');
 }
 
 // ── Utils ─────────────────────────────────────────────────────
-function esc(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function fmtF(iso){
+  try{if(!iso)return new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+  var pts=iso.split('-');return new Date(Number(pts[0]),Number(pts[1])-1,Number(pts[2])).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});}
+  catch(e){return iso||'';}
 }
-
-function showToast(msg, isError) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (isError ? ' error' : '');
-  t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 3000);
-}
+function fmto(n){return '$'+Number(n||0).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function gv(id){return document.getElementById(id).value.trim();}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function gasGet(ac,cb){fetch(GAS_URL+'?accion='+ac+'&token='+encodeURIComponent(TOKEN)).then(function(r){return r.json();}).then(cb).catch(function(){cb({ok:false});});}
+function gasPost(payload,cb){fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).then(function(r){return r.json();}).then(cb).catch(function(err){cb({ok:false,error:err.message});});}
+function toast(msg,isErr){var t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(isErr?' err':'');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 </script>
 </body>
 </html>
