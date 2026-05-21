@@ -236,7 +236,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fld"><label>Telefono</label><input type="tel" id="ct" placeholder="+52 951 000 0000"></div>
         <div class="fld"><label>Correo</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
         <div class="fld"><label>Zona</label><input type="text" id="cz" placeholder="Miahuatlan, Oaxaca"></div>
-        <div class="fld"><label>Elaboro (aparece en PDF)</label><input type="text" id="elaboro" placeholder="Nombre del asesor (opcional)"></div>
+        <div class="fld"><label>Direccion de entrega</label><input type="text" id="cdir" placeholder="Calle, Colonia, Ciudad..."></div>
+        <div class="fld"><label>Elaboro *</label><input type="text" id="elaboro" placeholder="Cargando..."></div>
       </div>
     </div>
 
@@ -247,9 +248,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="phd"><span>Descripcion</span><span style="text-align:right">Cant.</span><span style="text-align:right">Precio unit.</span><span></span></div>
         <div class="plst" id="plst"></div>
         <div class="pft">
-          <div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <button class="badd" onclick="addP()">+ Linea</button>
-            <button class="badd alt" onclick="togCat()">Del catalogo</button>
+            <button class="badd alt" onclick="togCat()">Catalogo</button>
+            <input type="text" id="cat-search" placeholder="Buscar producto..." style="font-size:11px;padding:5px 9px;width:160px;border-radius:20px" oninput="filterCat(this.value)">
           </div>
           <span style="font-size:10px;color:var(--mt)" id="pcnt">0 conceptos</span>
         </div>
@@ -561,7 +563,14 @@ window.addEventListener('DOMContentLoaded',function(){
 function startApp(f){
   try{$('LOGIN').style.display='none';}catch(e){}
   try{$('APP').style.display='block';}catch(e){}
-  folio=f||'...';upPv();addP('',1,0);
+  folio=f||'...';upPv();
+  // Cargar datos del usuario logueado
+  get('usuario',UID,TOK,function(d){
+    if(d.ok&&d.data){
+      var ud=d.data;
+      if(ud.nombre){sv('elaboro',ud.nombre);window._uCorreo=ud.correo||'';window._uTel=ud.telefono||'';}
+    }
+  });
   get('clientes',UID,TOK,function(d){if(d.ok&&d.clientes)clientes=d.clientes;});
   get('config',UID,TOK,function(d){
     if(d.ok&&d.config){
@@ -616,11 +625,7 @@ function renderChipsTo(wrapId,targetId){
     };
     var lbl=document.createElement('span');
     lbl.style.cssText='font-size:12px;color:var(--tx)';
-    lbl.innerHTML=item.label+'<span class="chk-added" style="font-size:10px;color:var(--g);margin-left:6px;display:none">agregado</span>';
-    chk.onchange=(function(origOnchange,lbl2){return function(){
-      origOnchange.call(this);
-      lbl2.querySelector('.chk-added').style.display=this.checked?'inline':'none';
-    };})(chk.onchange,lbl);
+    lbl.textContent=item.label;
     wrap.appendChild(chk);wrap.appendChild(lbl);
     el.appendChild(wrap);
   });
@@ -667,6 +672,23 @@ document.addEventListener('click',function(e){if(!e.target.closest('.acw'))cDD()
 
 // -- CATALOGO --------------------------------------------------
 var catVis=false;
+function filterCat(q){
+  if(!catVis) return;
+  var g=$('cgrid');if(!g)return;
+  var ql=q.toLowerCase().trim();
+  g.querySelectorAll('.ccard').forEach(function(card){
+    var txt=card.textContent.toLowerCase();
+    card.style.display=(!ql||txt.indexOf(ql)!==-1)?'':'none';
+  });
+  // Ocultar cabeceras de categoria si todos sus hijos estan ocultos
+  g.querySelectorAll('div').forEach(function(sec){
+    var cards=sec.querySelectorAll('.ccard');
+    if(!cards.length)return;
+    var vis=Array.from(cards).some(function(c){return c.style.display!=='none';});
+    var h=sec.querySelector('div');
+    if(h&&h.style.textTransform==='uppercase') h.style.display=vis?'':'none';
+  });
+}
 function togCat(){
   catVis=!catVis;
   var g=$('cgrid');
@@ -776,7 +798,7 @@ function mkPay(){
   var t=calc();
   return{uid:UID,tok:TOK,a:'guardar',folio:folio,fecha:hoy(),
     cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
-    vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),elaboro:gv('elaboro'),
+    vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),elaboro:gv('elaboro'),elaboro_correo:window._uCorreo||'',elaboro_tel:window._uTel||'',direccion_entrega:gv('cdir'),
     status:status,notas:gv('no'),
     productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
@@ -784,6 +806,7 @@ function mkPay(){
 }
 function valid(){
   if(!gv('cn')){toast('Ingresa el nombre del cliente',true);return false;}
+  if(!gv('elaboro')){toast('El campo Elaboro es obligatorio',true);return false;}
   if(!prods.length||prods.every(function(p){return !p.d.trim();})){toast('Agrega al menos un producto con descripcion',true);return false;}
   if(prods.some(function(p){return p.d.trim()&&p.p<=0;})){toast('Todos los productos deben tener precio mayor a 0',true);return false;}
   return true;
@@ -814,7 +837,7 @@ function getDatos(){
     productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
     incluye_iva:$('ivt').checked,
-    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente'),elaboro:gv('elaboro')};
+    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente'),elaboro:gv('elaboro'),elaboro_correo:window._uCorreo||'',elaboro_tel:window._uTel||'',direccion_entrega:gv('cdir')};
 }
 function genPDF(){if(!valid())return;withCfg(function(){buildPDF(getDatos());},'bp','PDF');}
 function genDOC(){if(!valid())return;withCfg(function(){buildDOC(getDatos());},'bd','DOC');}
@@ -848,8 +871,12 @@ function buildPDF(p){
   sf('normal',8,GR);tx('Vigencia:',ml,y);sf('normal',8,BL);tx(p.vigencia+' dias naturales',ml+18,y);
   sf('normal',8,GR);tx('Folio:',ml+80,y);sf('bold',8,VD);tx(p.folio,ml+93,y);
   y+=4;sf('normal',8,GR);tx('Fecha:',ml,y);sf('normal',8,BL);tx(fmtF(p.fecha),ml+18,y);
-  if(p.elaboro&&p.elaboro.trim()){sf('normal',8,GR);tx('Elaboro:',ml+80,y);sf('normal',8,BL);tx(p.elaboro,ml+95,y);}
-  y+=8;
+  if(p.elaboro&&p.elaboro.trim()){
+    sf('normal',8,GR);tx('Elaboro:',ml+80,y);sf('normal',8,BL);tx(p.elaboro,ml+95,y);y+=4.5;
+    if(p.elaboro_tel&&p.elaboro_tel.trim()){sf('normal',7,GR);tx('Tel:',ml+80,y);sf('normal',7,[80,80,80]);tx(p.elaboro_tel,ml+87,y);y+=4;}
+    if(p.elaboro_correo&&p.elaboro_correo.trim()){sf('normal',7,GR);tx('Mail:',ml+80,y);sf('normal',7,[80,80,80]);tx(p.elaboro_correo,ml+89,y);y+=4;}
+  }
+  y+=4;
   // Cliente - todos los datos del cliente
   sf('bold',8,VM);tx('COTIZACION PARA',ml,y);y+=4;
   var cliLines2=doc.splitTextToSize(p.cliente||'-',cw-8);
@@ -864,6 +891,12 @@ function buildPDF(p){
   if(p.tel)   cdata.push({l:'Tel:',   v:p.tel,   lw:9});
   if(p.email) cdata.push({l:'Correo:',v:p.email, lw:16});
   if(p.zona)  cdata.push({l:'Zona:',  v:p.zona,  lw:12});
+  if(p.direccion_entrega){
+    y+=1;sf('normal',8,GR);tx('Entrega:',ml,y);
+    sf('normal',8,BL);
+    var dirLines=doc.splitTextToSize(p.direccion_entrega,cw-20);
+    dirLines.forEach(function(dl){tx(dl,ml+16,y);y+=4;});
+  }
   for(var ci2=0;ci2<cdata.length;ci2+=2){
     sf('normal',8,GR);tx(cdata[ci2].l,   ml,      y);
     sf('normal',8,BL);tx(cdata[ci2].v,   ml+cdata[ci2].lw+1,y);
@@ -1111,7 +1144,11 @@ function genPropuesta(){
     tx('Folio: '+folioPP+'   -   Fecha: '+fmtF(fecha),W/2,ty+22,{align:'center'});
     ty+=38;
     // Elaboro en portada
-    if(elaboro){sf('normal',9,[200,230,201]);tx('Elaboro: '+elaboro,W/2,ty,{align:'center'});}
+    if(elaboro){
+      sf('normal',9,[200,230,201]);tx('Elaboro: '+elaboro,W/2,ty,{align:'center'});ty+=5;
+      if(window._uTel){sf('normal',8,[180,210,180]);tx(window._uTel,W/2,ty,{align:'center'});ty+=4;}
+      if(window._uCorreo){sf('normal',8,[180,210,180]);tx(window._uCorreo,W/2,ty,{align:'center'});}
+    }
     // Footer portada
     fr(0,272,W,25,[20,70,20]);
     sf('normal',9,[200,230,201]);tx('Omar Garcia Brena - Consultor Tecnologico',W/2,281,{align:'center'});
@@ -1402,7 +1439,118 @@ function guardarOC(){
 }
 
 function cerrarModal(){$('modal-oc').style.display='none';}
-function crearOCdesdeActual(){showModalOC(folioSaved||folio,gv('cn'));}
+function crearOCdesdeActual(){
+  if(!folioSaved&&!folio){toast('Guarda la cotizacion primero',true);return;}
+  // Generar PDF OC con datos actuales sin pasar por modal
+  var t=calc();
+  var ocData={
+    folio_oc:'OC-'+folio,
+    folio_cot:folioSaved||folio,
+    cliente:gv('cn'),
+    giro:gv('cg'),tel:gv('ct'),email:gv('ce'),
+    direccion_entrega:gv('cdir'),
+    monto:Math.round(t.tot),
+    estado:'PENDIENTE',
+    fecha_oc:hoy(),
+    productos:prods.filter(function(p){return p.d.trim();}).map(function(p){
+      return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};
+    }),
+    elaboro:gv('elaboro'),elaboro_tel:window._uTel||'',elaboro_correo:window._uCorreo||''
+  };
+  genPDF_OC_completo(ocData);
+  showModalOC(folioSaved||folio,gv('cn'));
+}
+
+function genPDF_OC_completo(oc){
+  var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  var W=210,ml=16,mr=16,cw=W-ml-mr;
+  var VD=[27,94,32],VM=[46,125,50],VL=[232,245,233],BL=[30,30,30],GR=[110,110,110],GB=[248,248,248],WH=[255,255,255];
+  function sf(st,sz,col){doc.setFont('helvetica',st);doc.setFontSize(sz);doc.setTextColor.apply(doc,col);}
+  function fr(x,y,w,h,col){doc.setFillColor.apply(doc,col);doc.rect(x,y,w,h,'F');}
+  function tx(t,x,y,o){doc.text(String(t||''),x,y,o||{});}
+
+  // Banda superior
+  fr(0,0,W,10,VD);sf('bold',9,WH);tx('Omar Garcia Brena - Consultor Tecnologico',W/2,6.5,{align:'center'});
+  var y=18;
+
+  // Titulo + box folio OC
+  sf('bold',16,VM);tx('ORDEN DE COMPRA',ml,y);
+  var bw=54,bx=W-mr-bw;
+  fr(bx,12,bw,20,VD);
+  sf('bold',7,[180,230,180]);tx('FOLIO OC',bx+bw/2,17,{align:'center'});
+  sf('bold',11,WH);tx(oc.folio_oc||'-',bx+bw/2,24,{align:'center'});
+  sf('normal',7,[200,230,201]);tx(fmtF(oc.fecha_oc),bx+bw/2,30,{align:'center'});
+  y=38;doc.setDrawColor(200,230,200);doc.setLineWidth(0.3);doc.line(ml,y,W-mr,y);y+=5;
+
+  // Datos OC
+  sf('bold',8,VM);tx('DATOS DE LA ORDEN',ml,y);y+=5;
+  sf('normal',8,GR);tx('Cotizacion ligada:',ml,y);sf('bold',8,VD);tx(oc.folio_cot||'-',ml+30,y);
+  sf('normal',8,GR);tx('Fecha:',ml+90,y);sf('normal',8,BL);tx(fmtF(oc.fecha_oc),ml+100,y);
+  y+=4.5;
+  sf('normal',8,GR);tx('Estado:',ml,y);sf('normal',8,BL);tx('PENDIENTE',ml+14,y);
+  if(oc.elaboro){sf('normal',8,GR);tx('Elaboro:',ml+90,y);sf('normal',8,BL);tx(oc.elaboro,ml+104,y);}
+  y+=8;
+
+  // Cliente
+  sf('bold',8,VM);tx('DATOS DEL CLIENTE',ml,y);y+=4;
+  var cliL=doc.splitTextToSize(oc.cliente||'-',cw-8);
+  var bh=Math.max(9,(cliL.length*5.5)+3);
+  fr(ml,y,cw,bh,VL);sf('bold',11,VD);
+  var cy=y+6;cliL.forEach(function(l){tx(l,ml+3,cy);cy+=5.5;});
+  y+=bh+4;
+  sf('normal',8,GR);
+  if(oc.giro){tx('Giro:',ml,y);sf('normal',8,BL);tx(oc.giro,ml+12,y);}
+  if(oc.tel){sf('normal',8,GR);tx('Tel:',ml+80,y);sf('normal',8,BL);tx(oc.tel,ml+89,y);}
+  y+=4.5;
+  if(oc.email){sf('normal',8,GR);tx('Correo:',ml,y);sf('normal',8,BL);tx(oc.email,ml+16,y);}
+  y+=4.5;
+  if(oc.direccion_entrega&&oc.direccion_entrega.trim()){
+    sf('bold',8,VM);tx('Direccion de entrega:',ml,y);y+=4;
+    sf('normal',8,BL);
+    doc.splitTextToSize(oc.direccion_entrega,cw).forEach(function(l){tx(l,ml,y);y+=4;});
+  }
+  y+=5;
+
+  // Tabla productos
+  sf('bold',8,VM);tx('ITEMS A ENTREGAR',ml,y);y+=4;
+  var rows=(oc.productos||[]).map(function(pr,i){
+    var nombre=pr.nombre||pr.desc||'-';
+    var desc=pr.desc&&pr.desc!==nombre?pr.desc:'';
+    return[String(i+1),nombre+(desc?'
+'+desc:''),String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)];
+  });
+  doc.autoTable({
+    startY:y,
+    head:[['#','Nombre / Descripcion','Cant.','Precio unit.','Subtotal']],
+    body:rows,theme:'plain',
+    styles:{font:'helvetica',fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:BL,lineColor:[220,220,220],lineWidth:0.2,overflow:'linebreak'},
+    headStyles:{fillColor:VD,textColor:WH,fontStyle:'bold',fontSize:9},
+    columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:14,halign:'right'},3:{cellWidth:26,halign:'right'},4:{cellWidth:26,halign:'right'}},
+    alternateRowStyles:{fillColor:GB},margin:{left:ml,right:mr},tableWidth:cw,
+    pageBreak:'auto',rowPageBreak:'avoid'
+  });
+  y=doc.lastAutoTable.finalY+4;
+
+  // Monto total
+  var tw=62,tx0=W-mr-tw;
+  fr(tx0,y,tw,7,VD);sf('bold',10,WH);tx('TOTAL',tx0+4,y+5.5);tx(fmto(oc.monto),tx0+tw-2,y+5.5,{align:'right'});
+  y+=14;
+
+  // Firmas
+  if(y>252){doc.addPage();y=15;}
+  doc.setDrawColor(160,160,160);doc.setLineWidth(0.3);
+  doc.line(ml,y,ml+74,y);doc.line(ml+85,y,ml+74+85,y);y+=4;
+  sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Firma del consultor',ml+85,y);
+
+  // Footer
+  fr(0,287,W,10,VD);sf('normal',7,[200,230,201]);
+  tx('ogarciabrena@gmail.com',ml+2,292);
+  tx('+52 55 1455 2202',W/2,292,{align:'center'});
+  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
+
+  doc.save((oc.folio_oc||'OC')+' - '+(oc.cliente||'cliente')+'.pdf');
+  toast('PDF OC generado');
+}
 
 // -- IMAGENES PROPUESTA ----------------------------------------
 function ev(e){e.preventDefault();}
