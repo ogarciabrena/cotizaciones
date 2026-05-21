@@ -429,7 +429,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- Texto de Config al final — se agrega automatico desde la cotizacion -->
     <div style="background:var(--s1);border:1px solid var(--bdg);border-radius:var(--r2);padding:1.25rem;margin-bottom:1rem">
       <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center">
-        Terminos y condiciones (al final del documento)
+        Informacion adicional (al final del documento — igual que en la cotizacion)
         <button class="rbtn prim" id="tog-terms" onclick="togSec('terms',this)">Incluir</button>
       </div>
       <div id="blk-terms">
@@ -613,30 +613,31 @@ function renderChipsTo(wrapId,targetId){
   var chips=cfgChips.length?cfgChips:buildDefaultChips();
   chips.forEach(function(item){
     var val=item.valor||(cfg&&cfg[item.key])||'';if(!val)return;
-    var id='chk_'+wrapId+'_'+item.key;
     var wrap=document.createElement('label');
-    wrap.style.cssText='display:flex;align-items:flex-start;gap:8px;cursor:pointer;padding:6px 8px;border-radius:6px;transition:background .12s;margin-bottom:4px';
+    wrap.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .12s';
     wrap.onmouseover=function(){this.style.background='rgba(122,224,106,.06)';};
     wrap.onmouseout=function(){this.style.background='transparent';};
     var chk=document.createElement('input');
-    chk.type='checkbox';chk.id=id;chk.style.cssText='margin-top:2px;accent-color:var(--g);flex-shrink:0';
-    chk.onchange=(function(v,tid,lbl){return function(){
-      var ta=$(tid);if(!ta)return;
+    chk.type='checkbox';
+    chk.style.cssText='accent-color:var(--g);width:14px;height:14px;flex-shrink:0;cursor:pointer';
+    chk.dataset.val=val;
+    chk.dataset.tid=targetId;
+    chk.onchange=function(){
+      var ta=$(this.dataset.tid);if(!ta)return;
       if(this.checked){
-        ta.value=(ta.value?ta.value+'\n\n':'')+v;
-        toast('Agregado: '+lbl);
+        ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+this.dataset.val;
       }else{
-        ta.value=ta.value.replace('\n\n'+v,'').replace(v+'\n\n','').replace(v,'');
+        ta.value=ta.value.replace('\n'+this.dataset.val,'').replace(this.dataset.val+'\n','').replace(this.dataset.val,'').trim();
       }
-    };})(val,targetId,item.label);
+    };
     var lbl=document.createElement('span');
-    lbl.style.cssText='font-size:12px;color:var(--tx);line-height:1.4';
-    lbl.innerHTML='<span style="font-size:10px;font-weight:600;color:var(--g);display:block;letter-spacing:.05em">'+esc(item.label)+'</span>'
-      +'<span style="font-size:11px;color:var(--mt)">'+esc(val.substring(0,80))+(val.length>80?'...':'')+'</span>';
+    lbl.style.cssText='font-size:12px;color:var(--tx)';
+    lbl.textContent=item.label;
     wrap.appendChild(chk);wrap.appendChild(lbl);
     el.appendChild(wrap);
   });
 }
+
 function buildDefaultChips(){
   if(!cfg)return[];
   var labels=['Terminos','Slogan','Nota pie','Zona','Correo','Telefono','Soporte','Garantias','Forma de pago','Bienvenida'];
@@ -924,15 +925,12 @@ function buildPDF(p){
     y+=6;
   }
   // Firma
-  if(p.elaboro&&p.elaboro.trim()){
-    if(y>258){doc.addPage();y=15;}
-    sf('normal',7,GR);tx('Elaboro:',ml,y+4);
-    sf('normal',8,BL);tx(p.elaboro,ml+18,y+4);y+=10;
-  }
-  if(y>258){doc.addPage();y=15;}
+  if(y>252){doc.addPage();y=15;}
+  y+=6;
   doc.setDrawColor(160,160,160);doc.setLineWidth(0.3);
   doc.line(ml,y,ml+74,y);doc.line(ml+85,y,ml+74+85,y);y+=4;
   sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Fecha de aceptacion',ml+85,y);
+  if(p.elaboro&&p.elaboro.trim()){y+=6;sf('normal',7,GR);tx('Elaboro: ',ml,y);sf('normal',7,BL);tx(p.elaboro,ml+14,y);}
   // Footer
   fr(0,287,W,10,VD);
   sf('normal',7,[200,230,201]);
@@ -1183,7 +1181,7 @@ function genPropuesta(){
     var terms=gv('pp-terms');
     if(terms){
       if(y>230){doc.addPage();y=18;}
-      fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('TERMINOS Y CONDICIONES',ml+4,y+1);y+=10;
+      fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('INFORMACION ADICIONAL',ml+4,y+1);y+=10;
       sf('normal',7,GR);terms.split('\n').forEach(function(l){if(!l.trim())return;if(y>275){doc.addPage();y=15;}doc.splitTextToSize(l.trim(),cw).forEach(function(wl){tx(wl,ml,y);y+=3.5;});});y+=6;
     }
   }
