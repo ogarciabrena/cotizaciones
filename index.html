@@ -189,7 +189,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="lbox">
     <div class="ltit">Cotizador <em>OGB</em></div>
     <div class="lsub">Omar Garcia Brena - Consultor Tecnologico</div>
-    <div class="lnote">Ingresa tu ID y token de acceso. Tu administrador te los proporciona desde el menu del Sheet.</div>
+    <div class="lnote">Ingresa tu ID y token de acceso.</div>
     <div class="lf"><label>ID de usuario</label><input type="text" id="lu" placeholder="USR-XXXXXX" autocomplete="username"></div>
     <div class="lf"><label>Token de acceso</label><input type="password" id="lt" placeholder="Tu token secreto" autocomplete="current-password"></div>
     <button class="lbtn" id="lbtn" onclick="doLogin()">Ingresar</button>
@@ -1516,8 +1516,8 @@ function genPDF_OC_completo(oc){
   var rows=(oc.productos||[]).map(function(pr,i){
     var nombre=pr.nombre||pr.desc||'-';
     var desc=pr.desc&&pr.desc!==nombre?pr.desc:'';
-    return[String(i+1),nombre+(desc?'
-'+desc:''),String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)];
+    return[String(i+1),nombre+(desc?'\n'+desc:''),String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)];
+
   });
   doc.autoTable({
     startY:y,
