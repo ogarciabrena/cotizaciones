@@ -236,6 +236,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fld"><label>Telefono</label><input type="tel" id="ct" placeholder="+52 951 000 0000"></div>
         <div class="fld"><label>Correo</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
         <div class="fld"><label>Zona</label><input type="text" id="cz" placeholder="Miahuatlan, Oaxaca"></div>
+        <div class="fld"><label>Elaboro (aparece en PDF)</label><input type="text" id="elaboro" placeholder="Nombre del asesor (opcional)"></div>
       </div>
     </div>
 
@@ -280,10 +281,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="fld">
             <label>Informacion adicional para el cliente (aparece en PDF/DOC)</label>
             <textarea id="info-cliente" placeholder="Ej. Incluye garantia de instalacion 30 dias, capacitacion incluida..." style="min-height:60px"></textarea>
-          </div>
-          <div class="fld">
-            <label>Elaboro - quien realiza la cotizacion (opcional, aparece en PDF)</label>
-            <input type="text" id="elaboro" placeholder="Nombre del asesor o vendedor">
           </div>
           <div class="fld">
             <label>Notas internas (solo en Sheets, NO aparecen en documentos)</label>
@@ -632,7 +629,11 @@ function renderChipsTo(wrapId,targetId){
     };
     var lbl=document.createElement('span');
     lbl.style.cssText='font-size:12px;color:var(--tx)';
-    lbl.textContent=item.label;
+    lbl.innerHTML=item.label+'<span class="chk-added" style="font-size:10px;color:var(--g);margin-left:6px;display:none">agregado</span>';
+    chk.onchange=(function(origOnchange,lbl2){return function(){
+      origOnchange.call(this);
+      lbl2.querySelector('.chk-added').style.display=this.checked?'inline':'none';
+    };})(chk.onchange,lbl);
     wrap.appendChild(chk);wrap.appendChild(lbl);
     el.appendChild(wrap);
   });
@@ -860,6 +861,7 @@ function buildPDF(p){
   sf('normal',8,GR);tx('Vigencia:',ml,y);sf('normal',8,BL);tx(p.vigencia+' dias naturales',ml+18,y);
   sf('normal',8,GR);tx('Folio:',ml+80,y);sf('bold',8,VD);tx(p.folio,ml+93,y);
   y+=4;sf('normal',8,GR);tx('Fecha:',ml,y);sf('normal',8,BL);tx(fmtF(p.fecha),ml+18,y);
+  if(p.elaboro&&p.elaboro.trim()){sf('normal',8,GR);tx('Elaboro:',ml+80,y);sf('normal',8,BL);tx(p.elaboro,ml+95,y);}
   y+=8;
   // Cliente - todos los datos del cliente
   sf('bold',8,VM);tx('COTIZACION PARA',ml,y);y+=4;
@@ -916,10 +918,10 @@ function buildPDF(p){
   if(p.info_cliente&&p.info_cliente.trim()){
     if(y>240){doc.addPage();y=15;}
     fr(ml,y-3,cw,8,VD);sf('bold',9,WH);tx('INFORMACION ADICIONAL',ml+4,y+2);y+=10;
-    sf('normal',9,BL);
+    sf('normal',7,GR);
     p.info_cliente.split('\n').forEach(function(l){
       if(y>272){doc.addPage();y=15;}
-      if(l.trim()){doc.splitTextToSize(l.trim(),cw).forEach(function(wl){tx(wl,ml,y);y+=4.5;});}
+      if(l.trim()){doc.splitTextToSize(l.trim(),cw).forEach(function(wl){tx(wl,ml,y);y+=3.8;});}
       else y+=2;
     });
     y+=6;
@@ -930,7 +932,6 @@ function buildPDF(p){
   doc.setDrawColor(160,160,160);doc.setLineWidth(0.3);
   doc.line(ml,y,ml+74,y);doc.line(ml+85,y,ml+74+85,y);y+=4;
   sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Fecha de aceptacion',ml+85,y);
-  if(p.elaboro&&p.elaboro.trim()){y+=6;sf('normal',7,GR);tx('Elaboro: ',ml,y);sf('normal',7,BL);tx(p.elaboro,ml+14,y);}
   // Footer
   fr(0,287,W,10,VD);
   sf('normal',7,[200,230,201]);
@@ -1087,22 +1088,28 @@ function actualizarPropTabla(d){
 // PROPUESTA PDF
 function genPropuesta(){
   var d=propDatos;
-  var titulo=gv('pp-titulo')||'PROPUESTA TECNOLOGICA INTEGRAL';
-  var subtit=gv('pp-sub')||'';
-  var cliente=gv('pp-cliente')||'-';
-  var fecha=$('pp-fecha').value||hoy();
-  var folioPP=gv('pp-folio-show')||'-';
+  var titulo =gv('pp-titulo')||'PROPUESTA TECNOLOGICA INTEGRAL';
+  var subtit  =gv('pp-sub')||'';
+  var cliente =gv('pp-cliente')||'-';
+  var fecha   =$('pp-fecha').value||hoy();
+  var folioPP =gv('pp-folio-show')||'-';
+  var elaboro =gv('elaboro')||'';
   var jsPDF=window.jspdf.jsPDF;
   var doc=new jsPDF({unit:'mm',format:'a4'});
   var W=210,ml=18,mr=18,cw=W-ml-mr;
-  var VD=[27,94,32],VM=[46,125,50],VL=[232,245,233],WH=[255,255,255],BL=[30,30,30],GR=[110,110,110],GB=[248,248,248];
+  var VD=[27,94,32],VM=[46,125,50],VL=[232,245,233];
+  var WH=[255,255,255],BL=[30,30,30],GR=[110,110,110],GB=[248,248,248];
   function sf(st,sz,col){doc.setFont('helvetica',st);doc.setFontSize(sz);doc.setTextColor.apply(doc,col);}
   function fr(x,y,w,h,col){doc.setFillColor.apply(doc,col);doc.rect(x,y,w,h,'F');}
   function tx(t,x,y,o){doc.text(String(t||''),x,y,o||{});}
-  // Portada
+  function seccion(titulo2,y2){
+    fr(ml,y2-4,cw,8,VD);sf('bold',10,WH);tx(titulo2,ml+4,y2+1);return y2+10;
+  }
+
+  // -- PORTADA ---------------------------------------------
   if(propActivo.portada){
     fr(0,0,W,297,VD);
-    var ty=20;
+    var ty=22;
     if(propImgs.portada&&propImgs.portada.length){
       try{doc.addImage(propImgs.portada[0],'JPEG',ml,ty,45,32);ty+=42;}catch(e){ty+=8;}
     }
@@ -1110,36 +1117,58 @@ function genPropuesta(){
     sf('bold',24,WH);
     doc.splitTextToSize(titulo,cw).forEach(function(l){tx(l,W/2,ty,{align:'center'});ty+=12;});
     ty+=4;
-    if(subtit){sf('italic',11,[200,230,201]);doc.splitTextToSize(subtit,cw-20).forEach(function(l){tx(l,W/2,ty,{align:'center'});ty+=6;});ty+=8;}
-    // Box cliente - SOLO datos del cliente, no del consultor
+    if(subtit){
+      sf('italic',11,[200,230,201]);
+      doc.splitTextToSize(subtit,cw-20).forEach(function(l){tx(l,W/2,ty,{align:'center'});ty+=6;});
+      ty+=8;
+    }
+    // Caja cliente
     fr(ml+10,ty,cw-20,32,VL);
-    sf('bold',14,VD);doc.splitTextToSize(cliente,cw-40).slice(0,1).forEach(function(l){tx(l,W/2,ty+12,{align:'center'});});
-    sf('normal',9,GR);tx('Folio: '+folioPP+'   -   Fecha: '+fmtF(fecha),W/2,ty+22,{align:'center'});
-    // Footer portada - consultor
+    sf('bold',14,VD);
+    doc.splitTextToSize(cliente,cw-40).slice(0,1).forEach(function(l){tx(l,W/2,ty+12,{align:'center'});});
+    sf('normal',9,GR);
+    tx('Folio: '+folioPP+'   -   Fecha: '+fmtF(fecha),W/2,ty+22,{align:'center'});
+    ty+=38;
+    // Elaboro en portada
+    if(elaboro){sf('normal',9,[200,230,201]);tx('Elaboro: '+elaboro,W/2,ty,{align:'center'});}
+    // Footer portada
     fr(0,272,W,25,[20,70,20]);
     sf('normal',9,[200,230,201]);tx('Omar Garcia Brena - Consultor Tecnologico',W/2,281,{align:'center'});
-    sf('normal',8,[160,210,160]);tx('ogarciabrena@gmail.com - +52 55 1455 2202',W/2,287,{align:'center'});
+    sf('normal',8,[160,210,160]);tx('ogarciabrena@gmail.com  -  +52 55 1455 2202',W/2,287,{align:'center'});
     doc.addPage();
   }
+
   var y=18;
+
+  // -- INTRODUCCION -----------------------------------------
   if(propActivo.intro){
     var intro=gv('pp-intro');
     if(intro||(propImgs.intro&&propImgs.intro.length)){
-      fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('INTRODUCCION / DIAGNOSTICO',ml+4,y+1);y+=10;
-      if(intro){sf('normal',9,BL);doc.splitTextToSize(intro,cw).forEach(function(l){if(y>268){doc.addPage();y=18;}tx(l,ml,y);y+=4.5;});y+=4;}
+      y=seccion('INTRODUCCION / DIAGNOSTICO',y);
+      if(intro){
+        sf('normal',9,BL);
+        doc.splitTextToSize(intro,cw).forEach(function(l){if(y>268){doc.addPage();y=18;}tx(l,ml,y);y+=4.5;});
+        y+=4;
+      }
       if(propImgs.intro&&propImgs.intro.length){
         var iw=Math.min(80,cw/propImgs.intro.length-4),ix=ml;
         propImgs.intro.forEach(function(src){try{doc.addImage(src,'JPEG',ix,y,iw,iw*0.65);ix+=iw+4;}catch(e){}});
-        y+=propImgs.intro.length?80*0.65+8:0;
+        y+=80*0.65+8;
       }
     }
   }
+
+  // -- SOLUCION PROPUESTA ------------------------------------
   if(propActivo.sol){
     var sol=gv('pp-sol');
     if(sol||(propImgs.sol&&propImgs.sol.length)){
       if(y>240){doc.addPage();y=18;}
-      fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('SOLUCION PROPUESTA',ml+4,y+1);y+=10;
-      if(sol){sf('normal',9,BL);doc.splitTextToSize(sol,cw).forEach(function(l){if(y>268){doc.addPage();y=18;}tx(l,ml,y);y+=4.5;});y+=4;}
+      y=seccion('SOLUCION PROPUESTA',y);
+      if(sol){
+        sf('normal',9,BL);
+        doc.splitTextToSize(sol,cw).forEach(function(l){if(y>268){doc.addPage();y=18;}tx(l,ml,y);y+=4.5;});
+        y+=4;
+      }
       if(propImgs.sol&&propImgs.sol.length){
         var sw=Math.min(80,cw/propImgs.sol.length-4),sx=ml;
         propImgs.sol.forEach(function(src){try{doc.addImage(src,'JPEG',sx,y,sw,sw*0.65);sx+=sw+4;}catch(e){}});
@@ -1147,50 +1176,89 @@ function genPropuesta(){
       }
     }
   }
+
+  // -- DESCRIPCION DE SERVICIOS - IDENTICA A COTIZACION ----
   if(propActivo.cot&&d){
     if(y>220){doc.addPage();y=18;}
-    fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('SERVICIOS Y PRECIOS',ml+4,y+1);y+=10;
-    var rows2=(d.resumen||'').split(' | ').map(function(item,i){
-      var ei=item.lastIndexOf(' = ');
-      var left=ei>0?item.substring(0,ei):item;
-      var right=ei>0?item.substring(ei+3):'';
-      var pi=left.lastIndexOf(' (x');
-      var concept=pi>0?left.substring(0,pi):left;
-      return[String(i+1),concept,right];
+    y=seccion('DESCRIPCION DE SERVICIOS',y);
+    // Construir rows identicos al PDF de cotizacion
+    var rows2=(d.productos||[]).map(function(pr,i){
+      var nombre=pr.nombre||pr.desc||'-';
+      var desc2=pr.desc&&pr.desc!==nombre?pr.desc:'';
+      var cell=nombre+(desc2?'\n'+desc2:'');
+      return[String(i+1),cell,String(pr.cant||1),fmto(pr.precio||0),fmto(pr.subtotal||0)];
     });
-    doc.autoTable({startY:y,head:[['#','Nombre / Descripcion','Total']],body:rows2,theme:'plain',
+    // Si no hay productos detallados, parsear del resumen
+    if(!rows2.length&&d.resumen){
+      rows2=d.resumen.split(' | ').map(function(item,i){
+        var ei=item.lastIndexOf(' = ');
+        var left=ei>0?item.substring(0,ei):item;
+        var right=ei>0?item.substring(ei+3):'';
+        var pi=left.lastIndexOf(' (x');
+        var concept=pi>0?left.substring(0,pi):left;
+        var cant=pi>0?left.substring(pi+3).replace(')',''):'1';
+        return[String(i+1),concept,cant,right,right];
+      });
+    }
+    doc.autoTable({
+      startY:y,
+      head:[['#','Nombre / Descripcion','Cant.','Precio unit.','Subtotal']],
+      body:rows2,
+      theme:'plain',
       styles:{font:'helvetica',fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:BL,lineColor:[220,220,220],lineWidth:0.2,overflow:'linebreak'},
-      headStyles:{fillColor:VD,textColor:WH,fontStyle:'bold'},
-      columnStyles:{0:{cellWidth:12,halign:'center',valign:'middle'},1:{cellWidth:'auto',overflow:'linebreak'},2:{cellWidth:30,halign:'right'}},
-      alternateRowStyles:{fillColor:GB},margin:{left:ml,right:mr},tableWidth:cw,
-      pageBreak:'auto',rowPageBreak:'avoid'});
+      headStyles:{fillColor:VD,textColor:WH,fontStyle:'bold',fontSize:9},
+      columnStyles:{0:{cellWidth:12,halign:'center',valign:'middle'},1:{cellWidth:'auto',overflow:'linebreak'},2:{cellWidth:14,halign:'right'},3:{cellWidth:26,halign:'right'},4:{cellWidth:26,halign:'right'}},
+      alternateRowStyles:{fillColor:GB},
+      margin:{left:ml,right:mr},tableWidth:cw,
+      pageBreak:'auto',rowPageBreak:'avoid'
+    });
     y=doc.lastAutoTable.finalY+4;
-    var tw=50,tx0=W-mr-tw;
-    fr(tx0,y,tw,7,VD);sf('bold',10,WH);tx('TOTAL',tx0+4,y+5);tx(fmto(d.total),tx0+tw-2,y+5,{align:'right'});y+=12;
+    // Totales igual que cotizacion
+    var tw2=62,tx0=W-mr-tw2;
+    [['Subtotal',fmto(d.subtotal||0),false],['IVA',fmto(d.iva||0)||'No aplica',false],['TOTAL',fmto(d.total||0),true]].forEach(function(r){
+      var isT=r[2];fr(tx0,y,tw2,6.5,isT?VD:GB);
+      sf('normal',isT?9:8,isT?WH:GR);tx(r[0],tx0+3,y+4.5);
+      sf(isT?'bold':'normal',isT?9:8,isT?WH:BL);tx(r[1],tx0+tw2-2,y+4.5,{align:'right'});
+      y+=6.5;
+    });
+    y+=8;
   }
+
+  // -- PROXIMOS PASOS ----------------------------------------
   if(propActivo.notas){
     var notas=gv('pp-notas');
     if(notas){
       if(y>245){doc.addPage();y=18;}
-      fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('PROXIMOS PASOS',ml+4,y+1);y+=10;
-      sf('normal',9,BL);doc.splitTextToSize(notas,cw).forEach(function(l){if(y>268){doc.addPage();y=18;}tx(l,ml,y);y+=4.5;});y+=6;
+      y=seccion('PROXIMOS PASOS',y);
+      sf('normal',9,BL);
+      doc.splitTextToSize(notas,cw).forEach(function(l){if(y>268){doc.addPage();y=18;}tx(l,ml,y);y+=4.5;});
+      y+=6;
     }
   }
-  // Terminos al final
+
+  // -- INFORMACION ADICIONAL - IDENTICA A COTIZACION --------
   if(propActivo.terms){
     var terms=gv('pp-terms');
-    if(terms){
+    if(terms&&terms.trim()){
       if(y>230){doc.addPage();y=18;}
-      fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('INFORMACION ADICIONAL',ml+4,y+1);y+=10;
-      sf('normal',7,GR);terms.split('\n').forEach(function(l){if(!l.trim())return;if(y>275){doc.addPage();y=15;}doc.splitTextToSize(l.trim(),cw).forEach(function(wl){tx(wl,ml,y);y+=3.5;});});y+=6;
+      y=seccion('INFORMACION ADICIONAL',y);
+      sf('normal',7,GR);  // misma fuente chica y delgada que cotizacion
+      terms.split('\n').forEach(function(l){
+        if(y>272){doc.addPage();y=18;}
+        if(l.trim()){doc.splitTextToSize(l.trim(),cw).forEach(function(wl){tx(wl,ml,y);y+=3.8;});}
+        else y+=2;
+      });
+      y+=6;
     }
   }
-  // Footer consultor
+
+  // -- FOOTER ------------------------------------------------
   fr(0,287,W,10,VD);
   sf('normal',7,[200,230,201]);
   tx('ogarciabrena@gmail.com',ml+2,292);
   tx('+52 55 1455 2202',W/2,292,{align:'center'});
   tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
+
   doc.save((d?d.folio:folioPP)+' - '+cliente+' - Propuesta.pdf');
   toast('Propuesta PDF descargada');
 }
@@ -1276,8 +1344,7 @@ function genPDF_OC(r){
   // Banda superior
   fr(0,0,W,10,VD);
   sf('bold',9,WH);
-  var sloganTxt=(cfg&&cfg.b2&&cfg.b2.trim())?cfg.b2:'Omar Garcia Brena - Consultor Tecnologico';
-  tx(sloganTxt,W/2,6.5,{align:'center'});
+  tx('Omar Garcia Brena - Consultor Tecnologico',W/2,6.5,{align:'center'});
   var y=18;
   // Titulo
   sf('bold',16,VM);tx('ORDEN DE COMPRA',ml,y);
