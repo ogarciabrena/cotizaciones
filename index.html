@@ -33,7 +33,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .ibtn{background:transparent;border:1px solid var(--bd);color:var(--mt);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
 .ibtn:hover{border-color:var(--bdg);color:var(--g)}
 .tabs{display:flex;gap:3px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:3px;margin-bottom:1.75rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
-.tab{flex:1;min-width:100px;padding:8px 12px;border:none;border-radius:var(--r);background:transparent;color:var(--mt);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab{flex:1;min-width:90px;padding:7px 10px;border:none;border-radius:var(--r);background:transparent;color:var(--mt);font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;text-align:center}
 .tab.on{background:var(--s2);color:var(--tx);border:1px solid var(--bd)}
 .panel{display:none}.panel.on{display:block}
 .sec{margin-bottom:1.75rem}
@@ -804,8 +804,7 @@ function buildPDF(p){
   // Banda superior
   fr(0,0,W,10,VD);sf('bold',9,WH);tx('Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202',W/2,6.5,{align:'center'});
   y=18;
-  sf('bold',16,VM);tx('PROPUESTA TECNOLOGICA INTEGRAL',ml,y);y+=6;
-  if(p.slogan){sf('italic',9,GR);tx(p.slogan,ml,y);}
+  sf('bold',16,VM);tx('PROPUESTA TECNOLOGICA INTEGRAL',ml,y);
   // Box folio
   var bw=54,bx=W-mr-bw;
   fr(bx,12,bw,20,VD);
@@ -821,18 +820,28 @@ function buildPDF(p){
   y+=8;
   // Cliente - todos los datos del cliente
   sf('bold',8,VM);tx('COTIZACION PARA',ml,y);y+=4;
-  fr(ml,y,cw,7,VL);sf('bold',11,VD);
-  var cliLines=doc.splitTextToSize(p.cliente||'-',cw-6);tx(cliLines[0],ml+3,y+5.2);
-  y+=9;
-  sf('normal',8,GR);
-  var ri=[];
-  if(p.giro)  ri.push({l:'Giro:',v:p.giro,lw:12});
-  if(p.tel)   ri.push({l:'Tel:',v:p.tel,lw:9});
-  if(ri.length){var rx=ml;ri.forEach(function(it){sf('normal',8,GR);tx(it.l,rx,y);sf('normal',8,BL);tx(it.v,rx+it.lw,y);rx+=80;});y+=4.5;}
-  var ri2=[];
-  if(p.email) ri2.push({l:'Correo:',v:p.email,lw:16});
-  if(p.zona)  ri2.push({l:'Zona:',v:p.zona,lw:12});
-  if(ri2.length){var rx2=ml;ri2.forEach(function(it){sf('normal',8,GR);tx(it.l,rx2,y);sf('normal',8,BL);tx(it.v,rx2+it.lw,y);rx2+=80;});y+=4.5;}
+  var cliLines2=doc.splitTextToSize(p.cliente||'-',cw-8);
+  var bandH2=Math.max(10,(cliLines2.length*5.5)+4);
+  fr(ml,y,cw,bandH2,VL);
+  sf('bold',12,VD);
+  var cliY2=y+7;
+  cliLines2.forEach(function(l){tx(l,ml+4,cliY2);cliY2+=5.5;});
+  y+=bandH2+5;
+  var cdata=[];
+  if(p.giro)  cdata.push({l:'Giro:',  v:p.giro,  lw:12});
+  if(p.tel)   cdata.push({l:'Tel:',   v:p.tel,   lw:9});
+  if(p.email) cdata.push({l:'Correo:',v:p.email, lw:16});
+  if(p.zona)  cdata.push({l:'Zona:',  v:p.zona,  lw:12});
+  for(var ci2=0;ci2<cdata.length;ci2+=2){
+    sf('normal',8,GR);tx(cdata[ci2].l,   ml,      y);
+    sf('normal',8,BL);tx(cdata[ci2].v,   ml+cdata[ci2].lw+1,y);
+    if(cdata[ci2+1]){
+      sf('normal',8,GR);tx(cdata[ci2+1].l,ml+90,  y);
+      sf('normal',8,BL);tx(cdata[ci2+1].v,ml+90+cdata[ci2+1].lw+1,y);
+    }
+    y+=4.5;
+  }
+  y+=4;
   y+=4;
   // Productos
   sf('bold',8,VM);tx('DESCRIPCION DE SERVICIOS',ml,y);y+=4;
@@ -868,9 +877,12 @@ function buildPDF(p){
   if(y>255){doc.addPage();y=15;}
   doc.setDrawColor(160,160,160);doc.line(ml,y,ml+74,y);doc.line(ml+85,y,ml+74+85,y);y+=4;
   sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Fecha de aceptacion',ml+85,y);
-  // Footer - solo datos del consultor
-  fr(0,289,W,8,VD);sf('normal',7,[200,230,201]);
-  tx('Omar Garcia Brena - ogarciabrena@gmail.com - +52 55 1455 2202',W/2,294.5,{align:'center'});
+  // Footer
+  fr(0,287,W,10,VD);
+  sf('normal',7,[200,230,201]);
+  tx('ogarciabrena@gmail.com',ml+2,292);
+  tx('+52 55 1455 2202',W/2,292,{align:'center'});
+  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
   doc.save(p.folio+' - '+p.cliente+'.pdf');
 }
 
@@ -1107,7 +1119,11 @@ function genPropuesta(){
     }
   }
   // Footer consultor
-  fr(0,289,W,8,VD);sf('normal',7,[200,230,201]);tx('ogarciabrena@gmail.com - +52 55 1455 2202',W/2,294.5,{align:'center'});
+  fr(0,287,W,10,VD);
+  sf('normal',7,[200,230,201]);
+  tx('ogarciabrena@gmail.com',ml+2,292);
+  tx('+52 55 1455 2202',W/2,292,{align:'center'});
+  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
   doc.save((d?d.folio:folioPP)+' - '+cliente+' - Propuesta.pdf');
   toast('Propuesta PDF descargada');
 }
@@ -1235,8 +1251,11 @@ function genPDF_OC(r){
   doc.line(ml,y,ml+74,y);doc.line(ml+95,y,W-mr,y);y+=4;
   sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Nombre y firma del consultor',ml+95,y);
   // Footer
-  fr(0,289,W,8,VD);sf('normal',7,[200,230,201]);
-  tx('Omar Garcia Brena - ogarciabrena@gmail.com - +52 55 1455 2202',W/2,294.5,{align:'center'});
+  fr(0,287,W,10,VD);
+  sf('normal',7,[200,230,201]);
+  tx('ogarciabrena@gmail.com',ml+2,292);
+  tx('+52 55 1455 2202',W/2,292,{align:'center'});
+  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
   doc.save((r.folio_oc||'OC')+' - '+(r.cliente||'cliente')+'.pdf');
   toast('PDF OC descargado');
 }
