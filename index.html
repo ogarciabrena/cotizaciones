@@ -25,14 +25,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .lbtn:hover{background:var(--gd)}
 .lerr{font-size:12px;color:var(--rd);margin-top:.625rem;display:none}
 #APP{display:none}
-.wrap{max-width:920px;margin:0 auto;padding:2rem 1.25rem 5rem}
-.hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:1.25rem;border-bottom:1px solid var(--bd);margin-bottom:1.75rem;flex-wrap:wrap;gap:.75rem}
+.wrap{max-width:920px;margin:0 auto;padding:2rem 1rem 5rem}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:1.25rem;border-bottom:1px solid var(--bd);margin-bottom:1.75rem;gap:.75rem;flex-wrap:wrap}
 .brand{font-size:16px;font-weight:600}.brand-sub{font-size:11px;color:var(--mt);margin-top:1px}
-.hdr-r{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.hdr-r{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
 .fbadge{background:var(--s2);border:1px solid var(--bdg);padding:5px 13px;border-radius:20px;font-size:11px;color:var(--g);font-weight:700;letter-spacing:.07em}
 .ibtn{background:transparent;border:1px solid var(--bd);color:var(--mt);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
 .ibtn:hover{border-color:var(--bdg);color:var(--g)}
-.tabs{display:flex;gap:3px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:3px;margin-bottom:1.75rem;overflow-x:auto}
+.tabs{display:flex;gap:3px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:3px;margin-bottom:1.75rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
 .tab{flex:1;min-width:100px;padding:8px 12px;border:none;border-radius:var(--r);background:transparent;color:var(--mt);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
 .tab.on{background:var(--s2);color:var(--tx);border:1px solid var(--bd)}
 .panel{display:none}.panel.on{display:block}
@@ -161,7 +161,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .spin{display:inline-block;width:11px;height:11px;border:1.5px solid rgba(10,10,10,.25);border-top-color:#0a0a0a;border-radius:50%;animation:sp .65s linear infinite;margin-right:6px;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
 .dot{width:5px;height:5px;border-radius:50%;background:var(--gdk);display:inline-block;margin-right:7px;vertical-align:middle}
-@media(max-width:580px){.g2,.g3{grid-template-columns:1fr}.phd{display:none}.prow{grid-template-columns:1fr 1fr}.prow .dc{grid-column:1/-1}.actions{flex-direction:column}.tabs{flex-wrap:wrap}}
+@media(max-width:580px){
+  .g2,.g3{grid-template-columns:1fr}
+  .phd{display:none}
+  .prow{grid-template-columns:1fr 1fr}
+  .prow .dc{grid-column:1/-1}
+  .actions{flex-direction:column}
+  .tabs{flex-wrap:wrap}
+  .wrap{padding:1rem .75rem 4rem}
+  .hdr{flex-direction:column;align-items:flex-start}
+  .hdr-r{width:100%;justify-content:flex-start}
+  .fbadge{font-size:10px}
+  .tab{min-width:80px;font-size:11px;padding:7px 8px}
+  .modal{padding:1.25rem 1rem}
+  .rcard-btns{gap:4px}
+  .rbtn{font-size:10px;padding:4px 9px}
+}
+@media(min-width:581px) and (max-width:900px){
+  .wrap{padding:1.5rem 1.25rem 4rem}
+  .g3{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -260,7 +279,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <input type="date" id="fc">
           </div>
           <div class="fld">
-            <label>Notas internas (solo en Sheets)</label>
+            <label>Informacion adicional para el cliente (aparece en PDF/DOC)</label>
+            <textarea id="info-cliente" placeholder="Ej. Incluye garantia de instalacion 30 dias, capacitacion incluida..." style="min-height:60px"></textarea>
+          </div>
+          <div class="fld">
+            <label>Notas internas (solo en Sheets, NO aparecen en documentos)</label>
             <textarea id="no" placeholder="Ej. cliente interesado en fase 2..."></textarea>
           </div>
         </div>
@@ -461,7 +484,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 
 </div>
-</div>
 
 <!-- Modal OC -->
 <div class="modal-bg" id="modal-oc" style="display:none">
@@ -573,7 +595,7 @@ function showTab(id,btn){
 // -- CHIPS CONFIG ----------------------------------------------
 function renderChips(){
   var chips=cfgChips.length?cfgChips:buildDefaultChips();
-  renderChipsTo('chips-cot-wrap','no');  // cotizador -> inserta en notas
+  renderChipsTo('chips-cot-wrap','info-cliente');  // cotizador -> inserta en info visible al cliente
   renderChipsTo('chips-prop-wrap','pp-terms');  // propuesta -> inserta en terminos
   if(chips.length){
     $('chips-cot').style.display='block';
@@ -723,7 +745,7 @@ function mkPay(){
   var t=calc();
   return{uid:UID,tok:TOK,a:'guardar',folio:folio,fecha:hoy(),
     cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
-    vigencia:$('vig').value,fecha_cierre:$('fc').value,
+    vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),
     status:status,notas:gv('no'),
     productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
@@ -761,7 +783,7 @@ function getDatos(){
     productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
     incluye_iva:$('ivt').checked,
-    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||''};
+    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente')};
 }
 function genPDF(){if(!valid())return;withCfg(function(){buildPDF(getDatos());},'bp','PDF');}
 function genDOC(){if(!valid())return;withCfg(function(){buildDOC(getDatos());},'bd','DOC');}
@@ -831,6 +853,7 @@ function buildPDF(p){
   });
   sf('normal',7,GR);tx(p.incluye_iva?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.',ml,y+4);y+=10;
   if(p.pago){sf('bold',8,VM);tx('Forma de pago:',ml,y);y+=4;sf('normal',7,GR);doc.splitTextToSize(p.pago,cw).forEach(function(l){tx(l,ml,y);y+=3.5;});y+=4;}
+  if(p.info_cliente){if(y>245){doc.addPage();y=15;}sf('bold',8,VM);tx('Informacion adicional:',ml,y);y+=4;sf('normal',8,BL);doc.splitTextToSize(p.info_cliente,cw).forEach(function(l){if(y>275){doc.addPage();y=15;}tx(l,ml,y);y+=4;});y+=6;}
   // Terminos al final
   if(p.terminos){
     if(y>240){doc.addPage();y=15;}
@@ -871,7 +894,7 @@ function buildDOC(p){
   +'<table style="width:42%;margin-left:auto;margin-bottom:6px"><tr style="background:#f5f5f5"><td style="padding:4px 10px;border:1px solid #ddd;color:#666">Subtotal</td><td style="padding:4px 10px;border:1px solid #ddd;text-align:right">'+fmto(p.subtotal)+'</td></tr><tr><td style="padding:4px 10px;border:1px solid #ddd;color:#666">IVA</td><td style="padding:4px 10px;border:1px solid #ddd;text-align:right">'+(p.incluye_iva?fmto(p.iva):'No aplica')+'</td></tr><tr style="background:#1B5E20"><td style="padding:6px 10px;border:1px solid #1B5E20;color:#fff;font-weight:bold">TOTAL</td><td style="padding:6px 10px;border:1px solid #1B5E20;color:#fff;font-weight:bold;text-align:right">'+fmto(p.total)+'</td></tr></table>'
   +'<p style="font-size:8pt;color:#888;margin-bottom:14px">'+(p.incluye_iva?'* IVA incluido.':'* Precios en MXN. IVA no incluido.')+'</p>'
   +(p.pago?'<h2>Forma de pago</h2><p style="font-size:9pt;color:#555">'+esc(p.pago)+'</p>':'')
-  +(p.terminos?'<h2>Terminos y condiciones</h2>'+termH:'')
+  +(p.info_cliente?'<h2>Informacion adicional</h2><p style="font-size:9pt">'+esc(p.info_cliente)+'</p>':'')+(p.terminos?'<h2>Terminos y condiciones</h2>'+termH:'')
   +'<div style="margin-top:28px"><table style="width:100%"><tr><td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Nombre y firma del cliente</td><td style="width:6%"></td><td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Fecha de aceptacion</td></tr></table></div>'
   +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px 12px;margin-top:22px;font-size:8pt;text-align:center">Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202</div>'
   +'</body></html>';
@@ -944,7 +967,10 @@ function irPropuesta(){
   sv('pp-cliente',gv('cn'));sv('pp-folio-show',folioSaved||folio);
   actualizarPropTabla(propDatos);
   // Cargar terminos de config automatico
-  if(cfg&&cfg.b1&&!gv('pp-terms')) sv('pp-terms',cfg.b1);
+  if(!gv('pp-terms')){
+    var tv=gv('info-cliente')||(cfg&&cfg.b1)||'';
+    if(tv) sv('pp-terms',tv);
+  }
   sei('prop-loaded-folio',propDatos.folio);sei('prop-loaded-cliente',propDatos.cliente+' - '+fmto(propDatos.total));
   $('prop-loaded').style.display='block';
   renderChipsTo('chips-prop-wrap','pp-terms');
@@ -961,7 +987,10 @@ function cargarCot(){
     propDatos=d;
     sv('pp-cliente',d.cliente||'');sv('pp-folio-show',d.folio||'');
     actualizarPropTabla(d);
-    if(cfg&&cfg.b1&&!gv('pp-terms')) sv('pp-terms',cfg.b1);
+    if(!gv('pp-terms')){
+    var tv=gv('info-cliente')||(cfg&&cfg.b1)||'';
+    if(tv) sv('pp-terms',tv);
+  }
     sei('prop-loaded-folio',d.folio);sei('prop-loaded-cliente',d.cliente+' - '+fmto(d.total));
     $('prop-loaded').style.display='block';
     renderChipsTo('chips-prop-wrap','pp-terms');
@@ -1150,6 +1179,62 @@ function editarOC(folio_oc,folio_cot,cliente,monto,estado,fecha_oc,fecha_entrega
   $('oc-entrega').value=fecha_entrega;
   $('oc-notas').value=notas;
   $('modal-oc').style.display='flex';
+}
+
+function genPDF_OC(r){
+  var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  var W=210,ml=18,mr=18,cw=W-ml-mr;
+  var VD=[27,94,32],VM=[46,125,50],VL=[232,245,233],BL=[30,30,30],GR=[110,110,110],GB=[248,248,248],WH=[255,255,255];
+  function sf(st,sz,col){doc.setFont('helvetica',st);doc.setFontSize(sz);doc.setTextColor.apply(doc,col);}
+  function fr(x,y,w,h,col){doc.setFillColor.apply(doc,col);doc.rect(x,y,w,h,'F');}
+  function tx(t,x,y,o){doc.text(String(t||''),x,y,o||{});}
+  // Banda superior
+  fr(0,0,W,10,VD);
+  sf('bold',9,WH);tx('Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202',W/2,6.5,{align:'center'});
+  var y=18;
+  // Titulo
+  sf('bold',16,VM);tx('ORDEN DE COMPRA',ml,y);
+  // Box OC
+  var bw=54,bx=W-mr-bw;
+  fr(bx,12,bw,20,VD);
+  sf('bold',7,[180,230,180]);tx('FOLIO OC',bx+bw/2,17,{align:'center'});
+  sf('bold',12,WH);tx(r.folio_oc||'-',bx+bw/2,24,{align:'center'});
+  sf('normal',7,[200,230,201]);tx(fmtF(r.fecha_oc)||'',bx+bw/2,30,{align:'center'});
+  y=38;doc.setDrawColor(200,230,200);doc.setLineWidth(0.3);doc.line(ml,y,W-mr,y);y+=6;
+  // Datos basicos
+  sf('normal',8,GR);tx('Cotizacion ligada:',ml,y);sf('bold',8,VM);tx(r.folio_cot||'-',ml+30,y);
+  sf('normal',8,GR);tx('Estado:',ml+90,y);sf('bold',8,BL);tx(r.estado||'-',ml+103,y);
+  y+=5;sf('normal',8,GR);tx('Fecha OC:',ml,y);sf('normal',8,BL);tx(fmtF(r.fecha_oc)||'-',ml+18,y);
+  if(r.fecha_entrega){sf('normal',8,GR);tx('Entrega estimada:',ml+90,y);sf('normal',8,BL);tx(fmtF(r.fecha_entrega),ml+117,y);}
+  y+=8;
+  // Cliente
+  sf('bold',8,VM);tx('CLIENTE',ml,y);y+=4;
+  fr(ml,y,cw,7,VL);sf('bold',11,VD);
+  var cliL=doc.splitTextToSize(r.cliente||'-',cw-6);tx(cliL[0],ml+3,y+5.2);
+  y+=9;
+  // Monto
+  sf('bold',8,VM);tx('MONTO DE LA ORDEN',ml,y);y+=5;
+  var tw=80,tx0=W-mr-tw;
+  fr(tx0,y,tw,10,VD);sf('bold',14,WH);tx(fmto(r.monto),tx0+tw/2,y+7.5,{align:'center'});
+  y+=16;
+  // Notas
+  if(r.notas){
+    sf('bold',8,VM);tx('NOTAS Y CONDICIONES',ml,y);y+=4;
+    sf('normal',9,BL);
+    doc.splitTextToSize(r.notas,cw).forEach(function(l){if(y>270){doc.addPage();y=15;}tx(l,ml,y);y+=4.5;});
+    y+=6;
+  }
+  // Firma
+  if(y>240){doc.addPage();y=15;}
+  y+=10;
+  doc.setDrawColor(160,160,160);
+  doc.line(ml,y,ml+74,y);doc.line(ml+95,y,W-mr,y);y+=4;
+  sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Nombre y firma del consultor',ml+95,y);
+  // Footer
+  fr(0,289,W,8,VD);sf('normal',7,[200,230,201]);
+  tx('Omar Garcia Brena - ogarciabrena@gmail.com - +52 55 1455 2202',W/2,294.5,{align:'center'});
+  doc.save((r.folio_oc||'OC')+' - '+(r.cliente||'cliente')+'.pdf');
+  toast('PDF OC descargado');
 }
 
 function guardarOC(){
