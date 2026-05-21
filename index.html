@@ -755,7 +755,7 @@ function renderP(){
     row.innerHTML='<div class="dc">'
       +'<input type="text" placeholder="Nombre del producto / servicio..." value="'+esc(dispName)+'" oninput="upP('+pr.id+',\'nombre\',this.value)" style="margin-bottom:3px">'
       +'<input type="text" placeholder="Descripcion (opcional)..." value="'+esc(dispDesc)+'" oninput="upP('+pr.id+',\'desc\',this.value)" style="font-size:11px;color:var(--mt);padding:6px 9px">'
-      +'')
+
       +'</div>'
       +'<div><input type="number" min="1" value="'+pr.c+'" oninput="upP('+pr.id+',\'c\',this.value)"></div>'
       +'<div class="pcell"><input type="number" min="0" value="'+(pr.p||'')+'" placeholder="0" oninput="upP('+pr.id+',\'p\',this.value)"></div>'
