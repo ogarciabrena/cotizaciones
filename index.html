@@ -206,7 +206,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="hdr-r">
       <div class="fbadge" id="fbadge">...</div>
       <button class="ibtn" onclick="showTab('buscador')">Buscar</button>
-      <button class="ibtn" onclick="showTab('ocs')">OC</button>
       <button class="ibtn" onclick="logout()">Salir</button>
     </div>
   </div>
@@ -215,7 +214,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <button class="tab on"  onclick="showTab('cotizador',this)">Cotizacion</button>
     <button class="tab"     onclick="showTab('propuesta',this)">Propuesta</button>
     <button class="tab"     onclick="showTab('buscador',this)">Buscar</button>
-    <button class="tab"     onclick="showTab('ocs',this)">Ordenes de Compra</button>
+    <button class="tab"     onclick="showTab('ocs',this)">OC</button>
     <button class="tab"     onclick="showTab('catalogo',this)">Catalogo</button>
   </div>
 
@@ -281,6 +280,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="fld">
             <label>Informacion adicional para el cliente (aparece en PDF/DOC)</label>
             <textarea id="info-cliente" placeholder="Ej. Incluye garantia de instalacion 30 dias, capacitacion incluida..." style="min-height:60px"></textarea>
+          </div>
+          <div class="fld">
+            <label>Elaboro - quien realiza la cotizacion (opcional, aparece en PDF)</label>
+            <input type="text" id="elaboro" placeholder="Nombre del asesor o vendedor">
           </div>
           <div class="fld">
             <label>Notas internas (solo en Sheets, NO aparecen en documentos)</label>
@@ -610,15 +613,28 @@ function renderChipsTo(wrapId,targetId){
   var chips=cfgChips.length?cfgChips:buildDefaultChips();
   chips.forEach(function(item){
     var val=item.valor||(cfg&&cfg[item.key])||'';if(!val)return;
-    var btn=document.createElement('button');
-    btn.className='badd alt';btn.style.cssText='font-size:11px;margin-bottom:3px';
-    btn.textContent='+ '+item.label;
-    btn.onclick=(function(v,tid){return function(){
+    var id='chk_'+wrapId+'_'+item.key;
+    var wrap=document.createElement('label');
+    wrap.style.cssText='display:flex;align-items:flex-start;gap:8px;cursor:pointer;padding:6px 8px;border-radius:6px;transition:background .12s;margin-bottom:4px';
+    wrap.onmouseover=function(){this.style.background='rgba(122,224,106,.06)';};
+    wrap.onmouseout=function(){this.style.background='transparent';};
+    var chk=document.createElement('input');
+    chk.type='checkbox';chk.id=id;chk.style.cssText='margin-top:2px;accent-color:var(--g);flex-shrink:0';
+    chk.onchange=(function(v,tid,lbl){return function(){
       var ta=$(tid);if(!ta)return;
-      ta.value=(ta.value?ta.value+'\n\n':'')+v;
-      toast('Agregado: '+item.label);
-    };})(val,targetId);
-    el.appendChild(btn);
+      if(this.checked){
+        ta.value=(ta.value?ta.value+'\n\n':'')+v;
+        toast('Agregado: '+lbl);
+      }else{
+        ta.value=ta.value.replace('\n\n'+v,'').replace(v+'\n\n','').replace(v,'');
+      }
+    };})(val,targetId,item.label);
+    var lbl=document.createElement('span');
+    lbl.style.cssText='font-size:12px;color:var(--tx);line-height:1.4';
+    lbl.innerHTML='<span style="font-size:10px;font-weight:600;color:var(--g);display:block;letter-spacing:.05em">'+esc(item.label)+'</span>'
+      +'<span style="font-size:11px;color:var(--mt)">'+esc(val.substring(0,80))+(val.length>80?'...':'')+'</span>';
+    wrap.appendChild(chk);wrap.appendChild(lbl);
+    el.appendChild(wrap);
   });
 }
 function buildDefaultChips(){
@@ -665,19 +681,33 @@ var catVis=false;
 function togCat(){
   catVis=!catVis;
   var g=$('cgrid');
-  if(catVis&&catProds.length){g.style.display='grid';renderCatInline();}
+  if(catVis&&catProds.length){g.style.display='block';renderCatInline();}
   else g.style.display='none';
 }
 function renderCatInline(){
   var g=$('cgrid');g.innerHTML='';
+  var cats={};
   catProds.forEach(function(p){
-    var d=document.createElement('div');d.className='ccard';
-    d.innerHTML='<button class="cc-add" onclick="fromCat(\''+ea(p.nombre)+'\','+p.precio+')">+</button>'
-      +'<div class="cc-n">'+esc(p.nombre)+'</div>'
-      +'<div class="cc-p">'+fmto(p.precio)+'</div>'
-      +(p.descripcion?'<div class="cc-d">'+esc(p.descripcion)+'</div>':'');
-    d.addEventListener('click',function(e){if(!e.target.classList.contains('cc-add'))fromCat(p.nombre,p.precio,p.descripcion||'');});
-    g.appendChild(d);
+    var cat=p.categoria||'General';
+    if(!cats[cat])cats[cat]=[];
+    cats[cat].push(p);
+  });
+  Object.keys(cats).sort().forEach(function(cat){
+    var sec=document.createElement('div');
+    sec.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--g);letter-spacing:.1em;text-transform:uppercase;margin:10px 0 5px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.07)">'+esc(cat)+'</div>';
+    var grid=document.createElement('div');
+    grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-bottom:8px';
+    cats[cat].forEach(function(p){
+      var d=document.createElement('div');d.className='ccard';
+      d.innerHTML='<button class="cc-add" onclick="fromCat(\''+ea(p.nombre)+'\',' +p.precio+',\''+ea(p.descripcion||'')+'\')">+</button>'
+        +'<div class="cc-n">'+esc(p.nombre)+'</div>'
+        +'<div class="cc-p">'+fmto(p.precio)+'</div>'
+        +(p.descripcion?'<div class="cc-d">'+esc(p.descripcion)+'</div>':'');
+      d.addEventListener('click',function(e){if(!e.target.classList.contains('cc-add'))fromCat(p.nombre,p.precio,p.descripcion||'');});
+      grid.appendChild(d);
+    });
+    sec.appendChild(grid);
+    g.appendChild(sec);
   });
 }
 function renderCatFull(){
@@ -720,7 +750,13 @@ function renderP(){
   var l=$('plst');l.innerHTML='';
   prods.forEach(function(pr){
     var row=document.createElement('div');row.className='prow';
-    row.innerHTML='<div class="dc"><input type="text" placeholder="Descripcion del servicio..." value="'+esc(pr.d)+'" oninput="upP('+pr.id+',\'d\',this.value)"></div>'
+        var dispName=pr.nombre||pr.d||'';
+    var dispDesc=pr.desc||'';
+    row.innerHTML='<div class="dc">'
+      +'<input type="text" placeholder="Nombre del producto / servicio..." value="'+esc(dispName)+'" oninput="upP('+pr.id+',\'nombre\',this.value)" style="margin-bottom:3px">'
+      +'<input type="text" placeholder="Descripcion (opcional)..." value="'+esc(dispDesc)+'" oninput="upP('+pr.id+',\'desc\',this.value)" style="font-size:11px;color:var(--mt);padding:6px 9px">'
+      +'')
+      +'</div>'
       +'<div><input type="number" min="1" value="'+pr.c+'" oninput="upP('+pr.id+',\'c\',this.value)"></div>'
       +'<div class="pcell"><input type="number" min="0" value="'+(pr.p||'')+'" placeholder="0" oninput="upP('+pr.id+',\'p\',this.value)"></div>'
       +'<button class="bdel" onclick="rmP('+pr.id+')">x</button>';
@@ -728,7 +764,7 @@ function renderP(){
   });
   $('pcnt').textContent=prods.length+' concepto'+(prods.length!==1?'s':'');
 }
-function upP(id,f,v){var pr=prods.find(function(x){return x.id===id;});if(!pr)return;if(f==='d')pr.d=v;else if(f==='c')pr.c=parseFloat(v)||1;else pr.p=parseFloat(v)||0;upPv();}
+function upP(id,f,v){var pr=prods.find(function(x){return x.id===id;});if(!pr)return;if(f==='nombre'){pr.nombre=v;pr.d=v;}else if(f==='desc')pr.desc=v;else if(f==='d'){pr.d=v;if(!pr.nombre)pr.nombre=v;}else if(f==='c')pr.c=parseFloat(v)||1;else pr.p=parseFloat(v)||0;upPv();}
 function calc(){var s=prods.reduce(function(a,p){return a+(p.c*p.p);},0);var iva=$('ivt')&&$('ivt').checked?s*0.16:0;return{sub:s,iva:iva,tot:s+iva};}
 function togIV(){var on=$('ivt').checked;$('ivr').style.display=on?'flex':'none';$('ivn').textContent=on?'* IVA incluido (16%).':'* Precios en MXN. IVA no incluido.';upPv();}
 function fmt(n){return '$'+Math.round(n).toLocaleString('es-MX');}
@@ -751,7 +787,7 @@ function mkPay(){
   var t=calc();
   return{uid:UID,tok:TOK,a:'guardar',folio:folio,fecha:hoy(),
     cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
-    vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),
+    vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),elaboro:gv('elaboro'),
     status:status,notas:gv('no'),
     productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
@@ -789,7 +825,7 @@ function getDatos(){
     productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
     incluye_iva:$('ivt').checked,
-    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente')};
+    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente'),elaboro:gv('elaboro')};
 }
 function genPDF(){if(!valid())return;withCfg(function(){buildPDF(getDatos());},'bp','PDF');}
 function genDOC(){if(!valid())return;withCfg(function(){buildDOC(getDatos());},'bd','DOC');}
@@ -852,10 +888,10 @@ function buildPDF(p){
   // Productos
   sf('bold',8,VM);tx('DESCRIPCION DE SERVICIOS',ml,y);y+=4;
   var rows=(p.productos||[]).map(function(pr,i){
-    var descTxt=pr.desc||'-';
-    // Si hay descripcion separada la agrega en nueva linea
-    var fullDesc=pr.nombre?pr.nombre+(pr.desc&&pr.desc!==pr.nombre?'\n'+pr.desc:''):descTxt;
-    return[String(i+1),fullDesc,String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)];
+    var nombre=pr.nombre||pr.desc||'-';
+    var desc=pr.desc&&pr.desc!==nombre?pr.desc:'';
+    var cell=nombre+(desc?'\n'+desc:'');
+    return[String(i+1),cell,String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)];
   });
   doc.autoTable({startY:y,head:[['#','Nombre / Descripcion','Cant.','Precio unit.','Subtotal']],body:rows,
     theme:'plain',
@@ -888,8 +924,14 @@ function buildPDF(p){
     y+=6;
   }
   // Firma
-  if(y>255){doc.addPage();y=15;}
-  doc.setDrawColor(160,160,160);doc.line(ml,y,ml+74,y);doc.line(ml+85,y,ml+74+85,y);y+=4;
+  if(p.elaboro&&p.elaboro.trim()){
+    if(y>258){doc.addPage();y=15;}
+    sf('normal',7,GR);tx('Elaboro:',ml,y+4);
+    sf('normal',8,BL);tx(p.elaboro,ml+18,y+4);y+=10;
+  }
+  if(y>258){doc.addPage();y=15;}
+  doc.setDrawColor(160,160,160);doc.setLineWidth(0.3);
+  doc.line(ml,y,ml+74,y);doc.line(ml+85,y,ml+74+85,y);y+=4;
   sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Fecha de aceptacion',ml+85,y);
   // Footer
   fr(0,287,W,10,VD);
@@ -901,7 +943,11 @@ function buildPDF(p){
 }
 
 function buildDOC(p){
-  var rows=(p.productos||[]).map(function(pr,i){return '<tr style="background:'+(i%2===0?'#fff':'#f8f8f8')+'"><td style="text-align:center;padding:5px 8px;border:1px solid #ddd">'+pr.cant+'</td><td style="padding:5px 8px;border:1px solid #ddd">'+esc(pr.desc||'-')+'</td><td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.precio)+'</td><td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.subtotal)+'</td></tr>';}).join('');
+  var rows=(p.productos||[]).map(function(pr,i){
+    var nb=pr.nombre||pr.desc||'-';
+    var ds=pr.desc&&pr.desc!==nb?('<br><span style="font-size:8pt;color:#888">'+esc(pr.desc)+'</span>'):'';
+    return '<tr style="background:'+(i%2===0?'#fff':'#f8f8f8')+'"><td style="text-align:center;padding:5px 8px;border:1px solid #ddd">'+pr.cant+'</td><td style="padding:5px 8px;border:1px solid #ddd">'+esc(nb)+ds+'</td><td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.precio)+'</td><td style="text-align:right;padding:5px 8px;border:1px solid #ddd">'+fmto(pr.subtotal)+'</td></tr>';
+  }).join('');
   var termH=(p.terminos||'').split('\n').filter(Boolean).map(function(l){return '<p style="margin:2px 0;font-size:9pt;color:#555">'+esc(l)+'</p>';}).join('');
   // Solo datos del cliente en el cuerpo, consultor solo en header/footer
   var cliInfo='';
@@ -1020,6 +1066,7 @@ function cargarCot(){
     if(tv) sv('pp-terms',tv);
   }
     sei('prop-loaded-folio',d.folio);sei('prop-loaded-cliente',d.cliente+' - '+fmto(d.total));
+  if(d.elaboro) sv('elaboro',d.elaboro);
     $('prop-loaded').style.display='block';
     renderChipsTo('chips-prop-wrap','pp-terms');
     toast('Cotizacion cargada');
@@ -1105,7 +1152,14 @@ function genPropuesta(){
   if(propActivo.cot&&d){
     if(y>220){doc.addPage();y=18;}
     fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('SERVICIOS Y PRECIOS',ml+4,y+1);y+=10;
-    var rows2=(d.resumen||'').split(' | ').map(function(item,i){var parts=item.split(' = ');var concept=parts[0]||item;return[String(i+1),concept,parts[1]||''];});
+    var rows2=(d.resumen||'').split(' | ').map(function(item,i){
+      var ei=item.lastIndexOf(' = ');
+      var left=ei>0?item.substring(0,ei):item;
+      var right=ei>0?item.substring(ei+3):'';
+      var pi=left.lastIndexOf(' (x');
+      var concept=pi>0?left.substring(0,pi):left;
+      return[String(i+1),concept,right];
+    });
     doc.autoTable({startY:y,head:[['#','Nombre / Descripcion','Total']],body:rows2,theme:'plain',
       styles:{font:'helvetica',fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:BL,lineColor:[220,220,220],lineWidth:0.2,overflow:'linebreak'},
       headStyles:{fillColor:VD,textColor:WH,fontStyle:'bold'},
@@ -1224,7 +1278,7 @@ function genPDF_OC(r){
   // Banda superior
   fr(0,0,W,10,VD);
   sf('bold',9,WH);
-  var sloganTxt=(cfg&&cfg.b2)||'Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202';
+  var sloganTxt=(cfg&&cfg.b2&&cfg.b2.trim())?cfg.b2:'Omar Garcia Brena - Consultor Tecnologico';
   tx(sloganTxt,W/2,6.5,{align:'center'});
   var y=18;
   // Titulo
