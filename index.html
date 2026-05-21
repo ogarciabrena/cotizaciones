@@ -472,7 +472,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="slbl">Agregar producto</div>
     <div class="g2" style="margin-bottom:10px">
       <div class="fld"><label>Nombre *</label><input type="text" id="pn" placeholder="Sistema POS completo"></div>
-      <div class="fld"><label>Descripcion</label><input type="text" id="pd" placeholder="Equipo + instalacion..."></div>
+      <div class="fld"><label>Descripcion</label><input type="text" id="pd" placeholder="Equipo + instalacion + capacitacion"></div>
+    </div>
+    <div class="g2" style="margin-bottom:10px">
+      <div class="fld"><label>Categoria</label><input type="text" id="pcat" placeholder="POS, CCTV, Redes, Soporte..."></div>
+      <div class="fld"><label>Link del producto (opcional)</label><input type="url" id="plink" placeholder="https://proveedor.com/producto"></div>
     </div>
     <div class="g3" style="margin-bottom:.75rem">
       <div class="fld"><label>Tu costo $ (privado)</label><input type="number" id="pc" placeholder="14000" min="0" oninput="calcP()"></div>
@@ -672,7 +676,7 @@ function renderCatInline(){
       +'<div class="cc-n">'+esc(p.nombre)+'</div>'
       +'<div class="cc-p">'+fmto(p.precio)+'</div>'
       +(p.descripcion?'<div class="cc-d">'+esc(p.descripcion)+'</div>':'');
-    d.addEventListener('click',function(e){if(!e.target.classList.contains('cc-add'))fromCat(p.nombre,p.precio);});
+    d.addEventListener('click',function(e){if(!e.target.classList.contains('cc-add'))fromCat(p.nombre,p.precio,p.descripcion||'');});
     g.appendChild(d);
   });
 }
@@ -682,12 +686,14 @@ function renderCatFull(){
   catProds.forEach(function(p){
     var d=document.createElement('div');d.className='ccard';d.style.cursor='default';
     d.innerHTML='<div class="cc-n">'+esc(p.nombre)+'</div>'
+      +(p.categoria?'<div style="font-size:9px;color:var(--g);font-weight:600;margin-bottom:2px">'+esc(p.categoria)+'</div>':'')
       +'<div class="cc-p">'+fmto(p.precio)+'</div>'
-      +(p.descripcion?'<div class="cc-d">'+esc(p.descripcion)+'</div>':'');
+      +(p.descripcion?'<div class="cc-d">'+esc(p.descripcion)+'</div>':'')
+      +(p.link?'<a href="'+p.link+'" target="_blank" style="font-size:9px;color:var(--mt)">ver producto</a>':'');
     g.appendChild(d);
   });
 }
-function fromCat(n,p){addP(n,1,p);toast(n+' agregado');}
+function fromCat(n,p,desc){addP(n,1,p,n,desc||'');toast(n+' agregado');}
 function calcP(){
   var c=parseFloat($('pc').value)||0,m=parseFloat($('pm').value)||0;
   $('pp').value=c&&m<100?fmto(Math.round(c/(1-m/100))):'';
@@ -696,19 +702,19 @@ function saveProd(){
   var nombre=gv('pn'),costo=parseFloat($('pc').value)||0,margen=parseFloat($('pm').value)||0;
   if(!nombre){toast('Nombre requerido',true);return;}
   if(!costo){toast('Ingresa el costo',true);return;}
-  post({uid:UID,tok:TOK,a:'guardar_producto',nombre:nombre,descripcion:gv('pd'),costo:costo,margen:margen},
+  post({uid:UID,tok:TOK,a:'guardar_producto',nombre:nombre,descripcion:gv('pd'),costo:costo,margen:margen,categoria:gv('pcat'),link:gv('plink')},
   function(d){
     if(d.ok){
       catProds.push({nombre:nombre,descripcion:gv('pd'),precio:Math.round(costo/(1-margen/100))});
       renderCatFull();
-      ['pn','pd','pc','pm'].forEach(function(i){$(i).value='';});
+      ['pn','pd','pc','pm','pcat','plink'].forEach(function(i){$(i).value=''});
       $('pp').value='';toast('Producto guardado');
     }else toast('Error: '+(d.e||'?'),true);
   });
 }
 
 // -- PRODUCTOS -------------------------------------------------
-function addP(d,c,p){d=d||'';c=c!==undefined?c:1;p=p!==undefined?p:0;var id=Date.now()+Math.random();prods.push({id:id,d:d,c:c,p:p});renderP();upPv();}
+function addP(d,c,p,nombre,desc){d=d||'';c=c!==undefined?c:1;p=p!==undefined?p:0;var id=Date.now()+Math.random();prods.push({id:id,d:d,c:c,p:p,nombre:nombre||d,desc:desc||''});renderP();upPv();}
 function rmP(id){prods=prods.filter(function(x){return x.id!==id;});renderP();upPv();}
 function renderP(){
   var l=$('plst');l.innerHTML='';
@@ -747,7 +753,7 @@ function mkPay(){
     cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
     vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),
     status:status,notas:gv('no'),
-    productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
+    productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
     incluye_iva:$('ivt').checked};
 }
@@ -780,7 +786,7 @@ function getDatos(){
   var t=calc(),c=cfg||{};
   return{folio:folioSaved||folio,fecha:hoy(),vigencia:$('vig').value,
     cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
-    productos:prods.map(function(p){return{desc:p.d,cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
+    productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
     incluye_iva:$('ivt').checked,
     terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente')};
@@ -802,7 +808,7 @@ function buildPDF(p){
   function tx(t,x,y,o){doc.text(String(t||''),x,y,o||{});}
   var y=0;
   // Banda superior
-  fr(0,0,W,10,VD);sf('bold',9,WH);tx('Omar Garcia Brena - Consultor Tecnologico',W/2,6.5,{align:'center'});
+  fr(0,0,W,10,VD);sf('bold',9,WH);tx('Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202',W/2,6.5,{align:'center'});
   y=18;
   sf('bold',16,VM);tx('PROPUESTA TECNOLOGICA INTEGRAL',ml,y);
   // Box folio
@@ -845,12 +851,20 @@ function buildPDF(p){
   y+=4;
   // Productos
   sf('bold',8,VM);tx('DESCRIPCION DE SERVICIOS',ml,y);y+=4;
-  var rows=(p.productos||[]).map(function(pr,i){return[String(i+1),pr.desc||'-',String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)];});
-  doc.autoTable({startY:y,head:[['#','Descripcion','Cant.','Precio unit.','Subtotal']],body:rows,
-    theme:'plain',styles:{font:'helvetica',fontSize:9,cellPadding:4,textColor:BL,lineColor:[220,220,220],lineWidth:0.2},
+  var rows=(p.productos||[]).map(function(pr,i){
+    var descTxt=pr.desc||'-';
+    // Si hay descripcion separada la agrega en nueva linea
+    var fullDesc=pr.nombre?pr.nombre+(pr.desc&&pr.desc!==pr.nombre?'\n'+pr.desc:''):descTxt;
+    return[String(i+1),fullDesc,String(pr.cant),fmto(pr.precio),fmto(pr.subtotal)];
+  });
+  doc.autoTable({startY:y,head:[['#','Nombre / Descripcion','Cant.','Precio unit.','Subtotal']],body:rows,
+    theme:'plain',
+    styles:{font:'helvetica',fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:BL,lineColor:[220,220,220],lineWidth:0.2,overflow:'linebreak'},
     headStyles:{fillColor:VD,textColor:WH,fontStyle:'bold',fontSize:9},
-    columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:16,halign:'right'},3:{cellWidth:28,halign:'right'},4:{cellWidth:28,halign:'right'}},
-    alternateRowStyles:{fillColor:GB},margin:{left:ml,right:mr},tableWidth:cw});
+    columnStyles:{0:{cellWidth:12,halign:'center',valign:'middle'},1:{cellWidth:'auto',overflow:'linebreak'},2:{cellWidth:14,halign:'right'},3:{cellWidth:26,halign:'right'},4:{cellWidth:26,halign:'right'}},
+    alternateRowStyles:{fillColor:GB},
+    margin:{left:ml,right:mr},tableWidth:cw,
+    pageBreak:'auto',rowPageBreak:'avoid'});
   y=doc.lastAutoTable.finalY+4;
   sf('italic',7,GR);tx('Esta cotizacion es valida por los proximos '+p.vigencia+' dias.',W-mr,y,{align:'right'});y+=8;
   // Totales
@@ -1029,7 +1043,7 @@ function actualizarPropTabla(d){
 function genPropuesta(){
   var d=propDatos;
   var titulo=gv('pp-titulo')||'PROPUESTA TECNOLOGICA INTEGRAL';
-  var subtit=gv('pp-sub')||(cfg&&cfg.b2)||'';
+  var subtit=gv('pp-sub')||'';
   var cliente=gv('pp-cliente')||'-';
   var fecha=$('pp-fecha').value||hoy();
   var folioPP=gv('pp-folio-show')||'-';
@@ -1091,12 +1105,13 @@ function genPropuesta(){
   if(propActivo.cot&&d){
     if(y>220){doc.addPage();y=18;}
     fr(ml,y-4,cw,8,VD);sf('bold',10,WH);tx('SERVICIOS Y PRECIOS',ml+4,y+1);y+=10;
-    var rows2=(d.resumen||'').split(' | ').map(function(item,i){var p=item.split(' = ');return[String(i+1),p[0]||item,p[1]||''];});
-    doc.autoTable({startY:y,head:[['#','Concepto','Total']],body:rows2,theme:'plain',
-      styles:{font:'helvetica',fontSize:9,cellPadding:4,textColor:BL,lineColor:[220,220,220],lineWidth:0.2},
+    var rows2=(d.resumen||'').split(' | ').map(function(item,i){var parts=item.split(' = ');var concept=parts[0]||item;return[String(i+1),concept,parts[1]||''];});
+    doc.autoTable({startY:y,head:[['#','Nombre / Descripcion','Total']],body:rows2,theme:'plain',
+      styles:{font:'helvetica',fontSize:9,cellPadding:{top:3,bottom:3,left:3,right:3},textColor:BL,lineColor:[220,220,220],lineWidth:0.2,overflow:'linebreak'},
       headStyles:{fillColor:VD,textColor:WH,fontStyle:'bold'},
-      columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:30,halign:'right'}},
-      alternateRowStyles:{fillColor:GB},margin:{left:ml,right:mr},tableWidth:cw});
+      columnStyles:{0:{cellWidth:12,halign:'center',valign:'middle'},1:{cellWidth:'auto',overflow:'linebreak'},2:{cellWidth:30,halign:'right'}},
+      alternateRowStyles:{fillColor:GB},margin:{left:ml,right:mr},tableWidth:cw,
+      pageBreak:'auto',rowPageBreak:'avoid'});
     y=doc.lastAutoTable.finalY+4;
     var tw=50,tx0=W-mr-tw;
     fr(tx0,y,tw,7,VD);sf('bold',10,WH);tx('TOTAL',tx0+4,y+5);tx(fmto(d.total),tx0+tw-2,y+5,{align:'right'});y+=12;
