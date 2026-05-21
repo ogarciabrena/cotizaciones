@@ -424,19 +424,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <!-- Texto de Config al final — se agrega automatico desde la cotizacion -->
-    <div style="background:var(--s1);border:1px solid var(--bdg);border-radius:var(--r2);padding:1.25rem;margin-bottom:1rem">
-      <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center">
-        Informacion adicional (al final del documento — igual que en la cotizacion)
-        <button class="rbtn prim" id="tog-terms" onclick="togSec('terms',this)">Incluir</button>
-      </div>
-      <div id="blk-terms">
-        <textarea id="pp-terms" style="min-height:100px" placeholder="Los terminos se cargaran automaticamente de tu Config..."></textarea>
-        <div style="margin-top:8px">
-          <div class="chips-title" style="font-size:10px;color:var(--g);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Insertar texto de Config</div>
-          <div class="chips-wrap" id="chips-prop-wrap"></div>
-        </div>
-      </div>
-    </div>
+    
 
     <div class="actions">
       <button class="bmain" onclick="genPropuesta()"><span class="dot"></span>Generar Propuesta PDF</button>
@@ -600,7 +588,6 @@ function showTab(id,btn){
 function renderChips(){
   var chips=cfgChips.length?cfgChips:buildDefaultChips();
   renderChipsTo('chips-cot-wrap','info-cliente');  // cotizador -> inserta en info visible al cliente
-  renderChipsTo('chips-prop-wrap','pp-terms');  // propuesta -> inserta en terminos
   if(chips.length){
     $('chips-cot').style.display='block';
   }
@@ -1036,17 +1023,15 @@ function irPropuesta(){
   var t=calc();
   propDatos={folio:folioSaved||folio,cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
     total:Math.round(t.tot),subtotal:Math.round(t.sub),iva:Math.round(t.iva),
-    resumen:prods.filter(function(p){return p.d.trim();}).map(function(p){return p.d+' = '+fmt(p.c*p.p);}).join(' | ')};
+    incluye_iva:$('ivt').checked,
+    info_cliente:gv('info-cliente'),
+    productos:prods.filter(function(p){return p.d.trim();}).map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};})};
   sv('pp-cliente',gv('cn'));sv('pp-folio-show',folioSaved||folio);
   actualizarPropTabla(propDatos);
   // Cargar terminos de config automatico
-  if(!gv('pp-terms')){
-    var tv=gv('info-cliente')||(cfg&&cfg.b1)||'';
-    if(tv) sv('pp-terms',tv);
-  }
+
   sei('prop-loaded-folio',propDatos.folio);sei('prop-loaded-cliente',propDatos.cliente+' - '+fmto(propDatos.total));
   $('prop-loaded').style.display='block';
-  renderChipsTo('chips-prop-wrap','pp-terms');
   showTab('propuesta');
   toast('Cotizacion cargada en propuesta');
 }
@@ -1060,15 +1045,11 @@ function cargarCot(){
     propDatos=d;
     sv('pp-cliente',d.cliente||'');sv('pp-folio-show',d.folio||'');
     actualizarPropTabla(d);
-    if(!gv('pp-terms')){
-    var tv=gv('info-cliente')||(cfg&&cfg.b1)||'';
-    if(tv) sv('pp-terms',tv);
-  }
+  
     sei('prop-loaded-folio',d.folio);sei('prop-loaded-cliente',d.cliente+' - '+fmto(d.total));
   if(d.elaboro) sv('elaboro',d.elaboro);
     $('prop-loaded').style.display='block';
-    renderChipsTo('chips-prop-wrap','pp-terms');
-    toast('Cotizacion cargada');
+      toast('Cotizacion cargada');
   });
 }
 function actualizarPropTabla(d){
@@ -1236,23 +1217,20 @@ function genPropuesta(){
     }
   }
 
-  // -- INFORMACION ADICIONAL - IDENTICA A COTIZACION --------
-  if(propActivo.terms){
-    var terms=gv('pp-terms');
-    if(terms&&terms.trim()){
-      if(y>230){doc.addPage();y=18;}
-      y=seccion('INFORMACION ADICIONAL',y);
-      sf('normal',7,GR);  // misma fuente chica y delgada que cotizacion
-      terms.split('\n').forEach(function(l){
-        if(y>272){doc.addPage();y=18;}
-        if(l.trim()){doc.splitTextToSize(l.trim(),cw).forEach(function(wl){tx(wl,ml,y);y+=3.8;});}
-        else y+=2;
-      });
-      y+=6;
-    }
+  // -- INFORMACION ADICIONAL -- identica a la cotizacion
+  var infoAd=(d&&d.info_cliente&&d.info_cliente.trim())?d.info_cliente:'';
+  if(infoAd){
+    if(y>230){doc.addPage();y=18;}
+    y=seccion('INFORMACION ADICIONAL',y);
+    sf('normal',7,GR);
+    infoAd.split('\n').forEach(function(l){
+      if(y>272){doc.addPage();y=18;}
+      if(l.trim()){doc.splitTextToSize(l.trim(),cw).forEach(function(wl){tx(wl,ml,y);y+=3.8;});}
+      else y+=2;
+    });
+    y+=6;
   }
-
-  // -- FOOTER ------------------------------------------------
+    // -- FOOTER ------------------------------------------------
   fr(0,287,W,10,VD);
   sf('normal',7,[200,230,201]);
   tx('ogarciabrena@gmail.com',ml+2,292);
@@ -1276,7 +1254,7 @@ function genPropuestaDOC(){
   +(propActivo.sol&&gv('pp-sol')?'<h2>Solucion propuesta</h2><p>'+esc(gv('pp-sol')).replace(/\n/g,'</p><p>')+'</p>':'')
   +(propActivo.cot&&d&&d.resumen?'<h2>Servicios y precios</h2><p>'+esc(d.resumen).replace(/ \| /g,'<br>')+'</p><p><strong>Total: '+fmto(d.total)+'</strong></p>':'')
   +(propActivo.notas&&gv('pp-notas')?'<h2>Proximos pasos</h2><p>'+esc(gv('pp-notas')).replace(/\n/g,'</p><p>')+'</p>':'')
-  +(propActivo.terms&&gv('pp-terms')?'<h2>Terminos y condiciones</h2><p style="font-size:9pt;color:#555">'+esc(gv('pp-terms')).replace(/\n/g,'</p><p style="font-size:9pt;color:#555">')+'</p>':'')
+  +(propDatos&&propDatos.info_cliente?'<h2 style="background:#1B5E20;color:#fff;padding:5px 10px">INFORMACION ADICIONAL</h2><div style="font-size:8pt;color:#555;white-space:pre-line">'+esc(propDatos.info_cliente)+'</div>':'')
   +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px;margin-top:20px;font-size:8pt;text-align:center">ogarciabrena@gmail.com - +52 55 1455 2202</div>'
   +'</body></html>';
   dlBlob(html,'text/html;charset=utf-8',(d?d.folio:'propuesta')+' - '+cliente+' - Propuesta.html');
