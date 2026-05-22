@@ -1163,11 +1163,12 @@ function genPropuesta(){
     sf('normal',9,GR);
     tx('Folio: '+folioPP+'   -   Fecha: '+fmtF(fecha),W/2,ty+22,{align:'center'});
     ty+=38;
-    // Elaboro en portada
+    // Elaboro debajo del recuadro del cliente
     if(elaboro){
-      sf('normal',9,[200,230,201]);tx('Elaboro: '+elaboro,W/2,ty,{align:'center'});ty+=5;
-      if(window._uTel){sf('normal',8,[180,210,180]);tx(window._uTel,W/2,ty,{align:'center'});ty+=4;}
-      if(window._uCorreo){sf('normal',8,[180,210,180]);tx(window._uCorreo,W/2,ty,{align:'center'});}
+      ty+=8;
+      sf('normal',8,[200,230,201]);tx('Elaboro: '+elaboro,W/2,ty,{align:'center'});ty+=5;
+      if(window._uTel&&window._uTel.trim()){sf('normal',7,[180,210,180]);tx(window._uTel,W/2,ty,{align:'center'});ty+=4;}
+      if(window._uCorreo&&window._uCorreo.trim()){sf('normal',7,[180,210,180]);tx(window._uCorreo,W/2,ty,{align:'center'});}
     }
     // Footer portada
     fr(0,272,W,25,[20,70,20]);
@@ -1528,8 +1529,13 @@ function genPDF_OC_completo(oc){
   sf('normal',8,GR);tx('Cotizacion ligada:',ml,y);sf('bold',8,VD);tx(oc.folio_cot||'-',ml+30,y);
   sf('normal',8,GR);tx('Fecha:',ml+90,y);sf('normal',8,BL);tx(fmtF(oc.fecha_oc),ml+100,y);
   y+=4.5;
-  sf('normal',8,GR);tx('Estado:',ml,y);sf('normal',8,BL);tx('PENDIENTE',ml+14,y);
+  sf('normal',8,GR);tx('Estado:',ml,y);sf('normal',8,BL);tx(oc.estado||'PENDIENTE',ml+14,y);
   if(oc.elaboro){sf('normal',8,GR);tx('Elaboro:',ml+90,y);sf('normal',8,BL);tx(oc.elaboro,ml+104,y);}
+  y+=5;
+  if(oc.fecha_entrega&&oc.fecha_entrega.trim()){
+    sf('bold',8,VM);tx('Fecha de entrega:',ml,y);
+    sf('bold',9,BL);tx(fmtF(oc.fecha_entrega),ml+30,y);
+  }
   y+=8;
 
   // Cliente
