@@ -320,7 +320,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <div class="actions">
-      <button class="bmain" id="bg" onclick="guardar()"><span class="dot"></span>1 - Guardar en Sheets</button>
+      <button class="bmain" id="bg" onclick="guardar()">Guardar</button>
       <button class="bsec"  id="bp" onclick="genPDF()" disabled>PDF</button>
       <button class="bsec"  id="bd" onclick="genDOC()" disabled>DOC</button>
     </div>
@@ -612,23 +612,25 @@ function renderChipsTo(wrapId,targetId){
     var val=item.valor||(cfg&&cfg[item.key])||'';if(!val)return;
     var wrap=document.createElement('label');
     wrap.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .12s';
-    wrap.onmouseover=function(){this.style.background='rgba(122,224,106,.06)';};
-    wrap.onmouseout=function(){this.style.background='transparent';};
+    wrap.onmouseover=function(){if(!this.querySelector('input').checked)this.style.background='rgba(122,224,106,.06)';};
+    wrap.onmouseout=function(){if(!this.querySelector('input').checked)this.style.background='transparent';};
     var chk=document.createElement('input');
     chk.type='checkbox';
-    chk.style.cssText='accent-color:var(--g);width:14px;height:14px;flex-shrink:0;cursor:pointer';
+    chk.style.cssText='accent-color:var(--g);width:14px;height:14px;flex-shrink:0;cursor:pointer;margin-top:1px';
     chk.dataset.val=val;
     chk.dataset.tid=targetId;
     chk.onchange=function(){
       var ta=$(this.dataset.tid);if(!ta)return;
       var wrap2=this.parentNode;
+      var lbl2=wrap2.querySelector('span');
       if(this.checked){
         ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+this.dataset.val;
-        wrap2.style.background='rgba(122,224,106,.15)';
-        wrap2.style.borderRadius='6px';
+        wrap2.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:6px;background:rgba(122,224,106,.18);border:1px solid rgba(122,224,106,.4)';
+        if(lbl2)lbl2.style.color='var(--g)';
       }else{
         ta.value=ta.value.replace('\n'+this.dataset.val,'').replace(this.dataset.val+'\n','').replace(this.dataset.val,'').trim();
-        wrap2.style.background='transparent';
+        wrap2.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .12s';
+        if(lbl2)lbl2.style.color='var(--tx)';
       }
     };
     var lbl=document.createElement('span');
@@ -835,7 +837,7 @@ function guardar(){
         clientes.push({nombre:n,giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz')});
     }else{
         toast('Error: '+(d.e||'?'),true);
-        btn.disabled=false;btn.innerHTML='<span class="dot"></span>1 - Guardar en Sheets';
+        btn.disabled=false;btn.innerHTML='Guardar';
       }
     });
   });
@@ -880,21 +882,23 @@ function buildPDF(p){
   y=38;doc.setDrawColor(200,230,200);doc.setLineWidth(0.3);doc.line(ml,y,W-mr,y);y+=6;
   // Info - SIN repetir datos del consultor (ya estan en la banda superior)
   sf('bold',8,VM);tx('DATOS DE LA COTIZACION',ml,y);y+=5;
+  // Fila 1: Vigencia | Folio
   sf('normal',8,GR);tx('Vigencia:',ml,y);sf('normal',8,BL);tx(p.vigencia+' dias naturales',ml+18,y);
-  sf('normal',8,GR);tx('Folio:',ml+80,y);sf('bold',8,VD);tx(p.folio,ml+93,y);
-  y+=4;sf('normal',8,GR);tx('Fecha:',ml,y);sf('normal',8,BL);tx(fmtF(p.fecha),ml+18,y);
+  sf('normal',8,GR);tx('Folio:',ml+90,y);sf('bold',8,VD);tx(p.folio,ml+100,y);
+  y+=4.5;
+  // Fila 2: Fecha | Elaboro nombre
+  sf('normal',8,GR);tx('Fecha:',ml,y);sf('normal',8,BL);tx(fmtF(p.fecha),ml+13,y);
   if(p.elaboro&&p.elaboro.trim()){
-    var ex=ml+82;
-    sf('bold',7,VM);tx('ELABORO',ex,y);y+=4;
-    sf('normal',8,BL);tx(p.elaboro,ex,y);y+=4;
+    sf('normal',8,GR);tx('Elaboro:',ml+90,y);sf('normal',8,BL);tx(p.elaboro,ml+105,y);
+    y+=4.5;
     if(p.elaboro_tel&&p.elaboro_tel.trim()){
-      sf('normal',7,GR);tx('Tel:',ex,y);sf('normal',7,BL);tx(p.elaboro_tel,ex+8,y);y+=3.8;
+      sf('normal',7,GR);tx('Tel:',ml+90,y);sf('normal',7,BL);tx(p.elaboro_tel,ml+99,y);y+=3.8;
     }
     if(p.elaboro_correo&&p.elaboro_correo.trim()){
-      sf('normal',7,GR);tx('Mail:',ex,y);sf('normal',7,BL);tx(p.elaboro_correo,ex+10,y);y+=3.8;
+      sf('normal',7,GR);tx('Mail:',ml+90,y);sf('normal',7,BL);tx(p.elaboro_correo,ml+99,y);y+=3.8;
     }
   }
-  y+=4;
+  y+=5;
   // Cliente - todos los datos del cliente
   sf('bold',8,VM);tx('COTIZACION PARA',ml,y);y+=4;
   var cliLines2=doc.splitTextToSize(p.cliente||'-',cw-8);
@@ -972,10 +976,8 @@ function buildPDF(p){
   sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Fecha de aceptacion',ml+85,y);
   // Footer
   fr(0,287,W,10,VD);
-  sf('normal',7,[200,230,201]);
-  tx('ogarciabrena@gmail.com',ml+2,292);
-  tx('+52 55 1455 2202',W/2,292,{align:'center'});
-  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
+  sf('normal',8,[200,230,201]);
+  tx('OGB - Consultor Tecnologico',W/2,293,{align:'center'});
   doc.save(p.folio+' - '+p.cliente+'.pdf');
 }
 
@@ -1055,7 +1057,7 @@ function recotizar(folio){
     if(!prods.length) addP('',1,0);
     upPv();
     // Reset botones
-    var bg=$('bg');bg.disabled=false;bg.innerHTML='<span class="dot"></span>1 - Guardar en Sheets';
+    var bg=$('bg');bg.disabled=false;bg.innerHTML='Guardar';
     $('bp').disabled=true;$('bd').disabled=true;$('acc-prop').style.display='none';
     showTab('cotizador');
     toast('Datos cargados desde '+folio+' - edita y guarda como nueva cotizacion');
@@ -1169,7 +1171,7 @@ function genPropuesta(){
     }
     // Footer portada
     fr(0,272,W,25,[20,70,20]);
-    sf('normal',9,[200,230,201]);tx('Omar Garcia Brena - Consultor Tecnologico',W/2,281,{align:'center'});
+    sf('normal',9,[200,230,201]);tx('OGB - Consultor Tecnologico',W/2,281,{align:'center'});
     sf('normal',8,[160,210,160]);tx('ogarciabrena@gmail.com  -  +52 55 1455 2202',W/2,287,{align:'center'});
     doc.addPage();
   }
