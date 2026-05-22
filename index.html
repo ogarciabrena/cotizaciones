@@ -870,7 +870,7 @@ function buildPDF(p){
   function tx(t,x,y,o){doc.text(String(t||''),x,y,o||{});}
   var y=0;
   // Banda superior
-  fr(0,0,W,10,VD);sf('bold',9,WH);tx('Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202',W/2,6.5,{align:'center'});
+  fr(0,0,W,10,VD);sf('bold',9,WH);tx('OGB - Consultor Tecnologico',W/2,6.5,{align:'center'});
   y=18;
   sf('bold',16,VM);tx('PROPUESTA TECNOLOGICA INTEGRAL',ml,y);
   // Box folio
@@ -996,7 +996,7 @@ function buildDOC(p){
   if(p.zona)  cliInfo+='<tr><td style="color:#666;padding:3px 8px">Zona:</td><td>'+esc(p.zona)+'</td></tr>';
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+esc(p.folio)+'</title>'
   +'<style>body{font-family:Arial,sans-serif;font-size:10pt;margin:2cm;color:#222;line-height:1.45}table{border-collapse:collapse;width:100%}h2{font-size:9pt;color:#2E7D32;text-transform:uppercase;letter-spacing:.07em;margin:14px 0 5px;border-bottom:1px solid #E8F5E9;padding-bottom:3px}</style></head><body>'
-  +'<div style="background:#1B5E20;color:#fff;padding:8px 14px;text-align:center;font-size:8pt;color:#c8e6c9">Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202</div>'
+  +'<div style="background:#1B5E20;color:#c8e6c9;padding:8px 14px;text-align:center;font-size:9pt;font-weight:bold">OGB - Consultor Tecnologico</div>'
   +'<table style="width:100%;margin:14px 0"><tr><td><p style="font-size:16pt;font-weight:bold;color:#2E7D32;margin:0">PROPUESTA TECNOLOGICA INTEGRAL</p>'+(p.slogan?'<p style="font-size:9pt;color:#666;font-style:italic">'+esc(p.slogan)+'</p>':'')+'</td>'
   +'<td style="text-align:right;vertical-align:top;width:130px"><div style="background:#1B5E20;color:#fff;padding:8px 12px"><p style="margin:0;font-size:7pt;color:#a5d6a7">COTIZACION</p><p style="margin:0;font-size:13pt;font-weight:bold">'+esc(p.folio)+'</p><p style="margin:0;font-size:8pt;color:#c8e6c9">'+fmtF(p.fecha)+'</p></div></td></tr></table>'
   +'<hr style="border:none;border-top:2px solid #2E7D32;margin:0 0 12px">'
@@ -1009,7 +1009,7 @@ function buildDOC(p){
   +(p.pago?'<h2>Forma de pago</h2><p style="font-size:9pt;color:#555">'+esc(p.pago)+'</p>':'')
   +(p.info_cliente&&p.info_cliente.trim()?'<h2 style="background:#1B5E20;color:#fff;padding:5px 10px">INFORMACION ADICIONAL</h2><div style="padding:8px;background:#f9f9f9;font-size:9pt;white-space:pre-line">'+esc(p.info_cliente)+'</div>':'')+(p.terminos?'<h2>Terminos y condiciones</h2>'+termH:'')
   +'<div style="margin-top:28px"><table style="width:100%"><tr><td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Nombre y firma del cliente</td><td style="width:6%"></td><td style="width:47%;border-top:1px solid #aaa;padding-top:28px;font-size:8pt;color:#666">Fecha de aceptacion</td></tr></table></div>'
-  +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px 12px;margin-top:22px;font-size:8pt;text-align:center">Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com - +52 55 1455 2202</div>'
+  +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px 12px;margin-top:22px;font-size:9pt;font-weight:bold;text-align:center">OGB - Consultor Tecnologico</div>'
   +'</body></html>';
   dlBlob(html,'text/html;charset=utf-8',p.folio+' - '+p.cliente+'.html');
 }
@@ -1172,7 +1172,7 @@ function genPropuesta(){
     // Footer portada
     fr(0,272,W,25,[20,70,20]);
     sf('normal',9,[200,230,201]);tx('OGB - Consultor Tecnologico',W/2,281,{align:'center'});
-    sf('normal',8,[160,210,160]);tx('ogarciabrena@gmail.com  -  +52 55 1455 2202',W/2,287,{align:'center'});
+    
     doc.addPage();
   }
 
@@ -1290,9 +1290,7 @@ function genPropuesta(){
     // -- FOOTER ------------------------------------------------
   fr(0,287,W,10,VD);
   sf('normal',7,[200,230,201]);
-  tx('ogarciabrena@gmail.com',ml+2,292);
-  tx('+52 55 1455 2202',W/2,292,{align:'center'});
-  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
+  tx('OGB - Consultor Tecnologico',W/2,293,{align:'center'});
 
   doc.save((d?d.folio:folioPP)+' - '+cliente+' - Propuesta.pdf');
   toast('Propuesta PDF descargada');
@@ -1303,7 +1301,7 @@ function genPropuestaDOC(){
   var cliente=gv('pp-cliente')||'-';
   var titulo=gv('pp-titulo')||'PROPUESTA TECNOLOGICA INTEGRAL';
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:10pt;margin:2cm;color:#222}table{border-collapse:collapse;width:100%}h2{font-size:10pt;color:#2E7D32;text-transform:uppercase;letter-spacing:.07em;margin:16px 0 6px;border-bottom:2px solid #E8F5E9;padding-bottom:3px}</style></head><body>'
-  +'<div style="background:#1B5E20;color:#c8e6c9;padding:8px 14px;text-align:center;font-size:8pt">Omar Garcia Brena - Consultor Tecnologico - ogarciabrena@gmail.com</div>'
+  +'<div style="background:#1B5E20;color:#c8e6c9;padding:8px 14px;text-align:center;font-size:9pt;font-weight:bold">OGB - Consultor Tecnologico</div>'
   +'<h1 style="font-size:18pt;color:#1B5E20;margin:16px 0 4px">'+esc(titulo)+'</h1>'
   +(gv('pp-sub')?'<p style="color:#666;font-style:italic">'+esc(gv('pp-sub'))+'</p>':'')
   +'<p style="color:#1B5E20;font-weight:bold;font-size:13pt">'+esc(cliente)+'</p>'
@@ -1312,7 +1310,7 @@ function genPropuestaDOC(){
   +(propActivo.cot&&d&&d.resumen?'<h2>Servicios y precios</h2><p>'+esc(d.resumen).replace(/ \| /g,'<br>')+'</p><p><strong>Total: '+fmto(d.total)+'</strong></p>':'')
   +(propActivo.notas&&gv('pp-notas')?'<h2>Proximos pasos</h2><p>'+esc(gv('pp-notas')).replace(/\n/g,'</p><p>')+'</p>':'')
   +(propDatos&&propDatos.info_cliente?'<h2 style="background:#1B5E20;color:#fff;padding:5px 10px">INFORMACION ADICIONAL</h2><div style="font-size:8pt;color:#555;white-space:pre-line">'+esc(propDatos.info_cliente)+'</div>':'')
-  +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px;margin-top:20px;font-size:8pt;text-align:center">ogarciabrena@gmail.com - +52 55 1455 2202</div>'
+  +'<div style="background:#1B5E20;color:#c8e6c9;padding:7px;margin-top:20px;font-size:9pt;font-weight:bold;text-align:center">OGB - Consultor Tecnologico</div>'
   +'</body></html>';
   dlBlob(html,'text/html;charset=utf-8',(d?d.folio:'propuesta')+' - '+cliente+' - Propuesta.html');
   toast('Propuesta DOC descargada');
@@ -1422,9 +1420,7 @@ function genPDF_OC(r){
   // Footer
   fr(0,287,W,10,VD);
   sf('normal',7,[200,230,201]);
-  tx('ogarciabrena@gmail.com',ml+2,292);
-  tx('+52 55 1455 2202',W/2,292,{align:'center'});
-  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
+  tx('OGB - Consultor Tecnologico',W/2,293,{align:'center'});
   doc.save((r.folio_oc||'OC')+' - '+(r.cliente||'cliente')+'.pdf');
   toast('PDF OC descargado');
 }
@@ -1583,15 +1579,14 @@ function genPDF_OC_completo(oc){
 
   // Firmas
   if(y>252){doc.addPage();y=15;}
+  y+=14;  // espacio separador antes de firma
   doc.setDrawColor(160,160,160);doc.setLineWidth(0.3);
-  doc.line(ml,y,ml+74,y);doc.line(ml+85,y,ml+74+85,y);y+=4;
-  sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Firma del consultor',ml+85,y);
+  doc.line(ml,y,ml+74,y);doc.line(ml+95,y,W-mr,y);y+=4;
+  sf('normal',7,GR);tx('Nombre y firma del cliente',ml,y);tx('Firma del consultor',ml+95,y);
 
   // Footer
   fr(0,287,W,10,VD);sf('normal',7,[200,230,201]);
-  tx('ogarciabrena@gmail.com',ml+2,292);
-  tx('+52 55 1455 2202',W/2,292,{align:'center'});
-  tx('ogarciabrena.github.io',W-mr-2,292,{align:'right'});
+  tx('OGB - Consultor Tecnologico',W/2,293,{align:'center'});
 
   doc.save((oc.folio_oc||'OC')+' - '+(oc.cliente||'cliente')+'.pdf');
   toast('PDF OC generado');
