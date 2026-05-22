@@ -1127,7 +1127,7 @@ function genPropuesta(){
   var cliente =gv('pp-cliente')||'-';
   var fecha   =$('pp-fecha').value||hoy();
   var folioPP =gv('pp-folio-show')||'-';
-  var elaboro =gv('elaboro')||'';
+  var elaboro =window._uNombre||'';
   var jsPDF=window.jspdf.jsPDF;
   var doc=new jsPDF({unit:'mm',format:'a4'});
   var W=210,ml=18,mr=18,cw=W-ml-mr;
