@@ -1106,7 +1106,7 @@ function cargarCot(){
   });
 }
 function actualizarPropTabla(d){
-  if(!d||!d.resumen){sei('prop-tabla','Sin datos de productos.');return;}
+  if(!d||!d.resumen){sei('prop-tabla','Datos de productos agregados.');return;}
   var html='<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">'
     +'<tr style="background:var(--s2)"><th style="padding:6px;border:1px solid var(--bd);text-align:left">Concepto</th><th style="padding:6px;border:1px solid var(--bd);text-align:right">Total</th></tr>';
   d.resumen.split(' | ').forEach(function(item){
