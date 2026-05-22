@@ -237,7 +237,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fld"><label>Correo</label><input type="email" id="ce" placeholder="contacto@negocio.mx"></div>
         <div class="fld"><label>Zona</label><input type="text" id="cz" placeholder="Miahuatlan, Oaxaca"></div>
         <div class="fld"><label>Direccion de entrega</label><input type="text" id="cdir" placeholder="Calle, Colonia, Ciudad..."></div>
-        <div class="fld"><label>Elaboro *</label><input type="text" id="elaboro" placeholder="Cargando..."></div>
+
       </div>
     </div>
 
@@ -568,7 +568,11 @@ function startApp(f){
   get('usuario',UID,TOK,function(d){
     if(d.ok&&d.data){
       var ud=d.data;
-      if(ud.nombre){sv('elaboro',ud.nombre);window._uCorreo=ud.correo||'';window._uTel=ud.telefono||'';}
+      if(ud.nombre){
+        window._uNombre=ud.nombre;
+        window._uCorreo=ud.correo||'';
+        window._uTel=ud.telefono||'';
+      }
     }
   });
   get('clientes',UID,TOK,function(d){if(d.ok&&d.clientes)clientes=d.clientes;});
@@ -617,10 +621,14 @@ function renderChipsTo(wrapId,targetId){
     chk.dataset.tid=targetId;
     chk.onchange=function(){
       var ta=$(this.dataset.tid);if(!ta)return;
+      var wrap2=this.parentNode;
       if(this.checked){
         ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+this.dataset.val;
+        wrap2.style.background='rgba(122,224,106,.15)';
+        wrap2.style.borderRadius='6px';
       }else{
         ta.value=ta.value.replace('\n'+this.dataset.val,'').replace(this.dataset.val+'\n','').replace(this.dataset.val,'').trim();
+        wrap2.style.background='transparent';
       }
     };
     var lbl=document.createElement('span');
@@ -798,7 +806,7 @@ function mkPay(){
   var t=calc();
   return{uid:UID,tok:TOK,a:'guardar',folio:folio,fecha:hoy(),
     cliente:gv('cn'),giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz'),
-    vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),elaboro:gv('elaboro'),elaboro_correo:window._uCorreo||'',elaboro_tel:window._uTel||'',direccion_entrega:gv('cdir'),
+    vigencia:$('vig').value,fecha_cierre:$('fc').value,info_cliente:gv('info-cliente'),elaboro:window._uNombre||'',elaboro_correo:window._uCorreo||'',elaboro_tel:window._uTel||'',direccion_entrega:gv('cdir'),
     status:status,notas:gv('no'),
     productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
@@ -806,7 +814,6 @@ function mkPay(){
 }
 function valid(){
   if(!gv('cn')){toast('Ingresa el nombre del cliente',true);return false;}
-  if(!gv('elaboro')){toast('El campo Elaboro es obligatorio',true);return false;}
   if(!prods.length||prods.every(function(p){return !p.d.trim();})){toast('Agrega al menos un producto con descripcion',true);return false;}
   if(prods.some(function(p){return p.d.trim()&&p.p<=0;})){toast('Todos los productos deben tener precio mayor a 0',true);return false;}
   return true;
@@ -814,7 +821,11 @@ function valid(){
 function guardar(){
   if(!valid())return;
   var btn=$('bg');btn.disabled=true;btn.innerHTML='<span class="spin"></span>Guardando...';
-  post(mkPay(),function(d){
+  // Obtener folio fresco justo antes de guardar para evitar duplicados
+  get('folio',UID,TOK,function(fr){
+    if(fr.ok&&fr.folio) folio=fr.folio;
+    upPv();
+    post(mkPay(),function(d){
     if(d.ok){
       folioSaved=folio;toast('Guardado: '+folio);btn.textContent='Guardado';
       $('bp').disabled=false;$('bd').disabled=false;$('acc-prop').style.display='flex';
@@ -823,9 +834,10 @@ function guardar(){
       if(n&&!clientes.some(function(c){return c.nombre.toLowerCase()===n.toLowerCase();}))
         clientes.push({nombre:n,giro:gv('cg'),tel:gv('ct'),email:gv('ce'),zona:gv('cz')});
     }else{
-      toast('Error: '+(d.e||'?'),true);
-      btn.disabled=false;btn.innerHTML='<span class="dot"></span>1 - Guardar en Sheets';
-    }
+        toast('Error: '+(d.e||'?'),true);
+        btn.disabled=false;btn.innerHTML='<span class="dot"></span>1 - Guardar en Sheets';
+      }
+    });
   });
 }
 
@@ -837,7 +849,7 @@ function getDatos(){
     productos:prods.map(function(p){return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};}),
     subtotal:Math.round(t.sub),iva:Math.round(t.iva),total:Math.round(t.tot),
     incluye_iva:$('ivt').checked,
-    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente'),elaboro:gv('elaboro'),elaboro_correo:window._uCorreo||'',elaboro_tel:window._uTel||'',direccion_entrega:gv('cdir')};
+    terminos:c.b1||'',slogan:c.b2||'',nota_pie:c.b3||'',pago:c.b9||'',info_cliente:gv('info-cliente'),elaboro:window._uNombre||'',elaboro_correo:window._uCorreo||'',elaboro_tel:window._uTel||'',direccion_entrega:gv('cdir')};
 }
 function genPDF(){if(!valid())return;withCfg(function(){buildPDF(getDatos());},'bp','PDF');}
 function genDOC(){if(!valid())return;withCfg(function(){buildDOC(getDatos());},'bd','DOC');}
@@ -872,9 +884,15 @@ function buildPDF(p){
   sf('normal',8,GR);tx('Folio:',ml+80,y);sf('bold',8,VD);tx(p.folio,ml+93,y);
   y+=4;sf('normal',8,GR);tx('Fecha:',ml,y);sf('normal',8,BL);tx(fmtF(p.fecha),ml+18,y);
   if(p.elaboro&&p.elaboro.trim()){
-    sf('normal',8,GR);tx('Elaboro:',ml+80,y);sf('normal',8,BL);tx(p.elaboro,ml+95,y);y+=4.5;
-    if(p.elaboro_tel&&p.elaboro_tel.trim()){sf('normal',7,GR);tx('Tel:',ml+80,y);sf('normal',7,[80,80,80]);tx(p.elaboro_tel,ml+87,y);y+=4;}
-    if(p.elaboro_correo&&p.elaboro_correo.trim()){sf('normal',7,GR);tx('Mail:',ml+80,y);sf('normal',7,[80,80,80]);tx(p.elaboro_correo,ml+89,y);y+=4;}
+    var ex=ml+82;
+    sf('bold',7,VM);tx('ELABORO',ex,y);y+=4;
+    sf('normal',8,BL);tx(p.elaboro,ex,y);y+=4;
+    if(p.elaboro_tel&&p.elaboro_tel.trim()){
+      sf('normal',7,GR);tx('Tel:',ex,y);sf('normal',7,BL);tx(p.elaboro_tel,ex+8,y);y+=3.8;
+    }
+    if(p.elaboro_correo&&p.elaboro_correo.trim()){
+      sf('normal',7,GR);tx('Mail:',ex,y);sf('normal',7,BL);tx(p.elaboro_correo,ex+10,y);y+=3.8;
+    }
   }
   y+=4;
   // Cliente - todos los datos del cliente
@@ -1359,7 +1377,7 @@ function genPDF_OC(r){
   // Banda superior
   fr(0,0,W,10,VD);
   sf('bold',9,WH);
-  tx('Omar Garcia Brena - Consultor Tecnologico',W/2,6.5,{align:'center'});
+  tx('OGB - Consultor Tecnologico',W/2,6.5,{align:'center'});
   var y=18;
   // Titulo
   sf('bold',16,VM);tx('ORDEN DE COMPRA',ml,y);
@@ -1414,11 +1432,12 @@ function guardarOC(){
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Guardando...';
   var folioEdit=$('oc-folio-edit').value;
   var isEdit=!!folioEdit;
+  var fechaEntrega=$('oc-entrega').value;
   var payload={uid:UID,tok:TOK,
     folio_cot:gv('oc-cot'),cliente:gv('oc-cliente'),
     monto:parseFloat($('oc-monto').value)||0,
     estado:$('oc-estado').value,
-    fecha_oc:$('oc-fecha').value,fecha_entrega:$('oc-entrega').value,notas:gv('oc-notas')};
+    fecha_oc:$('oc-fecha').value,fecha_entrega:fechaEntrega,notas:gv('oc-notas')};
   if(isEdit){
     payload.a='actualizar_oc';payload.folio_oc=folioEdit;
     post(payload,function(d){
@@ -1429,8 +1448,29 @@ function guardarOC(){
   }else{
     payload.a='guardar_oc';
     post(payload,function(d){
-      if(d.ok){toast('OC creada: '+d.folio_oc);cerrarModal();
-        // Actualizar buscador si hay busqueda activa
+      if(d.ok){
+        toast('OC creada: '+d.folio_oc);
+        // Generar PDF OC con fecha de entrega del modal
+        var t=calc();
+        var ocPDF={
+          folio_oc:d.folio_oc,folio_cot:gv('oc-cot'),
+          cliente:gv('oc-cliente')||gv('cn'),
+          giro:gv('cg'),tel:gv('ct'),email:gv('ce'),
+          direccion_entrega:gv('cdir'),
+          monto:parseFloat($('oc-monto').value)||Math.round(t.tot),
+          estado:$('oc-estado').value,
+          fecha_oc:$('oc-fecha').value,
+          fecha_entrega:fechaEntrega,
+          notas:gv('oc-notas'),
+          elaboro:window._uNombre||gv('elaboro')||'',
+          elaboro_tel:window._uTel||'',
+          elaboro_correo:window._uCorreo||'',
+          productos:prods.filter(function(p){return p.d.trim();}).map(function(p){
+            return{nombre:p.nombre||p.d,desc:p.desc||'',cant:p.c,precio:Math.round(p.p),subtotal:Math.round(p.c*p.p)};
+          })
+        };
+        cerrarModal();
+        genPDF_OC_completo(ocPDF);
         if($('oc-search').value) buscarOC();
       }else toast('Error: '+(d.e||'?'),true);
       btn.disabled=false;btn.innerHTML='<span class="dot"></span>Guardar OC';
@@ -1441,7 +1481,10 @@ function guardarOC(){
 function cerrarModal(){$('modal-oc').style.display='none';}
 function crearOCdesdeActual(){
   if(!folioSaved&&!folio){toast('Guarda la cotizacion primero',true);return;}
-  // Generar PDF OC con datos actuales sin pasar por modal
+  // Primero mostrar modal para fecha de entrega, luego PDF al guardar
+  showModalOC(folioSaved||folio,gv('cn'));
+}
+function crearOCdesdeActual_PDF(){
   var t=calc();
   var ocData={
     folio_oc:'OC-'+folio,
@@ -1470,7 +1513,7 @@ function genPDF_OC_completo(oc){
   function tx(t,x,y,o){doc.text(String(t||''),x,y,o||{});}
 
   // Banda superior
-  fr(0,0,W,10,VD);sf('bold',9,WH);tx('Omar Garcia Brena - Consultor Tecnologico',W/2,6.5,{align:'center'});
+  fr(0,0,W,10,VD);sf('bold',9,WH);tx('OGB - Consultor Tecnologico',W/2,6.5,{align:'center'});
   var y=18;
 
   // Titulo + box folio OC
